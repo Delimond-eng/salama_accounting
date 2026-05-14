@@ -7,18 +7,29 @@ use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
-| Web Routes - SALAMA ATTENDANCE
+| Web Routes - SALAMA ACCOUNTING
 |--------------------------------------------------------------------------
 */
 
 Auth::routes();
 
 Route::middleware(['auth'])->group(function () {
-    // Generic delete endpoint used by some Vue scripts (kept, but protected).
     // Dashboard
-    Route::get('/', [HomeController::class, 'index'])
-        ->name('dashboard')
-        ->middleware('can:dashboard_admin.view');
+    Route::get('/', [HomeController::class, 'index'])->name('dashboard');
+
+    // Accounting Routes
+    Route::prefix('accounting')->name('accounting.')->group(function () {
+        Route::get('/journal', fn () => view('accounting.journal'))->name('journal');
+        Route::get('/ledger', fn () => view('accounting.ledger'))->name('ledger');
+        Route::get('/trial-balance', fn () => view('accounting.trial-balance'))->name('trial-balance');
+        Route::get('/subsidiary-balance', fn () => view('accounting.subsidiary-balance'))->name('subsidiary-balance');
+        Route::get('/cash-draft', fn () => view('accounting.cash-draft'))->name('cash-draft');
+        Route::get('/reconciliation', fn () => view('accounting.reconciliation'))->name('reconciliation');
+        Route::get('/closing', fn () => view('accounting.closing'))->name('closing');
+        Route::get('/reopening', fn () => view('accounting.reopening'))->name('reopening');
+        Route::get('/exports', fn () => view('accounting.exports'))->name('exports');
+    });
+
     // Admin pages
     Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('/users', fn () => view('users', ['sites' => \App\Models\Station::all()]))

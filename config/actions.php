@@ -15,113 +15,60 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | RH / OPERATIONS
+    | COMPTABILITÉ
     |--------------------------------------------------------------------------
     */
-    'agents' => [
-        'entity' => 'agents',
-        'label'  => 'Agents',
-        'actions' => ['view', 'create', 'update', 'delete', 'export', 'import'],
+    'accounting_journal' => [
+        'entity' => 'accounting_journal',
+        'label'  => 'Journal comptable',
+        'actions' => ['view', 'create', 'update', 'delete', 'export', 'validate'],
     ],
 
-    'stations' => [
-        'entity' => 'stations',
-        'label'  => 'Stations',
-        'actions' => ['view', 'create', 'update', 'delete', 'export', 'import'],
-    ],
-
-    'horaires' => [
-        'entity' => 'horaires',
-        'label'  => 'Horaires',
-        'actions' => ['view', 'create', 'update', 'delete', 'export'],
-    ],
-
-    'groupes' => [
-        'entity' => 'groupes',
-        'label'  => 'Groupes',
-        'actions' => ['view', 'create', 'update'],
-    ],
-
-    'plannings' => [
-        'entity' => 'plannings',
-        'label'  => 'Plannings rotatifs',
-        'actions' => ['view', 'create', 'update', 'import', 'export'],
-    ],
-
-    'presences' => [
-        'entity' => 'presences',
-        'label'  => 'Pointages',
-        'actions' => ['view', 'create', 'export'],
-    ],
-
-    'retards' => [
-        'entity' => 'retards',
-        'label'  => 'Retards',
-        'actions' => ['view', 'create', 'export'],
-    ],
-
-    'absences' => [
-        'entity' => 'absences',
-        'label'  => 'Absences',
-        'actions' => ['view', 'create', 'update', 'delete', 'export'],
-    ],
-
-    'conges' => [
-        'entity' => 'conges',
-        'label'  => 'Conges',
-        'actions' => ['view', 'create', 'update', 'delete', 'export'],
-    ],
-
-    'attributions' => [
-        'entity' => 'attributions',
-        'label'  => 'Attributions conge',
-        'actions' => ['view', 'create', 'update', 'delete'],
-    ],
-
-    'authorizations' => [
-        'entity' => 'authorizations',
-        'label'  => 'Autorisations speciales',
-        'actions' => ['view', 'create', 'update', 'delete', 'export'],
-    ],
-
-    'justifications' => [
-        'entity' => 'justifications',
-        'label'  => 'Justifications RH',
-        'actions' => ['view', 'create', 'update', 'delete'],
-    ],
-
-    'timesheet' => [
-        'entity' => 'timesheet',
-        'label'  => 'Pointage mensuel RH',
+    'accounting_ledger' => [
+        'entity' => 'accounting_ledger',
+        'label'  => 'Grand livre',
         'actions' => ['view', 'export'],
     ],
 
-    /*
-    |--------------------------------------------------------------------------
-    | REPORTS
-    |--------------------------------------------------------------------------
-    */
-    'rapport_presences' => [
-        'entity' => 'rapport_presences',
-        'label'  => 'Rapports presences',
+    'accounting_trial_balance' => [
+        'entity' => 'accounting_trial_balance',
+        'label'  => 'Balance générale',
         'actions' => ['view', 'export'],
     ],
 
-    'rapport_absences' => [
-        'entity' => 'rapport_absences',
-        'label'  => 'Rapports absences',
+    'accounting_subsidiary_balance' => [
+        'entity' => 'accounting_subsidiary_balance',
+        'label'  => 'Balance auxiliaire',
         'actions' => ['view', 'export'],
     ],
 
-    'rapport_conges' => [
-        'entity' => 'rapport_conges',
-        'label'  => 'Rapports conges',
-        'actions' => ['view', 'export'],
+    'accounting_cash_draft' => [
+        'entity' => 'accounting_cash_draft',
+        'label'  => 'Brouillard de caisse',
+        'actions' => ['view', 'create', 'update', 'delete', 'validate'],
     ],
 
-    'rapport_retards' => [
-        'entity' => 'rapport_retards',
-        'label'  => 'Rapports retards',
+    'accounting_reconciliation' => [
+        'entity' => 'accounting_reconciliation',
+        'label'  => 'Lettrage des comptes',
+        'actions' => ['view', 'process'],
+    ],
+
+    'accounting_closing' => [
+        'entity' => 'accounting_closing',
+        'label'  => 'Clôture comptable',
+        'actions' => ['view', 'process'],
+    ],
+
+    'accounting_reopening' => [
+        'entity' => 'accounting_reopening',
+        'label'  => 'Réouverture d\'exercice',
+        'actions' => ['view', 'process'],
+    ],
+
+    'accounting_exports' => [
+        'entity' => 'accounting_exports',
+        'label'  => 'Exports comptables',
         'actions' => ['view', 'export'],
     ],
 
@@ -144,7 +91,7 @@ return [
 
     'logs' => [
         'entity' => 'logs',
-        'label'  => 'Journal acces',
+        'label'  => 'Journal accès',
         'actions' => ['view'],
     ],
 ];

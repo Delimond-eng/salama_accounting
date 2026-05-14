@@ -1,69 +1,147 @@
 @extends("layouts.app")
 
 @section("content")
-    <div class="content" id="App">
-        <!-- Breadcrumb -->
-        <div class="d-md-flex d-block align-items-center justify-content-between page-breadcrumb mb-3">
-            <div class="my-auto mb-2">
-                <h2 class="mb-1">Utilisateurs</h2>
-                <nav>
-                    <ol class="breadcrumb mb-0">
-                        <li class="breadcrumb-item">
-                            <a href="index.html"><i class="ti ti-smart-home"></i></a>
-                        </li>
-                        <li class="breadcrumb-item">
-                            Administration
-                        </li>
+    <div class="content pb-0" id="App">
+        <!-- Page Header -->
+        <div class="d-flex align-items-center justify-content-between gap-2 mb-4 flex-wrap">
+            <div>
+                <h4 class="mb-1">Utilisateurs <span class="badge badge-soft-primary ms-2">@{{ allUsers.length }}</span></h4>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-0 p-0">
+                        <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Accueil</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Administration</li>
                         <li class="breadcrumb-item active" aria-current="page">Utilisateurs</li>
                     </ol>
                 </nav>
             </div>
-            <div class="d-flex my-xl-auto right-content align-items-center flex-wrap ">
-                <div class="mb-2">
-                    @can('users.create')
-                    <a href="#" data-bs-toggle="modal" data-bs-target="#add_users"
-                       class="btn btn-primary d-flex align-items-center"><i
-                            class="ti ti-circle-plus me-2"></i>Ajout Utilisateur</a>
-                    @endcan
+            <div class="gap-2 d-flex align-items-center flex-wrap">
+                <div class="dropdown">
+                    <a href="javascript:void(0);" class="dropdown-toggle btn btn-outline-light px-2 shadow"
+                        data-bs-toggle="dropdown"><i class="ti ti-package-export me-2"></i>Export</a>
+                    <div class="dropdown-menu dropdown-menu-end">
+                        <ul>
+                            <li>
+                                <a href="javascript:void(0);" class="dropdown-item"><i
+                                        class="ti ti-file-type-pdf me-1"></i>Exporter en PDF</a>
+                            </li>
+                            <li>
+                                <a href="javascript:void(0);" class="dropdown-item"><i
+                                        class="ti ti-file-type-xls me-1"></i>Exporter en Excel</a>
+                            </li>
+                        </ul>
+                    </div>
                 </div>
+                <a href="javascript:void(0);" class="btn btn-icon btn-outline-light shadow"
+                    data-bs-toggle="tooltip" data-bs-placement="top" aria-label="Refresh"
+                    data-bs-original-title="Refresh"><i class="ti ti-refresh"></i></a>
+                <a href="javascript:void(0);" class="btn btn-icon btn-outline-light shadow"
+                    data-bs-toggle="tooltip" data-bs-placement="top" aria-label="Collapse"
+                    data-bs-original-title="Collapse" id="collapse-header"><i
+                        class="ti ti-transition-top"></i></a>
             </div>
         </div>
-        <!-- /Breadcrumb -->
+        <!-- /Page Header -->
 
-        <!-- Performance Indicator list -->
-        <div class="card">
-            <div class="card-header d-flex align-items-center justify-content-between flex-wrap row-gap-3">
-                <h5>Liste des Utilisateurs</h5>
-                <div class="d-flex my-xl-auto right-content align-items-center flex-wrap row-gap-3">
-                    <div class="me-3">
-                        <div class="input-icon-end position-relative">
-                            <input type="text" class="form-control date-range bookingrange"
-                                   placeholder="Recherche...">
-                            <span class="input-icon-addon">
-                            <i class="ti ti-search"></i>
-                        </span>
+        <!-- card start -->
+        <div class="card border-0 rounded-0">
+            <div class="card-header d-flex align-items-center justify-content-between gap-2 flex-wrap">
+                <div class="input-icon input-icon-start position-relative">
+                    <span class="input-icon-addon text-dark"><i class="ti ti-search"></i></span>
+                    <input type="text" class="form-control" placeholder="Rechercher un utilisateur...">
+                </div>
+                @can('users.create')
+                <a href="javascript:void(0);" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#add_users">
+                    <i class="ti ti-square-rounded-plus-filled me-1"></i>Ajout Utilisateur
+                </a>
+                @endcan
+            </div>
+            <div class="card-body">
+
+                <!-- table header filters -->
+                <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+                    <div class="d-flex align-items-center gap-2 flex-wrap">
+                        <div class="dropdown">
+                            <a href="javascript:void(0);" class="dropdown-toggle btn btn-outline-light shadow"
+                                data-bs-toggle="dropdown"><i class="ti ti-sort-ascending-2 me-2"></i>Trier par</a>
+                            <div class="dropdown-menu">
+                                <ul>
+                                    <li><a href="javascript:void(0);" class="dropdown-item">Plus récent</a></li>
+                                    <li><a href="javascript:void(0);" class="dropdown-item">Plus ancien</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-center gap-2 flex-wrap">
+                        <div class="dropdown">
+                            <a href="javascript:void(0);" class="btn btn-outline-light shadow px-2"
+                                data-bs-toggle="dropdown" data-bs-auto-close="outside"><i
+                                    class="ti ti-filter me-2"></i>Filtrer<i
+                                    class="ti ti-chevron-down ms-2"></i></a>
+                            <div class="filter-dropdown-menu dropdown-menu dropdown-menu-lg p-0">
+                                <div class="filter-header d-flex align-items-center justify-content-between border-bottom p-3">
+                                    <h4 class="mb-0 fs-16"><i class="ti ti-filter me-1"></i>Filtres</h4>
+                                </div>
+                                <div class="p-3">
+                                    <div class="mb-3">
+                                        <label class="form-label">Rôle</label>
+                                        <select class="form-select">
+                                            <option value="">Tous les rôles</option>
+                                            <option v-for="role in allRoles" :value="role.name">@{{ role.name }}</option>
+                                        </select>
+                                    </div>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <a href="javascript:void(0);" class="btn btn-outline-light w-100">Réinitialiser</a>
+                                        <a href="#" class="btn btn-primary w-100">Appliquer</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="dropdown">
+                            <a href="javascript:void(0);" class="btn bg-soft-indigo border-0"
+                                data-bs-toggle="dropdown" data-bs-auto-close="outside"><i
+                                    class="ti ti-columns-3 me-2"></i>Colonnes</a>
+                            <div class="dropdown-menu dropdown-menu-md dropdown-md p-3">
+                                <ul>
+                                    <li class="gap-1 d-flex align-items-center mb-2">
+                                        <div class="form-check form-switch w-100 ps-0">
+                                            <label class="form-check-label d-flex align-items-center gap-2 w-100">
+                                                <span>Email</span>
+                                                <input class="form-check-input switchCheckDefault ms-auto" type="checkbox" role="switch" checked>
+                                            </label>
+                                        </div>
+                                    </li>
+                                    <li class="gap-1 d-flex align-items-center mb-2">
+                                        <div class="form-check form-switch w-100 ps-0">
+                                            <label class="form-check-label d-flex align-items-center gap-2 w-100">
+                                                <span>Rôle</span>
+                                                <input class="form-check-input switchCheckDefault ms-auto" type="checkbox" role="switch" checked>
+                                            </label>
+                                        </div>
+                                    </li>
+                                </ul>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
-            <div class="card-body p-0">
-                <div class="table-responsive">
-                    <table class="table" v-cloak>
-                        <thead class="thead-light">
+                <!-- /table header filters -->
+
+                <!-- User List -->
+                <div class="table-responsive custom-table table-nowrap">
+                    <table class="table table-nowrap datatable" v-cloak>
+                        <thead class="table-light">
                         <tr>
                             <th class="no-sort">
                                 <div class="form-check form-check-md">
                                     <input class="form-check-input" type="checkbox" id="select-all">
                                 </div>
                             </th>
-                            <th>Nom</th>
+                            <th>Utilisateur</th>
                             <th>Email</th>
-                            <th>Date création</th>
-                            <th>Date modif.</th>
-                            <th>Role</th>
+                            <th>Rôle</th>
                             <th>Station</th>
-                            <th>Status</th>
-                            <th></th>
+                            <th>Statut</th>
+                            <th>Créé le</th>
+                            <th class="no-sort">Action</th>
                         </tr>
                         </thead>
                         <tbody>
@@ -75,41 +153,40 @@
                             </td>
                             <td>
                                 <div class="d-flex align-items-center file-name-icon">
-                                    <a href="#" class="avatar avatar-md avatar-rounded">
+                                    <a href="javascript:void(0);" class="avatar avatar-md avatar-rounded">
                                         <img src="{{asset("assets/img/avatar.jpg")}}" class="img-fluid" alt="img">
                                     </a>
                                     <div class="ms-2">
-                                        <h6 class="fw-medium"><a href="#">@{{ data.name }}</a></h6>
+                                        <h6 class="fw-medium mb-0">@{{ data.name }}</h6>
                                     </div>
                                 </div>
                             </td>
-                            <td>
-                                @{{ data.email }}
-                            </td>
-                            <td>
-                                @{{ data.created_at }}
-                            </td>
-                            <td>
-                                @{{ data.updated_at }}
-                            </td>
+                            <td>@{{ data.email }}</td>
                             <td>
                                 <span :class="data.role ==='admin' ? 'badge-pink-transparent' : 'badge-info-transparent'"
-                                      class=" badge badge-md p-2 fs-10">@{{ data.role }}</span>
+                                      class="badge badge-md p-2 fs-10">@{{ data.role }}</span>
                             </td>
-                            <td> <span class="badge badge-purple">@{{ data.station?.name ?? '-' }}</span> </td>
+                            <td><span class="badge badge-purple">@{{ data.station?.name ?? '-' }}</span></td>
                             <td>
                                 <span class="badge badge-success d-inline-flex align-items-center badge-xs">
-                                    <i class="ti ti-point-filled me-1"></i>Active
+                                    <i class="ti ti-point-filled me-1"></i>Actif
                                 </span>
                             </td>
-                            <td>
-                                <div class="action-icon d-inline-flex">
+                            <td>@{{ data.created_at }}</td>
+                            <td class="action-table-data">
+                                <div class="edit-delete-action">
                                     @can('users.update')
-                                        <a href="#" class="me-2" @click="getAccess(data)"><i :class="{'text-gray-3':data.role==='admin' || data.role==='manager' }" class="ti ti-shield"></i></a>
-                                        <a href="#" class="me-2" @click="editUser(data)"><i  class="ti ti-edit"></i></a>
+                                        <a href="javascript:void(0);" class="me-2 p-2" @click="getAccess(data)" title="Accès">
+                                            <i :class="{'text-gray-3':data.role==='admin' || data.role==='manager' }" class="ti ti-shield-lock text-warning"></i>
+                                        </a>
+                                        <a href="javascript:void(0);" class="me-2 p-2" @click="editUser(data)" title="Modifier">
+                                            <i class="ti ti-edit text-info"></i>
+                                        </a>
                                     @endcan
                                     @can('users.delete')
-                                        <a href="#" data-bs-toggle="modal" data-bs-target="#delete_modal"><i class="ti ti-trash"></i></a>
+                                        <a href="javascript:void(0);" class="p-2" data-bs-toggle="modal" data-bs-target="#delete_modal" title="Supprimer">
+                                            <i class="ti ti-trash text-danger"></i>
+                                        </a>
                                     @endcan
                                 </div>
                             </td>
@@ -117,18 +194,27 @@
                         </tbody>
                     </table>
                 </div>
+                <div class="row align-items-center mt-3">
+                    <div class="col-md-6">
+                        <div class="datatable-length"></div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="datatable-paginate"></div>
+                    </div>
+                </div>
+                <!-- /User List -->
+
             </div>
         </div>
-        <!-- /Performance Indicator list -->
+        <!-- card end -->
 
-
-        <!-- /Modal create User -->
+        <!-- Modal create/edit User -->
         @canany(['users.create','users.update'])
         <div class="modal fade" id="add_users">
             <div class="modal-dialog modal-dialog-centered modal-lg">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h4 class="modal-title">Création compte utilisateur</h4>
+                        <h4 class="modal-title">@{{ form.id ? 'Modifier l\'utilisateur' : 'Création compte utilisateur' }}</h4>
                         <button type="button" class="btn-close custom-btn-close" data-bs-dismiss="modal"
                                 aria-label="Close">
                             <i class="ti ti-x"></i>
@@ -140,18 +226,18 @@
                                 <div class="col-md-6">
                                     <div class="mb-3">
                                         <label class="form-label">Nom d'utilisateur</label>
-                                        <input type="text" class="form-control" v-model="form.name" placeholder="ex: Gaston">
+                                        <input type="text" class="form-control" v-model="form.name" placeholder="ex: Gaston" required>
                                     </div>
                                 </div>
                                 <div class="col-md-6">
                                     <div class="mb-3">
                                         <label class="form-label">Email</label>
-                                        <input type="text" v-model="form.email" class="form-control" placeholder="exemple@domain">
+                                        <input type="email" v-model="form.email" class="form-control" placeholder="exemple@domain" required>
                                     </div>
                                 </div>
                                 <div class="col-md-6">
                                     <div class="mb-3">
-                                        <label class="form-label">Mot de passe</label>
+                                        <label class="form-label">Mot de passe @{{ form.id ? '(laisser vide si inchangé)' : '' }}</label>
                                         <div class="pass-group">
                                             <input type="password" v-model="form.password" placeholder="***************" class="pass-input form-control">
                                             <span class="ti toggle-password ti-eye-off"></span>
@@ -161,7 +247,7 @@
                                 <div class="col-md-6">
                                     <div class="mb-3">
                                         <label class="form-label">Rôle</label>
-                                        <select class="form-select" v-model="form.role">
+                                        <select class="form-select" v-model="form.role" required>
                                             <option value="" hidden selected>--Sélectionner un rôle</option>
                                             <option v-for="(data, i) in allRoles" :value="data.name">@{{ data.name }}</option>
                                         </select>
@@ -192,7 +278,7 @@
         </div>
         @endcanany
 
-        <!-- /Modal access -->
+        <!-- Modal access -->
         @can('users.update')
         <div class="modal fade" id="access_users">
             <div class="modal-dialog modal-lg">
@@ -206,21 +292,21 @@
                     </div>
                     <form @submit.prevent="addAccess">
                         <div class="modal-body pb-0">
-                            <div class="table-responsive">
+                            <div class="table-responsive custom-table">
                                 <table class="table">
-                                    <thead class="thead-light">
+                                    <thead class="table-light">
                                     <tr>
                                         <th>Module Permissions</th>
-                                        <th v-for="col in ['voir', 'créer', 'modifier', 'supprimer', 'importer', 'exporter']" :key="col">@{{ col.charAt(0).toUpperCase() + col.slice(1) }}</th>
+                                        <th v-for="col in ['voir', 'créer', 'modifier', 'supprimer', 'importer', 'exporter']" :key="col" class="text-center">@{{ col.charAt(0).toUpperCase() + col.slice(1) }}</th>
                                     </tr>
                                     </thead>
                                     <tbody>
                                     <tr v-for="module in allActions" :key="module.entity">
                                         <td>
-                                            <h6 class="fs-14 fw-normal text-gray-9">@{{ module.label }}</h6>
+                                            <h6 class="fs-14 fw-normal text-gray-9 mb-0">@{{ module.label }}</h6>
                                         </td>
-                                        <td v-for="col in ['view', 'create', 'update', 'delete', 'import', 'export']" :key="col">
-                                            <div class="form-check form-check-md">
+                                        <td v-for="col in ['view', 'create', 'update', 'delete', 'import', 'export']" :key="col" class="text-center">
+                                            <div class="form-check form-check-md d-inline-block">
                                                 <input
                                                     class="form-check-input"
                                                     type="checkbox"
@@ -256,5 +342,3 @@
     </script>
     <script type="module" src="{{ asset("assets/js/scripts/user.js") }}"></script>
 @endpush
-
-
