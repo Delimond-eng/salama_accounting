@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Support\DateTimeFormat;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -16,6 +17,7 @@ class UserController extends Controller
     public function getActions()
     {
         $actions = [];
+        $actionLabels = config('accounting_permissions.action_labels', []);
 
         foreach ((array) config('actions') as $item) {
             $entity = (string) ($item['entity'] ?? '');
@@ -30,7 +32,7 @@ class UserController extends Controller
                 $entityActions[] = [
                     'name' => "{$entity}.{$actionName}",
                     'action' => $actionName,
-                    'label' => $this->translateAction($actionName),
+                    'label' => $actionLabels[$actionName] ?? $this->translateAction($actionName),
                     'entity' => $entity,
                 ];
             }
@@ -42,21 +44,24 @@ class UserController extends Controller
             ];
         }
 
-        return response()->json($actions);
+        return response()->json([
+            'modules' => $actions,
+            'role_labels' => config('accounting_roles.labels', []),
+            'role_descriptions' => config('accounting_roles.descriptions', []),
+            'protected_roles' => config('accounting_roles.protected', []),
+            'permission_columns' => ['view', 'create', 'update', 'validate', 'delete', 'export', 'process'],
+        ]);
     }
 
     private function translateAction(string $action): string
     {
-        $map = [
-            'view' => 'Voir',
-            'create' => 'Creer',
-            'update' => 'Modifier',
-            'delete' => 'Supprimer',
-            'export' => 'Exporter',
-            'import' => 'Importer',
-        ];
+        return config('accounting_permissions.action_labels')[$action] ?? ucfirst($action);
+    }
 
-        return $map[$action] ?? ucfirst($action);
+    private function roleHasFullAccess(string $roleName): bool
+    {
+        return in_array($roleName, config('accounting_roles.full_access', ['super_admin']), true)
+            || in_array($roleName, ['admin', 'manager'], true);
     }
 
     public function createOrUpdateRole(Request $request)
@@ -72,6 +77,9 @@ class UserController extends Controller
 
             if (!empty($data['role_id'])) {
                 $role = Role::findOrFail($data['role_id']);
+                if (in_array($role->name, config('accounting_roles.protected', []), true)) {
+                    return response()->json(['errors' => 'Ce rôle système ne peut pas être modifié.'], 403);
+                }
                 $role->update([
                     'name' => $data['name'],
                 ]);
@@ -83,8 +91,8 @@ class UserController extends Controller
             }
 
             $permissionNames = [];
-            $isManagerRole = Str::lower((string) ($role->name ?? $data['name'])) === 'manager';
-            if ($isManagerRole) {
+            $roleName = Str::lower((string) ($role->name ?? $data['name']));
+            if ($this->roleHasFullAccess($roleName)) {
                 $permissionNames = $this->allPermissionNamesFromActions();
             } else {
                 foreach ((array) $data['permissions'] as $permission) {
@@ -122,25 +130,60 @@ class UserController extends Controller
 
     public function getAllRoles()
     {
-        $roles = Role::with('permissions')->get();
+        $labels = config('accounting_roles.labels', []);
+        $descriptions = config('accounting_roles.descriptions', []);
+        $roles = Role::with('permissions')->get()->map(function ($role) use ($labels, $descriptions) {
+            return [
+                'id' => $role->id,
+                'name' => $role->name,
+                'label' => $labels[$role->name] ?? $role->name,
+                'description' => $descriptions[$role->name] ?? '',
+                'permissions' => $role->permissions->pluck('name'),
+                'permissions_count' => $role->permissions->count(),
+                'created_at' => DateTimeFormat::format($role->created_at),
+                'updated_at' => DateTimeFormat::format($role->updated_at),
+            ];
+        });
+
         return response()->json([
             'status' => 'success',
             'roles' => $roles,
+            'role_labels' => $labels,
+            'protected_roles' => config('accounting_roles.protected', []),
         ]);
     }
 
     public function getAllUsers()
     {
-        $query = User::query()->with(['roles.permissions', 'permissions', 'station']);
+        $labels = config('accounting_roles.labels', []);
+        $users = User::query()
+            ->with(['roles.permissions', 'permissions'])
+            ->orderBy('name')
+            ->get()
+            ->map(function ($user) use ($labels) {
+                $roleName = $user->roles->first()?->name ?? $user->role;
 
-        $auth = auth()->user();
-        if ($auth && (!method_exists($auth, 'hasRole') || !$auth->hasRole('admin')) && $auth->station_id !== null && $auth->station_id !== '') {
-            $query->where('station_id', (int) $auth->station_id);
-        }
+                return [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'role' => $roleName,
+                    'role_label' => $labels[$roleName] ?? $roleName,
+                    'roles' => $user->roles->map(fn ($r) => [
+                        'id' => $r->id,
+                        'name' => $r->name,
+                        'permissions' => $r->permissions->pluck('name'),
+                    ]),
+                    'permissions' => $user->permissions->pluck('name'),
+                    'created_at' => DateTimeFormat::format($user->created_at),
+                    'updated_at' => DateTimeFormat::format($user->updated_at),
+                ];
+            });
 
         return response()->json([
             'status' => 'success',
-            'users' => $query->get(),
+            'users' => $users,
+            'role_labels' => $labels,
         ]);
     }
 
@@ -148,14 +191,12 @@ class UserController extends Controller
     {
         try {
             $userId = $request->user_id;
-            $managerStationId = $this->managerStationId();
 
             $data = $request->validate([
                 'name' => 'required|string|max:255',
-                'email' => 'required|email|unique:users,email,' . $userId,
+                'email' => 'required|email|unique:users,email,'.$userId,
                 'password' => $userId ? 'nullable|string|min:6' : 'required|string|min:6',
                 'role' => 'required|string|exists:roles,name',
-                'station_id' => 'nullable|integer|exists:sites,id|required_unless:role,admin',
                 'user_id' => 'nullable|exists:users,id',
                 'permissions' => 'nullable|array',
             ]);
@@ -164,15 +205,10 @@ class UserController extends Controller
 
             if ($userId) {
                 $user = User::findOrFail($userId);
-                if ($managerStationId !== null && (int) ($user->station_id ?? 0) !== $managerStationId) {
-                    DB::rollBack();
-                    return response()->json(['errors' => 'Utilisateur hors station du manager.'], 403);
-                }
 
                 $updateData = [
                     'name' => $data['name'],
                     'email' => $data['email'],
-                    'station_id' => $managerStationId ?? ($data['station_id'] ?? null),
                 ];
                 if (!empty($data['password'])) {
                     $updateData['password'] = Hash::make($data['password']);
@@ -183,24 +219,21 @@ class UserController extends Controller
                     'name' => $data['name'],
                     'email' => $data['email'],
                     'role' => $data['role'],
-                    'station_id' => $managerStationId ?? ($data['station_id'] ?? null),
                     'password' => Hash::make($data['password']),
                 ]);
             }
 
             $newRole = (string) $data['role'];
-            if (Str::lower($newRole) === 'manager') {
-                $this->ensureManagerRoleHasAllPermissions();
-            }
 
             if ($userId) {
-                $isAdmin = $user->hasRole('admin');
-                if ($isAdmin && $newRole !== 'admin') {
-                    $adminCount = User::role('admin')->count();
-                    if ($adminCount <= 1) {
+                $wasSuper = $user->hasRole('super_admin');
+                if ($wasSuper && $newRole !== 'super_admin') {
+                    $count = User::role('super_admin')->count();
+                    if ($count <= 1) {
                         DB::rollBack();
+
                         return response()->json([
-                            'errors' => 'Impossible de modifier le role: cet utilisateur est le seul administrateur du systeme.',
+                            'errors' => 'Impossible de modifier le rôle : seul super administrateur du système.',
                         ]);
                     }
                 }
@@ -208,12 +241,14 @@ class UserController extends Controller
 
             $user->syncRoles([$newRole]);
             $user->role = $newRole;
-            $user->station_id = $managerStationId ?? ($data['station_id'] ?? null);
             $user->save();
 
-            if (array_key_exists('permissions', $data)) {
+            if (! array_key_exists('permissions', $data)) {
+                $user->syncPermissions([]);
+                app(PermissionRegistrar::class)->forgetCachedPermissions();
+            } elseif (! empty($data['permissions'])) {
                 $permissionNames = [];
-                foreach ((array) ($data['permissions'] ?? []) as $permission) {
+                foreach ((array) $data['permissions'] as $permission) {
                     $permission = trim((string) $permission);
                     if ($permission === '') {
                         continue;
@@ -226,15 +261,17 @@ class UserController extends Controller
                     ]);
                 }
 
-                $user->syncPermissions(array_values(array_unique($permissionNames)));
-                app(PermissionRegistrar::class)->forgetCachedPermissions();
+                if ($permissionNames !== []) {
+                    $user->syncPermissions(array_values(array_unique($permissionNames)));
+                    app(PermissionRegistrar::class)->forgetCachedPermissions();
+                }
             }
 
             DB::commit();
 
             return response()->json([
                 'message' => $userId ? 'Utilisateur mis a jour avec succes' : 'Utilisateur cree avec succes',
-                'user' => $user->load(['roles', 'station']),
+                'user' => $user->load(['roles']),
             ]);
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json(['errors' => $e->validator->errors()->all()]);
@@ -247,7 +284,6 @@ class UserController extends Controller
     {
         try {
             $userId = (int) $request->user_id;
-            $managerStationId = $this->managerStationId();
 
             $validated = $request->validate([
                 'user_id' => 'required|int|exists:users,id',
@@ -257,9 +293,10 @@ class UserController extends Controller
             DB::beginTransaction();
 
             $user = User::findOrFail($userId);
-            if ($managerStationId !== null && (int) ($user->station_id ?? 0) !== $managerStationId) {
+            if ($user->hasRole('super_admin')) {
                 DB::rollBack();
-                return response()->json(['errors' => 'Utilisateur hors station du manager.'], 403);
+
+                return response()->json(['errors' => 'Les permissions du super administrateur ne peuvent pas être modifiées individuellement.'], 403);
             }
 
             if (array_key_exists('permissions', $validated)) {
@@ -285,7 +322,7 @@ class UserController extends Controller
 
             return response()->json([
                 'message' => 'Utilisateur mis a jour avec succes',
-                'user' => $user->load(['roles', 'permissions', 'station']),
+                'user' => $user->load(['roles', 'permissions']),
             ]);
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json(['errors' => $e->validator->errors()->all()]);
@@ -327,29 +364,4 @@ class UserController extends Controller
         return array_values(array_unique($permissionNames));
     }
 
-    private function ensureManagerRoleHasAllPermissions(): void
-    {
-        $permissions = $this->allPermissionNamesFromActions();
-        $roleManager = Role::updateOrCreate(['name' => 'manager', 'guard_name' => 'web']);
-        $roleManager->syncPermissions($permissions);
-        app(PermissionRegistrar::class)->forgetCachedPermissions();
-    }
-
-    private function managerStationId(): ?int
-    {
-        $auth = auth()->user();
-        if (!$auth) {
-            return null;
-        }
-
-        if (method_exists($auth, 'hasRole') && $auth->hasRole('admin')) {
-            return null;
-        }
-
-        if ($auth->station_id === null || $auth->station_id === '') {
-            return null;
-        }
-
-        return (int) $auth->station_id;
-    }
 }

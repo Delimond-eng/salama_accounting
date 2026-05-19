@@ -5,80 +5,56 @@ namespace Database\Seeders;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
-use Spatie\Permission\Models\Permission;
-use Spatie\Permission\Models\Role;
-use Spatie\Permission\PermissionRegistrar;
 
 class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-        // Reset Spatie cache before seeding.
-        app(PermissionRegistrar::class)->forgetCachedPermissions();
+        $this->command?->info('');
+        $this->command?->info('═══ Rôles & permissions SYSCOHADA ═══');
+        $this->call(AccountingRolesPermissionsSeeder::class);
 
-        $modules = config('actions', []);
-        if (!is_array($modules) || empty($modules)) {
-            $this->command?->warn("config('actions') is empty/invalid. Check config/actions.php");
-            return;
-        }
-
-        // Create permissions from config/actions.php
-        // Permission name format: "{entity}.{action}"
-        $permissionNames = [];
-
-        foreach ($modules as $key => $moduleConfig) {
-            if (!is_array($moduleConfig)) {
-                continue;
-            }
-
-            $entity = $moduleConfig['entity'] ?? $key;
-            $actions = $moduleConfig['actions'] ?? [];
-
-            if (!is_string($entity) || trim($entity) === '') {
-                continue;
-            }
-            if (!is_array($actions)) {
-                $actions = [];
-            }
-
-            foreach ($actions as $action) {
-                if (!is_string($action) || trim($action) === '') {
-                    continue;
-                }
-
-                $name = trim($entity) . '.' . trim($action);
-                Permission::updateOrCreate(
-                    ['name' => $name, 'guard_name' => 'web'],
-                    []
-                );
-                $permissionNames[] = $name;
-            }
-        }
-
-        $permissionNames = array_values(array_unique($permissionNames));
-
-        // Default admin role
-        $roleAdmin = Role::updateOrCreate(['name' => 'admin', 'guard_name' => 'web']);
-        $roleAdmin->syncPermissions($permissionNames);
-
-        // Default manager role (same permissions, data remains station scoped at runtime)
-        $roleManager = Role::updateOrCreate(['name' => 'manager', 'guard_name' => 'web']);
-        $roleManager->syncPermissions($permissionNames);
-
-        // Default admin user (demo)
-        $adminUser = User::updateOrCreate(
+        User::updateOrCreate(
             ['email' => 'demo@gmail.com'],
             [
-                'name' => 'Administrateur SALAMA',
+                'name' => 'Compte Démo',
                 'password' => Hash::make('demo@2025'),
-                'role' => 'admin', // keep legacy column in sync
+                'role' => 'super_admin',
             ]
-        );
-        $adminUser->syncRoles([$roleAdmin]);
+        )->syncRoles(['super_admin']);
 
-        // Demo data
-        $this->call(DemoDataSeeder::class);
+        $admin = config('accounting_roles.default_admin');
+        $this->command?->info('');
+        $this->command?->info('╔══════════════════════════════════════════╗');
+        $this->command?->info('║   SYSCOHADA — Initialisation base        ║');
+        $this->command?->info('╚══════════════════════════════════════════╝');
+        $this->command?->info('');
 
-        $this->command?->info('Seeder done: permissions/roles created from config(actions), admin user created.');
+        $this->command?->info('① Devises...');
+        $this->call(DeviseSeeder::class);
+
+        $this->command?->info('② Paramètres système...');
+        $this->call(ParametresSeeder::class);
+
+        $this->command?->info('③ Société démo...');
+        $this->call(SocieteDemoSeeder::class);
+
+        $this->command?->info('④ Plan comptable SYSCOHADA...');
+        $this->call(PlanComptableSyscohadaSeeder::class);
+
+        $this->command?->info('⑤ Journaux comptables...');
+        $this->call(JournauxSeeder::class);
+
+        $this->command?->info('⑥ Workflows demandes de fonds...');
+        $this->call(WorkflowDemandeFondsSeeder::class);
+
+        $this->command?->info('');
+        $this->command?->info('╔══════════════════════════════════════════╗');
+        $this->command?->info('║   ✅ Initialisation terminée             ║');
+        $this->command?->info('╚══════════════════════════════════════════╝');
+        $this->command?->info('');
+        $this->command?->info("Super admin : {$admin['email']} / {$admin['password']}");
+        $this->command?->info('Compte démo (super admin) : demo@gmail.com / demo@2025');
+        $this->command?->info('Paramètres : /accounting/parametres/societe');
     }
 }

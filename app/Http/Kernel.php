@@ -68,6 +68,7 @@ class Kernel extends HttpKernel
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
         'cors'=> \App\Http\Middleware\Cors::class,
         'check.permission' => \App\Http\Middleware\CheckPermission::class,
+        'accounting.permission' => \App\Http\Middleware\AccountingPermission::class,
         'geo.restricted' => \App\Http\Middleware\GeoRestriction::class,
         'geo.restricted.api' => \App\Http\Middleware\GeoRestrictionApi::class,
         'check.api.key' => \App\Http\Middleware\CheckApiKey::class,
