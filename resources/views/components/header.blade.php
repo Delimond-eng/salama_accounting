@@ -6,11 +6,11 @@
             <!-- Logo -->
             <a href="{{ route('dashboard') }}" class="logo">
                 <span class="logo-light">
-                    <span class="logo-lg"><img src="{{ $appLogoUrl ?? asset('assets/img/logo.svg') }}" alt="logo" class="app-logo-img" style="max-height:36px"></span>
-                    <span class="logo-sm"><img src="{{ $appLogoUrl ?? asset('assets/img/logo-small.svg') }}" alt="small logo" class="app-logo-img" style="max-height:32px"></span>
+                    <span class="logo-lg"><img src="{{ $appLogoUrl ?? asset('assets/img/compta.svg') }}" alt="logo" class="app-logo-img" style="max-height:36px"></span>
+                    <span class="logo-sm"><img src="{{ $appLogoUrl ?? asset('assets/img/icon.png') }}" alt="small logo" class="app-logo-img" style="max-height:32px"></span>
                 </span>
                 <span class="logo-dark">
-                    <span class="logo-lg"><img src="{{ $appLogoUrl ?? asset('assets/img/logo-white.svg') }}" alt="dark logo" class="app-logo-img" style="max-height:36px"></span>
+                    <span class="logo-lg"><img src="{{ $appLogoUrl ?? asset('assets/img/compta-light.svg') }}" alt="dark logo" class="app-logo-img" style="max-height:36px"></span>
                 </span>
             </a>
 
@@ -42,14 +42,14 @@
                 <a href="javascript:void(0);"
                     class="topbar-link dropdown-toggle drop-arrow-none position-relative"
                     data-bs-toggle="dropdown" data-bs-offset="0,22" aria-haspopup="false" aria-expanded="false">
-                    <img src="assets/img/users/user-40.jpg" width="38" class="rounded-1 d-flex"
+                    <img src="{{ asset('assets/img/users/user-40.jpg') }}" width="38" class="rounded-1 d-flex"
                         alt="user-image">
                     <span class="online text-success"><i
                             class="ti ti-circle-filled d-flex bg-white rounded-circle border border-1 border-white"></i></span>
                 </a>
                 <div class="dropdown-menu dropdown-menu-end dropdown-menu-md p-2">
                     <div class="d-flex align-items-center bg-light rounded-3 p-2 mb-2">
-                        <img src="assets/img/users/user-40.jpg" class="rounded-circle" width="42" height="42"
+                        <img src="{{ asset('assets/img/users/user-40.jpg') }}" class="rounded-circle" width="42" height="42"
                             alt="Img">
                         <div class="ms-2">
                             <p class="fw-medium text-dark mb-0">{{ Auth::user()->name }}</p>
@@ -71,10 +71,15 @@
                     @endcan
 
                     <div class="pt-2 mt-2 border-top">
-                        <a href="login.html" class="dropdown-item text-danger">
+                        <a href="#" class="dropdown-item text-danger" id="logout-btn">
                             <i class="ti ti-logout me-1 fs-17 align-middle"></i>
-                            <span class="align-middle">Sign Out</span>
+                            <span class="align-middle">Déconnexion</span>
                         </a>
+                        <form id="logout-form" method="POST" hidden action="{{ route('logout') }}" class="m-0 p-0">
+                            @csrf
+                            <button type="submit" class="dropdown-item d-inline-flex align-items-center p-0 py-2 js-logout">
+                            </button>
+                        </form>
                     </div>
                 </div>
             </div>

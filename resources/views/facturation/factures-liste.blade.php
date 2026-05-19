@@ -1,6 +1,6 @@
 @extends('layouts.app')
 @section('content')
-@include('components.vue-splash')
+
 <div class="content pb-0" id="App" v-cloak>
     <template v-if="!pageReady">@include('components.vue-page-loading')</template>
     <template v-else>

@@ -1,59 +1,84 @@
-<!DOCTYPE html><!--
-Template Name: Midone - Admin Dashboard Template
-Author: Left4code
-Website: http://www.left4code.com/
-Contact: muhammadrizki@left4code.com
-Purchase: https://themeforest.net/user/left4code/portfolio
-Renew Support: https://themeforest.net/user/left4code/portfolio
-License: You must have a valid license purchased only from themeforest(the above link) in order to legally use the theme for your project.
--->
-<html xmlns="http://www.w3.org/1999/xhtml" class="opacity-0" lang="en"><!-- BEGIN: Head -->
+<!DOCTYPE html>
+<html lang="en">
 
-<!-- Mirrored from midone-html.vercel.app/rubick-side-menu-error-page-page.html by HTTrack Website Copier/3.x [XR&CO'2014], Thu, 24 Apr 2025 22:36:58 GMT -->
-<!-- Added by HTTrack --><meta http-equiv="content-type" content="text/html;charset=utf-8" /><!-- /Added by HTTrack -->
+
 <head>
+
+    <!-- Meta Tags -->
     <meta charset="utf-8">
-    <meta name="csrf-token" content="Koo2zWJKliRELq4FawEfkQPg3CJYusp6ppGFZw4O">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="Midone admin is super flexible, powerful, clean & modern responsive tailwind admin template with unlimited possibilities.">
-    <meta name="keywords" content="admin template, midone Admin Template, dashboard template, flat admin template, responsive admin template, web app">
-    <meta name="author" content="LEFT4CODE">
-    <title>Error Page - Salama</title>
-    <!-- BEGIN: CSS Assets-->
-    <!-- END: CSS Assets-->
-    <link rel="stylesheet" href="dist/css/app.css">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Error 404 </title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta name="author" content="SALAMA DRC">
+	<meta name="robots" content="index, follow">
+
+    <!-- Favicon -->
+    <link rel="shortcut icon" href="{{ asset('assets/img/icon.png') }}">
+
+    <!-- Apple Icon -->
+    <link rel="apple-touch-icon" href="{{ asset('assets/img/icon.png') }}">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="{{ asset('assets/css/bootstrap.min.css') }}">
+
+    <!-- Tabler Icon CSS -->
+    <link rel="stylesheet" href="{{ asset('assets/plugins/tabler-icons/tabler-icons.min.css') }}">
+
+    <!-- Simplebar CSS -->
+    <link rel="stylesheet" href="{{ asset('assets/plugins/simplebar/simplebar.min.css') }}">
+
+    <!-- Main CSS -->
+    <link rel="stylesheet" href="{{ asset('assets/css/style.css') }}" id="app-style">
+
 </head>
-<!-- END: Head -->
-<body>
-    <div class="py-2 bg-gradient-to-b from-theme-1 to-theme-2 dark:from-darkmode-800 dark:to-darkmode-800">
+
+<body class="error-page">
+
+    <!-- Begin Wrapper -->
+    <div class="main-wrapper">
+
         <div class="container">
-            <!-- BEGIN: Error Page -->
-            <div class="flex flex-col items-center justify-center h-screen text-center error-page lg:flex-row lg:text-left">
-                <div class="-intro-x lg:mr-20">
-                    <img class="h-48 w-[450px] lg:h-auto" src="dist/images/logo.svg" alt="salama">
-                </div>
-                <div class="mt-10 text-white lg:mt-0">
-                    <div class="font-medium intro-x text-8xl">403</div>
-                    <div class="mt-5 text-xl font-medium intro-x lg:text-3xl">
-                        Permission refusée.
+
+            <!-- start row -->
+            <div class="row justify-content-center align-items-center vh-100">
+
+                <div class="col-md-8 d-flex align-items-center justify-content-center mx-auto">
+                    <div>
+                        <div class="error-img p-4">
+                            <img src="{{ asset('assets/img/authentication/error-500.png') }}" class="img-fluid" alt="Img">
+                        </div>
+                        <div class="text-center">
+                            <h2 class="mb-3">Oups, une erreur s’est produite</h2>
+                            <p class="mb-3"> Erreur 403 - Accès refusé. Désolé, <br> vous n'avez pas les autorisations nécessaires pour accéder à cette page.</p>
+                            <div class="pb-4">
+                                <a href="{{ route('dashboard') }}" class="btn btn-primary d-inline-flex align-items-center">
+                                    <i class="ti ti-chevron-left me-1"></i>Retour à l'accueil
+                                </a>
+                            </div>
+                        </div>
                     </div>
-                    <div class="mt-3 text-lg intro-x">
-                        Vous n'avez pas des accès pour cette page !
-                    </div>
-                    <a href="/" data-tw-merge="" class="transition duration-200 border shadow-sm inline-flex items-center justify-center rounded-md font-medium cursor-pointer focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus-visible:outline-none dark:focus:ring-slate-700 dark:focus:ring-opacity-50 [&:hover:not(:disabled)]:bg-opacity-90 [&:hover:not(:disabled)]:border-opacity-90 [&:not(button)]:text-center disabled:opacity-70 disabled:cursor-not-allowed px-4 py-3 mt-10 text-white border-white intro-x dark:border-darkmode-400 dark:text-slate-200">Retour à l'accueil</a>
-                </div>
+                </div> <!-- end col -->
+
             </div>
-            <!-- END: Error Page -->
+            <!-- end row -->
+
         </div>
+
     </div>
-    <!-- BEGIN: Vendor JS Assets-->
-    <script src="dist/js/vendors/dom.js"></script>
-    <script src="dist/js/vendors/tailwind-merge.js"></script>
-    <script src="dist/js/vendors/lucide.js"></script>
-    <script src="dist/js/vendors/modal.js"></script>
-    <script src="dist/js/components/base/theme-color.js"></script>
-    <script src="dist/js/components/base/lucide.js"></script> <!-- END: Vendor JS Assets-->
-    <!-- BEGIN: Pages, layouts, components JS Assets-->
-    <!-- END: Pages, layouts, components JS Assets-->
+    <!-- End Wrapper -->
+
+    <!-- jQuery -->
+    <script src="{{ asset('assets/js/jquery-3.7.1.min.js') }}"></script>
+
+    <!-- Bootstrap Core JS -->
+    <script src="{{ asset('assets/js/bootstrap.bundle.min.js') }}"></script>
+
+	<!-- Simplebar JS -->
+	<script src="{{ asset('assets/plugins/simplebar/simplebar.min.js') }}"></script>
+
+    <!-- Main JS -->
+    <script src="{{ asset('assets/js/script.js') }}"></script>
+
 </body>
+
 </html>

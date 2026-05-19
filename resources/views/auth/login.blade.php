@@ -12,8 +12,8 @@
             <div class="col-md-10 mx-auto">
                 <form action="{{ route('login') }}" method="POST" @submit.prevent="handleLogin" class=" vh-100 d-flex justify-content-between flex-column p-4 pb-0">
                     @csrf
-                    <div class="text-center mb-4 auth-logo">
-                        <img src="assets/img/logo.svg" class="img-fluid" alt="Logo">
+                    <div class="text-center mb-4">
+                        <img src="{{ asset('assets/img/compta.svg') }}" style="height: 80px" class="img-fluid" alt="Logo">
                     </div>
                     <div>
                         <div class="mb-3">

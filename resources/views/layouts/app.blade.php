@@ -16,10 +16,10 @@
 	<meta name="robots" content="index, follow">
 
 	<!-- Favicon -->
-	<link rel="shortcut icon" href="{{ asset('assets/img/favicon.png') }}">
+	<link rel="shortcut icon" href="{{ asset('assets/img/icon.png') }}">
 
 	<!-- Apple Icon -->
-	<link rel="apple-touch-icon" href="{{ asset('assets/img/apple-icon.png') }}">
+	<link rel="apple-touch-icon" href="{{ asset('assets/img/icon.png') }}">
 
 	<!-- Bootstrap CSS -->
 	<link rel="stylesheet" href="{{ asset('assets/css/bootstrap.min.css') }}">

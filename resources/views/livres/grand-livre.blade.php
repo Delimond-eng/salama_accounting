@@ -1,6 +1,5 @@
 @extends('layouts.app')
 @section('content')
-@include('components.vue-splash')
 <div class="content pb-0" id="App" v-cloak>
     <template v-if="!pageReady">
         @include('components.vue-page-loading')
@@ -43,7 +42,7 @@
         <div class="card-header"><h5 class="mb-0">Grand livre général</h5></div>
         <div class="card-body p-0">
             <div class="table-responsive">
-                <table class="table table-nowrap mb-0 grand-livre-gl">
+                <table class="table table-nowrap mb-0 table-bordered">
                     <thead class="table-light">
                         <tr>
                             <th>Compte / Date</th>
@@ -55,7 +54,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr v-for="(r, i) in dataGeneral.lignes" :key="'g'+i" class="table-light fw-medium">
+                        <tr v-for="(r, i) in dataGeneral.lignes" :key="'g'+i" class="fw-medium">
                             <td>@{{ r.libelle_complet }}</td>
                             <td></td>
                             <td>@{{ r.devise_libelle }}</td>
@@ -63,7 +62,7 @@
                             <td class="text-end">@{{ fmtMontantDevise(r.credit, r.devise_saisie) }}</td>
                             <td class="text-end">@{{ fmtMontantDevise(r.solde, r.devise_saisie) }}</td>
                         </tr>
-                        <tr class="table-secondary fw-bold" v-if="dataGeneral.totaux">
+                        <tr class="table-indigo fw-bold" v-if="dataGeneral.totaux">
                             <td colspan="3">Total grand livre</td>
                             <td class="text-end">@{{ fmtMontantDevise(dataGeneral.totaux.debit, dataGeneral.devise_affichage) }}</td>
                             <td class="text-end">@{{ fmtMontantDevise(dataGeneral.totaux.credit, dataGeneral.devise_affichage) }}</td>

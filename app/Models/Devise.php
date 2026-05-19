@@ -15,6 +15,7 @@ class Devise extends Model
 
     protected $casts = [
         'nb_decimales' => 'integer', 'est_devise_reference' => 'boolean', 'actif' => 'boolean',
+        'created_at' => 'datetime:d/m/Y H:i:s', 'updated_at' => 'datetime:d/m/Y H:i:s',
     ];
 
     public function tauxChanges(): HasMany

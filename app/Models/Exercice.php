@@ -20,10 +20,10 @@ class Exercice extends Model
 
     protected $casts = [
         'annee' => 'integer',
-        'date_debut' => 'date',
-        'date_fin' => 'date',
-        'date_ouverture' => 'date',
-        'date_cloture' => 'date',
+        'date_debut' => 'date:d/m/Y',
+        'date_fin' => 'date:d/m/Y',
+        'date_ouverture' => 'date:d/m/Y',
+        'date_cloture' => 'date:d/m/Y',
         'est_courant' => 'boolean',
         'report_a_nouveau_genere' => 'boolean',
         'bilan_ouverture_genere' => 'boolean',

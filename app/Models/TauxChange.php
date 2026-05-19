@@ -11,10 +11,11 @@ class TauxChange extends Model
 
     protected $fillable = [
         'societe_id', 'devise_code', 'date_taux', 'taux', 'taux_achat', 'taux_vente', 'source',
+
     ];
 
     protected $casts = [
-        'date_taux' => 'date',
+        'date_taux' => 'datetime:d/m/Y H:s',
         'taux' => 'float', 'taux_achat' => 'float', 'taux_vente' => 'float',
     ];
 

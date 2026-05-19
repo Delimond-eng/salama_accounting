@@ -1,7 +1,6 @@
 ﻿@extends('layouts.app')
 
 @section('content')
-@include('components.vue-splash')
 <div class="content pb-0" id="App" v-cloak>
     <template v-if="!pageReady">
         @include('components.vue-page-loading')
@@ -32,7 +31,7 @@
                 <div class="card-header d-flex align-items-center justify-content-between gap-2 flex-wrap">
                     <div class="input-icon input-icon-start position-relative">
                         <span class="input-icon-addon text-dark"><i class="ti ti-search"></i></span>
-                        <input type="text" class="form-control" placeholder="NÂ° compte ou libellÃ©â€¦" v-model="search" @input="debounceSearch">
+                        <input type="text" class="form-control" placeholder="N° compte ou libellé…" v-model="search" @input="debounceSearch">
                     </div>
                     <div class="d-flex gap-2 align-items-center">
                         @include('components.export-buttons')
@@ -46,8 +45,8 @@
                         <table class="table table-nowrap mb-0">
                             <thead class="table-light">
                                 <tr>
-                                    <th>NÂ° compte</th>
-                                    <th>LibellÃ©</th>
+                                    <th>N° compte</th>
+                                    <th>Libellé</th>
                                     <th>Classe</th>
                                     <th>Type</th>
                                     <th>Tiers</th>

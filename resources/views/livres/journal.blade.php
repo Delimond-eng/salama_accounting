@@ -1,6 +1,5 @@
 @extends('layouts.app')
 @section('content')
-@include('components.vue-splash')
 <div class="content pb-0" id="App" v-cloak>
     <template v-if="!pageReady">
         @include('components.vue-page-loading')
@@ -30,7 +29,7 @@
         <div class="card-header"><h5 class="mb-0">Journal général</h5></div>
         <div class="card-body p-0">
             <div class="table-responsive">
-                <table class="table table-nowrap mb-0">
+                <table class="table table-nowrap table-bordered mb-0">
                     <thead class="table-light">
                         <tr>
                             <th>Date enregistrement</th><th>Pièce</th><th>Jnl</th><th>Compte</th><th>Partenaire</th><th>Libellé</th>

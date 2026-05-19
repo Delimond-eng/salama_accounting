@@ -285,22 +285,41 @@ class ParametresController extends Controller
             $request->validate([
                 'logo' => 'required|image|mimes:jpeg,png,jpg,gif,svg,webp|max:2048',
             ]);
-
             $societe = Societe::findOrFail($societeId);
+            // Supprimer l'ancien logo
             if ($societe->logo_path) {
-                Storage::disk('public')->delete($societe->logo_path);
+                $oldFile = public_path(
+                    str_replace(url('/').'/', '', $societe->logo_path)
+                );
+                if (file_exists($oldFile)) {
+                    unlink($oldFile);
+                }
             }
 
-            $path = $request->file('logo')->store('logos', 'public');
-            $societe->update(['logo_path' => $path]);
+            // Upload dans public/logos
+            $file = $request->file('logo');
+
+            $filename = time().'_'.uniqid().'.'.$file->getClientOriginalExtension();
+
+            $file->move(public_path('logos'), $filename);
+
+            // URL complète avec host
+            $fullUrl = asset('logos/'.$filename);
+
+            $societe->update([
+                'logo_path' => $fullUrl,
+            ]);
 
             return response()->json([
                 'status' => 'success',
                 'message' => 'Logo enregistré.',
-                'logo_url' => asset('storage/'.$path),
+                'logo_url' => $fullUrl,
             ]);
+
         } catch (\Illuminate\Validation\ValidationException $e) {
-            return response()->json(['errors' => $e->validator->errors()->all()], 422);
+            return response()->json([
+                'errors' => $e->validator->errors()->all()
+            ], 422);
         }
     }
 

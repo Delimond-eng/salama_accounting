@@ -1,8 +1,8 @@
 @extends("layouts.app")
 
 @section("content")
-@include('components.vue-splash')
-    <div class="content pb-0" id="App" v-cloak>
+
+<div class="content pb-0" id="App" v-cloak>
     <template v-if="!pageReady">
         @include('components.vue-page-loading')
     </template>
@@ -138,7 +138,6 @@
                             <th>Utilisateur</th>
                             <th>Email</th>
                             <th>Rôle</th>
-                            <th>Statut</th>
                             <th>Créé le</th>
                             <th class="no-sort">Action</th>
                         </tr>
@@ -162,13 +161,8 @@
                             </td>
                             <td>@{{ data.email }}</td>
                             <td>
-                                <span class="badge badge-md p-2 fs-10 badge-info-transparent"
-                                      :title="data.role">@{{ data.role_label || roleLabel(data.roles?.[0]?.name || data.role) }}</span>
-                            </td>
-                            <td>
-                                <span class="badge badge-success d-inline-flex align-items-center badge-xs">
-                                    <i class="ti ti-point-filled me-1"></i>Actif
-                                </span>
+                                <span class="badge badge-md p-2 fs-100 badge-soft-info"
+                                    >@{{ data.role_label }}</span>
                             </td>
                             <td>@{{ formatDateTime(data.created_at) }}</td>
                             <td class="action-table-data">

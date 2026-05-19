@@ -5,13 +5,13 @@
     <div class="sidebar-logo">
         <div>
             <a href="{{ route('dashboard') }}" class="logo logo-normal">
-                <img src="{{ $appLogoUrl ?? asset('assets/img/logo.svg') }}" alt="Logo" class="app-logo-img">
+                <img src="{{ asset('assets/img/compta.svg') }}" alt="Logo" class="app-logo-img">
             </a>
             <a href="{{ route('dashboard') }}" class="logo-small">
-                <img src="{{ $appLogoUrl ?? asset('assets/img/logo-small.svg') }}" alt="Logo" class="app-logo-img">
+                <img src="{{  asset('assets/img/icon.png') }}" alt="Logo" class="app-logo-img">
             </a>
             <a href="{{ route('dashboard') }}" class="dark-logo">
-                <img src="{{ $appLogoUrl ?? asset('assets/img/logo-white.svg') }}" alt="Logo" class="app-logo-img">
+                <img src="{{ asset('assets/img/compta-light.svg') }}" style="height: 40px" alt="Logo" class="app-logo-img">
             </a>
         </div>
         <button class="sidenav-toggle-btn btn border-0 p-0 active" id="toggle_btn">
