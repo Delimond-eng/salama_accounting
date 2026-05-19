@@ -17,7 +17,7 @@
     <div class="row">
         <div class="col-xl-4 col-md-6 d-flex">
             <div class="card flex-fill">
-                <div class="card-header pb-0">
+                <div class="card-header">
                     <h5 class="card-title">Clôture Mensuelle</h5>
                 </div>
                 <div class="card-body">
@@ -35,7 +35,7 @@
         </div>
         <div class="col-xl-4 col-md-6 d-flex">
             <div class="card flex-fill">
-                <div class="card-header pb-0">
+                <div class="card-header">
                     <h5 class="card-title">Clôture Annuelle</h5>
                 </div>
                 <div class="card-body">

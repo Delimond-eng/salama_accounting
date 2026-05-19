@@ -21,8 +21,8 @@
     <div class="row">
         <div class="col-md-6">
             <div class="card flex-fill">
-                <div class="card-header pb-0">
-                    <h5 class="card-title mb-0">Écritures non lettrées (Débit)</h5>
+                <div class="card-header">
+                    <h5 class="card-title">Écritures non lettrées (Débit)</h5>
                 </div>
                 <div class="card-body">
                     <div class="table-responsive">
@@ -50,8 +50,8 @@
         </div>
         <div class="col-md-6">
             <div class="card flex-fill">
-                <div class="card-header pb-0">
-                    <h5 class="card-title mb-0">Écritures non lettrées (Crédit)</h5>
+                <div class="card-header">
+                    <h5 class="card-title">Écritures non lettrées (Crédit)</h5>
                 </div>
                 <div class="card-body">
                     <div class="table-responsive">

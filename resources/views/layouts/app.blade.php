@@ -36,6 +36,9 @@
 	<!-- Daterangepicker CSS -->
 	<link rel="stylesheet" href="{{ asset('assets/plugins/daterangepicker/daterangepicker.css') }}">
 
+    <!-- SweetAlert2 JS -->
+    <link rel="stylesheet" href="{{ asset('assets/plugins/sweetalert2/sweetalert2.min.css') }}">
+
 	<!-- Main CSS -->
 	<link rel="stylesheet" href="{{ asset('assets/css/style.css') }}" id="app-style">
 
@@ -102,6 +105,9 @@
 
 	<!-- Main JS -->
 	<script src="{{ asset('assets/js/script.js') }}"></script>
+
+        <!-- SweetAlert2 JS -->
+    <script src="{{ asset('assets/plugins/sweetalert2/sweetalert2.min.js') }}"></script>
 
     <script src="{{ asset('assets/js/vendor/vue2.js') }}"></script>
 

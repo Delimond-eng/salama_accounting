@@ -44,15 +44,15 @@
                     </button>
                 </div>
                 <div class="col-lg-4 text-center d-none d-lg-block">
-                    <img src="{{ asset('assets/img/icons/reopening-illustration.svg') }}" alt="Reopening" class="img-fluid" style="max-height: 200px; opacity: 0.5;">
+                    <img src="{{ asset('assets/img/book.webp') }}" alt="Reopening" class="img-fluid" style="max-height: 200px; opacity: 0.5;">
                 </div>
             </div>
         </div>
     </div>
 
     <div class="card table-list-card">
-        <div class="card-header pb-0">
-            <h5 class="card-title mb-0">Historique des ouvertures</h5>
+        <div class="card-header">
+            <h5 class="card-title">Historique des ouvertures</h5>
         </div>
         <div class="card-body">
             <div class="table-responsive">

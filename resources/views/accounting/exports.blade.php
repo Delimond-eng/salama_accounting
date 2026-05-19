@@ -19,7 +19,7 @@
             <div class="card flex-fill">
                 <div class="card-body">
                     <div class="mb-3">
-                        <img src="{{ asset('assets/img/icons/pdf.svg') }}" alt="PDF" width="40">
+                        <i class="ti ti-file-type-pdf fs-1 text-danger"></i>
                     </div>
                     <h5>États Financiers (PDF)</h5>
                     <p class="text-muted">Bilan, Compte de Résultat et Tableaux de Financement au format PDF pour impression.</p>
@@ -31,10 +31,10 @@
             <div class="card flex-fill">
                 <div class="card-body">
                     <div class="mb-3">
-                        <img src="{{ asset('assets/img/icons/excel.svg') }}" alt="Excel" width="40">
+                        <i class="ti ti-file-excel fs-1 text-success"></i>
                     </div>
                     <h5>Grand Livre Export (Excel)</h5>
-                    <p class="text-muted">Export complet du grand livre avec filtres personnalisés pour analyse approfondie sur Excel.</p>
+                    <p class="text-muted">Export complet du grand livre avec filtres personnalisés pour analyse approfondie.</p>
                     <button class="btn btn-outline-success w-100 mt-auto">Exporter vers Excel</button>
                 </div>
             </div>
@@ -54,8 +54,8 @@
     </div>
 
     <div class="card">
-        <div class="card-header pb-0">
-            <h5 class="card-title mb-0">Paramètres d'export</h5>
+        <div class="card-header">
+            <h5 class="card-title">Paramètres d'export</h5>
         </div>
         <div class="card-body">
             <form>
