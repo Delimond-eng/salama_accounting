@@ -421,7 +421,7 @@
                     confirmButtonText: 'Oui, Déconnecter',
                     cancelButtonText: 'Annuler',
                     customClass: {
-                        confirmButton: 'btn btn-primary btn-sm',
+                        confirmButton: 'btn btn-primary btn-sm me-2',
                         cancelButton: 'btn btn-danger btn-sm'
                     },
                     buttonsStyling: false
