@@ -42,6 +42,29 @@
 	<!-- Main CSS -->
 	<link rel="stylesheet" href="{{ asset('assets/css/style.css') }}" id="app-style">
 
+	@stack('styles')
+
+	<style>
+		[v-cloak] { display: none !important; }
+		.vue-splash-loader {
+			min-height: 50vh;
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			justify-content: center;
+		}
+		.vue-page-loading { min-height: 40vh; }
+		.compte-select-wrap { min-width: 160px; }
+		.compte-select-dropdown {
+			max-height: 220px;
+			overflow-y: auto;
+			z-index: 1060;
+			position: absolute;
+			top: 100%;
+			left: 0;
+		}
+	</style>
+
 </head>
 
 <body>
@@ -98,10 +121,10 @@
 
 	<!-- Apexchart JS -->
 	<script src="{{ asset('assets/plugins/apexchart/apexcharts.min.js') }}"></script>
+	@unless (request()->routeIs('dashboard'))
 	<script src="{{ asset('assets/plugins/apexchart/chart-data.js') }}"></script>
-
-	<!-- Custom Json Js -->
 	<script src="{{ asset('assets/json/dashboard.js') }}"></script>
+	@endunless
 
 	<!-- Main JS -->
 	<script src="{{ asset('assets/js/script.js') }}"></script>

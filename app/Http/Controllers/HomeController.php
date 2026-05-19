@@ -2,27 +2,36 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\DashboardComptableService;
+use App\Support\SocieteContext;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class HomeController extends Controller
 {
-    /**
-     * Create a new controller instance.
-     *
-     * @return void
-     */
-    public function __construct()
-    {
+    public function __construct(
+        protected DashboardComptableService $dashboard
+    ) {
         $this->middleware('auth');
     }
 
-    /**
-     * Show the application dashboard.
-     *
-     * @return \Illuminate\Contracts\Support\Renderable
-     */
     public function index()
     {
         return view('dashboard');
+    }
+
+    public function data(Request $request): JsonResponse
+    {
+        try {
+            $societeId = SocieteContext::requireId();
+            $payload = $this->dashboard->assembler($societeId);
+
+            return response()->json(['status' => 'success', 'data' => $payload]);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'status' => 'error',
+                'errors' => [$e->getMessage()],
+            ], 500);
+        }
     }
 }

@@ -1,0 +1,1143 @@
+Code	Nom du compte	Type	Payment Reconciliation
+101100	Capital engagé non appelé	Capitaux propres	FAUX
+101200	Capital souscrit, appelé, non versé	Capitaux propres	FAUX
+101300	Capital souscrit, appelé, versé, non amorti	Capitaux propres	FAUX
+101400	Capital souscrit, appelé, payé, amorti	Capitaux propres	FAUX
+101800	Capital souscrit soumis à des conditions spécifiques	Capitaux propres	FAUX
+102100	Dotation initiale	Capitaux propres	FAUX
+102200	Allocations supplémentaires	Capitaux propres	FAUX
+102800	Autres dotations	Capitaux propres	FAUX
+103000	Capital personnel	Capitaux propres	FAUX
+104100	Contributions temporaires	Capitaux propres	FAUX
+104200	Opérations communes	Capitaux propres	FAUX
+104300	Rémunération, impôts et autres charges personnelles	Capitaux propres	FAUX
+104700	Retraits pour autoconsommation	Capitaux propres	FAUX
+104800	Autres prélèvements	Capitaux propres	FAUX
+105100	Primes d'émission	Capitaux propres	FAUX
+105200	Primes de cotisation	Capitaux propres	FAUX
+105300	Primes de fusion	Capitaux propres	FAUX
+105400	Primes de conversion	Capitaux propres	FAUX
+105800	Autres primes	Capitaux propres	FAUX
+106100	Différences de réévaluation légales	Capitaux propres	FAUX
+106200	Écarts de réévaluation libres	Capitaux propres	FAUX
+109000	Contributors, subscribed capital, uncalled	Capitaux propres	FAUX
+111000	Réserve légale	Capitaux propres	FAUX
+112000	Réserves statutaires ou contractuelles	Capitaux propres	FAUX
+113100	Réserves de plus-values nettes à long terme	Capitaux propres	FAUX
+113200	Réserves pour l'attribution gratuite d'actions aux salariés et dirigeants	Capitaux propres	FAUX
+113300	Réserves résultant de l'octroi de subventions d'investissement	Capitaux propres	FAUX
+113400	Réserves de titres donnant accès au capital	Capitaux propres	FAUX
+113800	Autres réserves réglementées	Capitaux propres	FAUX
+118100	Réservations facultatives	Capitaux propres	FAUX
+118800	Réserves diverses	Capitaux propres	FAUX
+121000	Créancier reporté	Capitaux propres	FAUX
+129100	Perte nette à reporter	Capitaux propres	FAUX
+129200	Perte - Amortissement réputé différé	Capitaux propres	FAUX
+130100	Résultat en attente d'affectation : Bénéfice	Capitaux propres	FAUX
+130900	Résultat en attente d'affectation : Perte	Capitaux propres	FAUX
+131000	Revenu net : profit	Capitaux propres	FAUX
+132000	Marge commerciale (tm)	Capitaux propres	FAUX
+133000	Valeur ajoutee (v.a.)	Capitaux propres	FAUX
+134000	Excédent brut d'exploitation (ebe)	Capitaux propres	FAUX
+135000	Résultat opérationnel (r.o.)	Capitaux propres	FAUX
+136000	Résultat financier (r.f.)	Capitaux propres	FAUX
+137000	Produits des activités ordinaires (r.i.a.)	Capitaux propres	FAUX
+138100	Résultat de la fusion	Capitaux propres	FAUX
+138200	Résultat de l'apport partiel d'actif	Capitaux propres	FAUX
+138300	Résultat du fractionnement	Capitaux propres	FAUX
+138400	Résultat de liquidation	Capitaux propres	FAUX
+139000	Revenu net : perte	Capitaux propres	FAUX
+141100	Subvention d'équipement : État	Capitaux propres	FAUX
+141200	Subvention d'équipement : Régions	Capitaux propres	FAUX
+141300	Subvention d'équipement : Départements	Capitaux propres	FAUX
+141400	Subvention d'équipement : Municipalités et autorités publiques décentralisées	Capitaux propres	FAUX
+141500	Subvention d'équipement : Entités publiques ou mixtes	Capitaux propres	FAUX
+141600	Subvention d'équipement : Entités et organisations privées	Capitaux propres	FAUX
+141700	Subvention d'équipement : Organisations internationales	Capitaux propres	FAUX
+141800	Subvention d'équipement : Autres	Capitaux propres	FAUX
+148000	D'autres subventions d'investissement	Capitaux propres	FAUX
+151000	Amortissement accéléré	Dettes à court terme	FAUX
+152000	Les plus-values à réinvestir	Dettes à court terme	FAUX
+153100	Fonds national	Dettes à court terme	FAUX
+153200	Prélèvement pour le budget	Dettes à court terme	FAUX
+154000	Provision spéciale de réévaluation	Dettes à court terme	FAUX
+155100	Reconstruction de gisements miniers et pétroliers	Dettes à court terme	FAUX
+156100	Provision réglementée relative aux stocks : Augmentation des prix	Dettes à court terme	FAUX
+156200	Disposition réglementée relative aux stocks : Fluctuation des prix	Dettes à court terme	FAUX
+157000	Provisions pour investissement	Dettes à court terme	FAUX
+158000	Autres dispositions réglementées et fonds	Dettes à court terme	FAUX
+161100	Emissions d'obligations ordinaires	Dettes à court terme	FAUX
+161200	Obligations convertibles en actions	Dettes à court terme	FAUX
+161300	Obligations remboursables en actions	Dettes à court terme	FAUX
+161800	Autres émissions obligataires	Dettes à court terme	FAUX
+162000	Emprunts et dettes auprès des établissements de crédit	Dettes à court terme	FAUX
+163000	Avances reçues de l'état	Dettes à court terme	FAUX
+164000	Avances reçues et comptes courants bloqués	Dettes à court terme	FAUX
+165100	Dépôts et garanties reçus : Dépôts	Dettes à court terme	FAUX
+165200	Dépôts et garanties reçus : Garanties	Dettes à court terme	FAUX
+166100	Intérêts courus sur les émissions obligataires	Dettes à court terme	FAUX
+166200	Intérêts courus sur emprunts et dettes auprès des établissements de crédit	Dettes à court terme	FAUX
+166300	Intérêts courus sur avances reçues de l'Etat	Dettes à court terme	FAUX
+166400	Intérêts courus sur avances reçues et comptes courants bloqués	Dettes à court terme	FAUX
+166500	Intérêts courus sur cautions et cautionnements reçus	Dettes à court terme	FAUX
+166700	Intérêts courus sur avances soumises à des conditions particulières	Dettes à court terme	FAUX
+166800	Intérêts courus sur autres emprunts et dettes	Dettes à court terme	FAUX
+167100	Avances bloquées pour augmentation de capital	Dettes à court terme	FAUX
+167200	Avances conditionnelles de l'État	Dettes à court terme	FAUX
+167300	Avances conditionnées aux autres agences africaines	Dettes à court terme	FAUX
+167400	Avances conditionnées aux organismes internationaux	Dettes à court terme	FAUX
+168100	Rentes viagères capitalisées pour les prêts et les dettes	Dettes à court terme	FAUX
+168200	Notes de fonds pour emprunts et dettes	Dettes à court terme	FAUX
+168300	Dettes résultant de titres empruntés	Dettes à court terme	FAUX
+168400	Prêts participatifs	Dettes à court terme	FAUX
+168500	Participation des salariés aux prêts et dettes	Dettes à court terme	FAUX
+168600	Emprunts et dettes contractés avec d'autres tiers	Dettes à court terme	FAUX
+172000	Dettes de location-achat / crédit-bail immobilier	Dettes à court terme	FAUX
+173000	Dettes de location-achat / crédit-bail mobilier	Dettes à court terme	FAUX
+174000	Dettes en location-achat / location-vente	Dettes à court terme	FAUX
+176200	Intérêts courus sur dettes de crédit-bail / crédit-bail immobilier	Dettes à court terme	FAUX
+176300	Intérêts courus sur les dettes de crédit-bail/crédit-bail	Dettes à court terme	FAUX
+176400	Intérêts courus sur les dettes de crédit-bail / location-vente	Dettes à court terme	FAUX
+176800	Intérêts courus sur autres dettes de location-acquisition	Dettes à court terme	FAUX
+178000	Autres dettes de location-achat	Dettes à court terme	FAUX
+181100	Dettes liées aux participations (groupe)	Dettes à court terme	FAUX
+181200	Dettes liées à des participations (hors groupe)	Dettes à court terme	FAUX
+182000	Coûts d'obtention du contrat	Dettes à court terme	FAUX
+183000	Intérêts courus sur dettes rattachées à des participations	Dettes à court terme	FAUX
+184000	Comptes permanents bloqués des établissements et succursales	Dettes à court terme	FAUX
+185000	Comptes permanents non bloqués des établissements et succursales	Dettes à court terme	FAUX
+186000	Comptes de liaison chargés	Dettes à court terme	FAUX
+187000	Comptes de liaison de produits	Dettes à court terme	FAUX
+188000	Comptes de liaison des entreprises participantes	Dettes à court terme	FAUX
+191000	Les provisions pour litiges	Dettes à court terme	FAUX
+192000	Provision provision pour garantie pour le client	Dettes à court terme	FAUX
+193000	Provisions pour pertes sur les marchés d'achèvement futurs	Dettes à court terme	FAUX
+194000	Provision pour perte de change	Dettes à court terme	FAUX
+195000	Provisions pour impôts	Dettes à court terme	FAUX
+196100	Provisions pour pensions et obligations similaires - engagement de retraite	Dettes à court terme	FAUX
+196200	Actifs du régime de retraite	Dettes à court terme	FAUX
+197000	Provisions pour restructuration	Dettes à court terme	FAUX
+198100	Provisions pour amendes et pénalités	Dettes à court terme	FAUX
+198300	Dispositions relatives aux auto-assureurs	Dettes à court terme	FAUX
+198400	Provisions pour le démantèlement et la remise en état	Dettes à court terme	FAUX
+198500	Dispositions relatives aux droits à réduction ou aux avantages en nature (chèques-cadeaux, cartes de fidélité, etc.)	Dettes à court terme	FAUX
+198800	Provisions pour risques et charges divers	Dettes à court terme	FAUX
+211000	Frais de développement	Actifs immobilisés	FAUX
+212100	Brevets	Actifs immobilisés	FAUX
+212200	Licences	Actifs immobilisés	FAUX
+212300	Concessions de services publics	Actifs immobilisés	FAUX
+212800	Autres concessions et droits similaires	Actifs immobilisés	FAUX
+213100	Logiciel	Actifs immobilisés	FAUX
+213200	Sites web	Actifs immobilisés	FAUX
+214000	Marques	Actifs immobilisés	FAUX
+215000	Fonds commerciaux	Actifs immobilisés	FAUX
+216000	Droit de louer	Actifs immobilisés	FAUX
+217000	Investissements créatifs	Actifs immobilisés	FAUX
+218100	Coûts d'exploration et d'évaluation des ressources minérales	Actifs immobilisés	FAUX
+218200	Coûts d'obtention du contrat	Actifs immobilisés	FAUX
+218300	Fichiers clients, avis, titres de journaux et de magazines	Actifs immobilisés	FAUX
+218400	Coûts de franchise	Actifs immobilisés	FAUX
+218800	Divers droits et valeurs immatériels	Actifs immobilisés	FAUX
+219100	Frais de développement	Actifs immobilisés	FAUX
+219300	Logiciels et sites web	Actifs immobilisés	FAUX
+219800	Autres droits et valeurs incorporels	Actifs immobilisés	FAUX
+221100	Terre agricole	Actifs immobilisés	FAUX
+221200	Terres forestières	Actifs immobilisés	FAUX
+221800	Autres terres	Actifs immobilisés	FAUX
+222100	Terrains à bâtir	Actifs immobilisés	FAUX
+222800	Autres frais bancaires	Actifs immobilisés	FAUX
+223100	Terrains bâtis pour les bâtiments industriels et agricoles	Actifs immobilisés	FAUX
+223200	Terrains bâtis pour les bâtiments administratifs et commerciaux	Actifs immobilisés	FAUX
+223400	Terrains bâtis pour les bâtiments affectés à d'autres opérations professionnelles	Actifs immobilisés	FAUX
+223500	Terrains bâtis pour les bâtiments affectés à d'autres opérations non professionnelles	Actifs immobilisés	FAUX
+223800	Autres terrains bâtis	Actifs immobilisés	FAUX
+224100	Plantation d'arbres et d'arbustes	Actifs immobilisés	FAUX
+224500	Améliorations du fonds	Actifs immobilisés	FAUX
+224800	Autres travaux	Actifs immobilisés	FAUX
+225100	Carrières	Actifs immobilisés	FAUX
+226100	Parkings	Actifs immobilisés	FAUX
+227000	Terres concédées	Actifs immobilisés	FAUX
+228100	Terrain - immeubles de placement	Actifs immobilisés	FAUX
+228500	Terrain pour le logement du personnel	Actifs immobilisés	FAUX
+228600	Terrain à louer - acquisition	Actifs immobilisés	FAUX
+228800	Terrains divers	Actifs immobilisés	FAUX
+229100	Différents terrains	Actifs immobilisés	FAUX
+229200	Terrain nu pour aménagement foncier en cours	Actifs immobilisés	FAUX
+229500	Terrains de carrières - sous-sol pour l'aménagement du territoire en cours	Actifs immobilisés	FAUX
+229800	Autres terrains pour l'aménagement en cours	Actifs immobilisés	FAUX
+231100	Bâtiments industriels	Actifs immobilisés	FAUX
+231200	Bâtiments agricoles	Actifs immobilisés	FAUX
+231300	Bâtiments administratifs et commerciaux	Actifs immobilisés	FAUX
+231400	Bâtiments utilisés pour le logement du personnel	Actifs immobilisés	FAUX
+231500	Bâtiments - immeubles de placement	Actifs immobilisés	FAUX
+231600	Immeubles locatifs - acquisition	Actifs immobilisés	FAUX
+232100	Bâtiments industriels	Actifs immobilisés	FAUX
+232200	Bâtiments agricoles	Actifs immobilisés	FAUX
+232300	Bâtiments administratifs et commerciaux	Actifs immobilisés	FAUX
+232400	Bâtiments affectés au logement du personnel	Actifs immobilisés	FAUX
+232500	Bâtiments - immeubles de placement	Actifs immobilisés	FAUX
+232600	Immeubles locatifs - acquisition	Actifs immobilisés	FAUX
+233100	Sur le territoire	Actifs immobilisés	FAUX
+233200	Voies ferrées	Actifs immobilisés	FAUX
+233300	Voies navigables	Actifs immobilisés	FAUX
+233400	Barrages, digues	Actifs immobilisés	FAUX
+233500	Pistes d'aérodrome	Actifs immobilisés	FAUX
+233800	Autres travaux d'infrastructure	Actifs immobilisés	FAUX
+234100	Installations complexes spécialisées sur terrain propre	Actifs immobilisés	FAUX
+234200	Installations complexes spécialisées sur terrain propre	Actifs immobilisés	FAUX
+234300	Installations spécifiques sur terrain propre	Actifs immobilisés	FAUX
+234400	Installations à caractère particulier sur sol tiers	Actifs immobilisés	FAUX
+234500	Installations et équipements des bâtiments	Actifs immobilisés	FAUX
+235100	Installations générales	Actifs immobilisés	FAUX
+235800	Autres aménagements de bureaux	Actifs immobilisés	FAUX
+237000	Bâtiments industriels, agricoles et commerciaux sous concession	Actifs immobilisés	FAUX
+238000	D'autres installations et arrangements	Actifs immobilisés	FAUX
+239100	Bâtiments en cours de construction	Actifs immobilisés	FAUX
+239200	Installations en cours	Actifs immobilisés	FAUX
+239300	Travaux d'infrastructures en cours	Actifs immobilisés	FAUX
+239400	Equipements, aménagements et installations techniques en cours	Actifs immobilisés	FAUX
+239500	Développements de bureaux en cours	Actifs immobilisés	FAUX
+239800	Autres installations et aménagements en cours	Actifs immobilisés	FAUX
+241100	Matériel industriel	Actifs immobilisés	FAUX
+241200	Outils industriels	Actifs immobilisés	FAUX
+241300	Matériel commercial	Actifs immobilisés	FAUX
+241400	Outils commerciaux	Actifs immobilisés	FAUX
+241600	Équipements et outillages industriels et commerciaux en location – acquisition	Actifs immobilisés	FAUX
+242100	Matériel agricole	Actifs immobilisés	FAUX
+242200	Outils agricoles	Actifs immobilisés	FAUX
+242600	Location de matériel et d'outils agricoles - acquisition	Actifs immobilisés	FAUX
+243000	Matériel d'emballage récupérable et identifiable	Actifs immobilisés	FAUX
+244100	Fournitures de bureau	Actifs immobilisés	FAUX
+244200	Matériel informatique	Actifs immobilisés	FAUX
+244300	Matériel de bureau	Actifs immobilisés	FAUX
+244400	Mobilier de bureau	Actifs immobilisés	FAUX
+244500	Équipement et mobilier - immeubles de placement	Actifs immobilisés	FAUX
+244600	Matériel et mobilier de location - acquisition	Actifs immobilisés	FAUX
+244700	Équipement et mobilier pour le logement du personnel	Actifs immobilisés	FAUX
+245100	équipement automobile	Actifs immobilisés	FAUX
+245200	Matériel ferroviaire	Actifs immobilisés	FAUX
+245300	Équipement pour les rivières et les lagons	Actifs immobilisés	FAUX
+245400	Équipement naval	Actifs immobilisés	FAUX
+245500	Matériel aérien	Actifs immobilisés	FAUX
+245600	Location de matériel de transport - acquisition	Actifs immobilisés	FAUX
+245700	Matériel tiré par des chevaux	Actifs immobilisés	FAUX
+245800	Autres équipements de transport	Actifs immobilisés	FAUX
+246100	Bétail, animaux de trait	Actifs immobilisés	FAUX
+246200	Bétail, animaux reproducteurs	Actifs immobilisés	FAUX
+246300	Animaux de garde	Actifs immobilisés	FAUX
+246500	Plantations agricoles	Actifs immobilisés	FAUX
+246800	Autres actifs biologiques	Actifs immobilisés	FAUX
+247100	Disposition et équipement des équipements	Actifs immobilisés	FAUX
+247200	Aménagements et aménagements des actifs biologiques	Actifs immobilisés	FAUX
+247800	Autres équipements, équipements de matériels et actifs biologiques	Actifs immobilisés	FAUX
+248100	Collections et œuvres d'art	Actifs immobilisés	FAUX
+248800	Équipements et mobilier divers	Actifs immobilisés	FAUX
+249100	Équipements et outils industriels et commerciaux	Actifs immobilisés	FAUX
+249200	Matériels et outillages agricoles	Actifs immobilisés	FAUX
+249300	Matériaux d'emballage récupérables et identifiables	Actifs immobilisés	FAUX
+249400	Matériel et mobilier de bureau	Actifs immobilisés	FAUX
+249500	Matériel de transport	Actifs immobilisés	FAUX
+249600	Actifs biologiques	Actifs immobilisés	FAUX
+249700	Agencements et installations pour les équipements et les actifs biologiques	Actifs immobilisés	FAUX
+249800	Autres matériels et actifs biologiques	Actifs immobilisés	FAUX
+251000	Avances et acomptes versés sur immobilisations incorporelles	Actifs immobilisés	FAUX
+252000	avances et acomptes versés sur immobilisations corporelles	Actifs immobilisés	FAUX
+261000	Participations dans les entités sous contrôle exclusif	Actifs immobilisés	FAUX
+262000	Participations dans des entités contrôlées conjointement	Actifs immobilisés	FAUX
+263000	Investissements dans des entités ayant une influence significative	Actifs immobilisés	FAUX
+265000	Participations dans des organismes professionnels	Actifs immobilisés	FAUX
+266000	Shares in economic interest groupings (eigs)	Actifs immobilisés	FAUX
+268000	Autres investissements en actions	Actifs immobilisés	FAUX
+271100	Prêts participatifs	Actifs immobilisés	FAUX
+271200	Prêts aux partenaires	Actifs immobilisés	FAUX
+271300	Notes du Fonds	Actifs immobilisés	FAUX
+271400	Créances de location-financement	Actifs immobilisés	FAUX
+271500	Titres prêtés	Actifs immobilisés	FAUX
+271800	Autres prêts et créances	Actifs immobilisés	FAUX
+272100	Prêts immobiliers	Actifs immobilisés	FAUX
+272200	Prêts mobiliers et prêts d'installation	Actifs immobilisés	FAUX
+272800	Autres prêts au personnel	Actifs immobilisés	FAUX
+273100	Retenues	Actifs immobilisés	FAUX
+273300	Fonds réglementé	Actifs immobilisés	FAUX
+273400	Créances sur le concédant	Actifs immobilisés	FAUX
+273800	Autres créances sur l'État	Actifs immobilisés	FAUX
+274100	Immobilisations de l'activité du portefeuille (I.A.P)	Actifs immobilisés	FAUX
+274200	Titres de participation	Actifs immobilisés	FAUX
+274300	Certificats d'investissement	Actifs immobilisés	FAUX
+274400	Unités de fonds communs de placement (U.F.M.)	Actifs immobilisés	FAUX
+274500	Obligations	Actifs immobilisés	FAUX
+274600	Actions ou parts propres	Actifs immobilisés	FAUX
+274800	Autres immobilisations	Actifs immobilisés	FAUX
+275100	Cautions de loyer anticipées	Actifs immobilisés	FAUX
+275200	Dépôts pour l'électricité	Actifs immobilisés	FAUX
+275300	Dépôts pour l'eau	Actifs immobilisés	FAUX
+275400	Dépôts pour le gaz	Actifs immobilisés	FAUX
+275500	Dépôts pour téléphone, télex, fax	Actifs immobilisés	FAUX
+275600	Obligations émises par l'entité et remboursées par elle	Actifs immobilisés	FAUX
+275700	Garanties sur d'autres opérations	Actifs immobilisés	FAUX
+275800	Autres dépôts et garanties	Actifs immobilisés	FAUX
+276100	Prêts et créances non commerciales	Actifs immobilisés	FAUX
+276200	Prêts au personnel	Actifs immobilisés	FAUX
+276300	Créances sur l'État	Actifs immobilisés	FAUX
+276400	Actifs immobilisés	Actifs immobilisés	FAUX
+276500	Dépôts et garanties versés	Actifs immobilisés	FAUX
+276600	Créances de location-financement	Actifs immobilisés	FAUX
+276700	Créances liées aux participations	Actifs immobilisés	FAUX
+276800	Actifs financiers divers	Actifs immobilisés	FAUX
+277100	Créances sur les participations (groupe)	Actifs immobilisés	FAUX
+277200	Créances liées à des investissements (hors groupe)	Actifs immobilisés	FAUX
+277300	Créances liées à des coentreprises	Actifs immobilisés	FAUX
+277400	Avances aux Groupes d'Intérêt Economique (G.I.E.)	Actifs immobilisés	FAUX
+278100	Créances diverses du groupe	Actifs immobilisés	FAUX
+278200	Créances diverses hors groupe	Actifs immobilisés	FAUX
+278400	Dépôts à terme des banques	Actifs immobilisés	FAUX
+278500	Or et métaux précieux	Actifs immobilisés	FAUX
+278800	Autres actifs financiers	Actifs immobilisés	FAUX
+281100	Amortissement des frais de développement	Actifs immobilisés	FAUX
+281200	Amortissement des brevets, licences, concessions et droits similaires	Actifs immobilisés	FAUX
+281300	Amortissement des logiciels et des sites Web	Actifs immobilisés	FAUX
+281400	Amortissement des marques	Actifs immobilisés	FAUX
+281500	Amortissement de l'écart d'acquisition	Actifs immobilisés	FAUX
+281600	Amortissement des droits au bail	Actifs immobilisés	FAUX
+281700	Amortissement des investissements de démarrage	Actifs immobilisés	FAUX
+281800	Amortissement des autres droits et actifs incorporels	Actifs immobilisés	FAUX
+282400	Amortissement des travaux de remise en état des terres	Actifs immobilisés	FAUX
+283100	Amortissement des bâtiments industriels, agricoles, administratifs et commerciaux sur un terrain propre	Actifs immobilisés	FAUX
+283200	Amortissement des bâtiments industriels, agricoles, administratifs et commerciaux sur des terrains non bâtis	Actifs immobilisés	FAUX
+283300	Amortissement des travaux d'infrastructure	Actifs immobilisés	FAUX
+283400	Amortissement des agencements, agencements et installations techniques	Actifs immobilisés	FAUX
+283500	Amortissement des équipements de bureau	Actifs immobilisés	FAUX
+283700	Amortissement des bâtiments industriels, agricoles et commerciaux sous concession	Actifs immobilisés	FAUX
+283800	Amortissement des autres installations et équipements	Actifs immobilisés	FAUX
+284100	Amortissement des équipements et outils industriels et commerciaux	Actifs immobilisés	FAUX
+284200	Amortissement des terres agricoles et forestières	Actifs immobilisés	FAUX
+284300	Amortissement du matériel d'emballage récupérable et identifiable	Actifs immobilisés	FAUX
+284400	Amortissement des équipements et du mobilier	Actifs immobilisés	FAUX
+284500	Amortissement du matériel de transport	Actifs immobilisés	FAUX
+284600	Dépréciation des actifs biologiques	Actifs immobilisés	FAUX
+284700	Amortissement des agencements, agencements, équipements et actifs biologiques	Actifs immobilisés	FAUX
+284800	Amortissement des autres équipements	Actifs immobilisés	FAUX
+291100	Dépréciation des frais de développement	Actifs immobilisés	FAUX
+291200	Atteinte à des brevets, licences, concessions et droits similaires	Actifs immobilisés	FAUX
+291300	Dépréciation de logiciels et de sites Web	Actifs immobilisés	FAUX
+291400	Dépréciation de marques	Actifs immobilisés	FAUX
+291500	Dépréciation de l'écart d'acquisition	Actifs immobilisés	FAUX
+291600	Dépréciation des droits de location	Actifs immobilisés	FAUX
+291700	Dépréciation des investissements de démarrage	Actifs immobilisés	FAUX
+291800	Dépréciation d'autres droits et actifs incorporels	Actifs immobilisés	FAUX
+291900	Dépréciation des immobilisations incorporelles en cours	Actifs immobilisés	FAUX
+292100	Amortissement des terres agricoles et forestières	Actifs immobilisés	FAUX
+292200	Amortissement des terrains nus	Actifs immobilisés	FAUX
+292300	Dépréciation des terrains bâtis	Actifs immobilisés	FAUX
+292400	Amortissement des travaux de remise en état des terres	Actifs immobilisés	FAUX
+292500	Amortissement du terrain de la carrière	Actifs immobilisés	FAUX
+292600	Dépréciation des terrains bâtis	Actifs immobilisés	FAUX
+292700	Dépréciation des terrains en concession	Actifs immobilisés	FAUX
+292800	Dépréciation d'autres terrains	Actifs immobilisés	FAUX
+292900	Dépréciation des terrains en cours	Actifs immobilisés	FAUX
+293100	Amortissement des bâtiments industriels, agricoles, administratifs et commerciaux sur un terrain propre	Actifs immobilisés	FAUX
+293200	Amortissement des bâtiments industriels, agricoles, administratifs et commerciaux sur des terrains appartenant à des tiers	Actifs immobilisés	FAUX
+293300	Dépréciation des travaux d'infrastructure	Actifs immobilisés	FAUX
+293400	Dépréciation des agencements et agencements	Actifs immobilisés	FAUX
+293500	Dépréciation des agencements de bureaux	Actifs immobilisés	FAUX
+293700	Amortissement des bâtiments industriels, agricoles et commerciaux sous concession	Actifs immobilisés	FAUX
+293800	Dépréciation d'autres agencements et installations	Actifs immobilisés	FAUX
+293900	Amortissement des bâtiments et installations en cours	Actifs immobilisés	FAUX
+294100	Dépréciation des équipements et de l'outillage industriels et commerciaux	Actifs immobilisés	FAUX
+294200	Amortissement des machines et équipements agricoles	Actifs immobilisés	FAUX
+294300	Amortissement du matériel d'emballage récupérable et identifiable	Actifs immobilisés	FAUX
+294400	Amortissement des équipements et du mobilier	Actifs immobilisés	FAUX
+294500	Amortissement du matériel de transport	Actifs immobilisés	FAUX
+294600	Dépréciation des actifs biologiques	Actifs immobilisés	FAUX
+294700	Dépréciation des agencements, agencements, équipements et actifs biologiques	Actifs immobilisés	FAUX
+294800	Dépréciation d'autres équipements	Actifs immobilisés	FAUX
+294900	Dépréciation des équipements en cours	Actifs immobilisés	FAUX
+295100	Dépréciation des avances versées sur immobilisations incorporelles	Actifs immobilisés	FAUX
+295200	Dépréciation des avances versées sur immobilisations corporelles	Actifs immobilisés	FAUX
+296100	Dépréciation des investissements dans les entités contrôlées exclusivement	Actifs immobilisés	FAUX
+296200	Dépréciation des investissements dans les entités contrôlées conjointement	Actifs immobilisés	FAUX
+296300	Dépréciation des investissements dans des entités sur lesquelles une influence significative est exercée	Actifs immobilisés	FAUX
+296500	Dépréciation des investissements dans les organismes professionnels	Actifs immobilisés	FAUX
+296600	Dépréciation des parts de GIE	Actifs immobilisés	FAUX
+296800	Dépréciation des autres investissements	Actifs immobilisés	FAUX
+297100	Dépréciation des prêts et créances	Actifs immobilisés	FAUX
+297200	Dépréciation des prêts aux employés	Actifs immobilisés	FAUX
+297300	Dépréciation des créances sur l'Etat	Actifs immobilisés	FAUX
+297400	Dépréciation des immobilisations	Actifs immobilisés	FAUX
+297500	Dépréciation des dépôts et cautionnements versés	Actifs immobilisés	FAUX
+297700	Dépréciation des créances rattachées à des participations et avances aux GIE	Actifs immobilisés	FAUX
+297800	Dépréciation des créances financières diverses	Actifs immobilisés	FAUX
+311100	Biens A1	Actifs circulants	FAUX
+311200	Marchandises A2	Actifs circulants	FAUX
+312100	Marchandises B1	Actifs circulants	FAUX
+312200	Biens B2	Actifs circulants	FAUX
+313100	Actifs biologiques : Animaux	Actifs circulants	FAUX
+313200	Actifs biologiques : Plantes	Actifs circulants	FAUX
+318000	Biens hors activités ordinaires (h.a.o)	Actifs circulants	FAUX
+321000	Matériaux a	Actifs circulants	FAUX
+322000	Matériaux b	Actifs circulants	FAUX
+323000	FOURNITURES (A,B)	Actifs circulants	FAUX
+331000	Matières consommables	Actifs circulants	FAUX
+332000	Fournitures d'atelier et d'usine	Actifs circulants	FAUX
+333000	Fournitures de magasin	Actifs circulants	FAUX
+334000	Fournitures de bureau	Actifs circulants	FAUX
+335100	Emballage perdu	Actifs circulants	FAUX
+335200	Emballage récupérable non identifiable	Actifs circulants	FAUX
+335300	Emballage à usage mixte	Actifs circulants	FAUX
+335800	Autres emballages	Actifs circulants	FAUX
+338000	Autres matériaux	Actifs circulants	FAUX
+341100	Produits en cours P1	Actifs circulants	FAUX
+341200	Produits en cours P2	Actifs circulants	FAUX
+342100	Travaux en cours T1	Actifs circulants	FAUX
+342200	Travaux en cours T2	Actifs circulants	FAUX
+343100	Produits intermédiaires A	Actifs circulants	FAUX
+343200	Produits intermédiaires B	Actifs circulants	FAUX
+344100	Produits résiduels A	Actifs circulants	FAUX
+344200	Produits résiduels B	Actifs circulants	FAUX
+345100	Actifs biologiques courants : Animaux	Actifs circulants	FAUX
+345200	Actifs biologiques courants : Plantes	Actifs circulants	FAUX
+351100	Études en cours E1	Actifs circulants	FAUX
+351200	Études en cours E2	Actifs circulants	FAUX
+352100	Services fournis S1	Actifs circulants	FAUX
+352200	Services fournis S2	Actifs circulants	FAUX
+361000	Produits finis a	Actifs circulants	FAUX
+362000	Produits finis b	Actifs circulants	FAUX
+363100	Produits finis : Animaux	Actifs circulants	FAUX
+363200	Produits finis : Plantes	Actifs circulants	FAUX
+363800	Autres stocks (activités connexes)	Actifs circulants	FAUX
+371100	Produits intermédiaires A	Actifs circulants	FAUX
+371200	Produits intermédiaires B	Actifs circulants	FAUX
+372100	Produits résiduels : Déchets	Actifs circulants	FAUX
+372200	Produits résiduels : Ferraille	Actifs circulants	FAUX
+372300	Produits résiduels : Matériaux de récupération	Actifs circulants	FAUX
+373100	Produits résiduels : Animaux	Actifs circulants	FAUX
+373200	Produits résiduels : Plantes	Actifs circulants	FAUX
+373800	Autres stocks (activités connexes)	Actifs circulants	FAUX
+381000	Marchandises en transit	Actifs circulants	FAUX
+382000	Les matières premières et fournitures liées en cours de route	Actifs circulants	FAUX
+383000	Autres fournitures en cours de route	Actifs circulants	FAUX
+386000	Des produits finis en route	Actifs circulants	FAUX
+387100	Stock en consignation	Actifs circulants	FAUX
+387200	Stock en dépôt	Actifs circulants	FAUX
+388000	Stock provenant d'actifs mis hors service ou mis au rebut	Actifs circulants	FAUX
+391000	Dépréciation des stocks de marchandises	Actifs circulants	FAUX
+392000	L'amortissement des matières premières et des fournitures connexes	Actifs circulants	FAUX
+393000	Réductions de valeur sur les stocks d'autres biens	Actifs circulants	FAUX
+394000	L'amortissement des travaux en cours	Actifs circulants	FAUX
+395000	dépréciation des prestations en cours	Actifs circulants	FAUX
+396000	Dépréciation du stock de produits finis	Actifs circulants	FAUX
+397000	Dépréciation des stocks de produits intermédiaires et résiduels	Actifs circulants	FAUX
+398000	La dépréciation des stocks en transit, en consignation ou en dépôt	Actifs circulants	FAUX
+401100	Fournisseurs	Fournisseur	VRAI
+401200	Fournisseurs, Groupe	Fournisseur	VRAI
+401300	Sous-traitants	Fournisseur	VRAI
+401600	Fournisseurs, réserve de propriété	Fournisseur	VRAI
+401700	Fournisseurs, retenues	Fournisseur	VRAI
+402100	Fournisseurs, effets à payer	Fournisseur	VRAI
+402200	Fournisseurs - Groupe, effets à payer	Fournisseur	VRAI
+402300	Sous-traitants, effets à payer	Fournisseur	VRAI
+404100	Comptes créditeurs, immobilisations incorporelles	Fournisseur	VRAI
+404200	Comptes fournisseurs, immobilisations	Fournisseur	VRAI
+404600	Comptes créditeurs effets à payer, immobilisations incorporelles	Fournisseur	VRAI
+404700	Comptes créditeurs effets à payer, immobilisations corporelles	Fournisseur	VRAI
+408100	Fournisseurs	Fournisseur	VRAI
+408200	Fournisseurs - Groupe	Fournisseur	VRAI
+408300	Sous-traitants	Fournisseur	VRAI
+408600	Fournisseurs, intérêts courus	Fournisseur	VRAI
+409100	Avances et acomptes versés par les fournisseurs	Actifs circulants	FAUX
+409200	Fournisseurs - Groupe des paiements anticipés	Actifs circulants	FAUX
+409300	Fournisseurs et sous-traitants Avances et acomptes versés	Actifs circulants	FAUX
+409400	Créances des fournisseurs pour les emballages et les matériaux à retourner	Actifs circulants	FAUX
+409800	Fournisseurs, remises, rabais et autres crédits à obtenir	Actifs circulants	FAUX
+411100	Clients	Client	VRAI
+411200	Clients - Groupe	Client	VRAI
+411300	Clients (PoS)	Client	VRAI
+411400	Clients, gouvernements et autorités publiques	Client	VRAI
+411500	Clients, organisations internationales	Client	VRAI
+411600	Clients, réserve de propriété	Client	VRAI
+411700	Clients, retenues	Client	VRAI
+411800	Clients, Remboursement de la taxe sur la valeur ajoutée (TVA)	Client	VRAI
+412100	Comptes débiteurs, Effets à recevoir	Client	VRAI
+412200	Clients - Groupe, Notes à recevoir	Client	VRAI
+412400	Gouvernement et autorités publiques, Notes à recevoir	Client	VRAI
+412500	Organisations internationales, Effets à recevoir	Client	VRAI
+413100	Clients, chèques impayés	Client	VRAI
+413200	Clients, Articles non payés	Client	VRAI
+413300	Clients, cartes de crédit impayées	Client	VRAI
+413800	Clients, autres articles non payés	Client	VRAI
+414100	Débiteurs, immobilisations incorporelles	Client	VRAI
+414200	Débiteurs, immobilisations corporelles	Client	VRAI
+414600	Effets à recevoir, actifs incorporels	Client	VRAI
+414700	Effets à recevoir, immobilisations corporelles	Client	VRAI
+415000	Clients, factures impayées et escomptées	Client	VRAI
+416100	Réclamations litigieuses	Client	VRAI
+416200	Mauvaises dettes	Client	VRAI
+418100	Clients, factures à émettre	Client	VRAI
+418600	Clients, intérêts courus	Client	VRAI
+419100	Clients, avances et dépôts reçus	Dettes à court terme	FAUX
+419200	Clients - Groupe, avances et dépôts reçus	Dettes à court terme	FAUX
+419400	Créances commerciales, dettes pour emballages et matériaux consignés	Dettes à court terme	FAUX
+419800	Clients, remises, rabais et autres crédits à accorder	Dettes à court terme	FAUX
+421100	Personnel, avances	Client	VRAI
+421200	Personnel, acomptes	Client	VRAI
+421300	Frais avancés et fournitures au personnel	Client	VRAI
+422000	Personnel, rémunération due	Dettes à court terme	FAUX
+423100	Personnel, objections	Dettes à court terme	FAUX
+423200	Personnel, saisies-arrêts	Dettes à court terme	FAUX
+423300	Avis personnel, avis de tiers	Dettes à court terme	FAUX
+424100	Assistance médicale	Dettes à court terme	FAUX
+424200	Allocations familiales	Dettes à court terme	FAUX
+424500	Organisations sociales liées à l'entité	Dettes à court terme	FAUX
+424800	Autres œuvres sociales internes	Dettes à court terme	FAUX
+425100	Représentants du personnel	Dettes à court terme	FAUX
+425200	Syndicats et comités d'entreprise	Dettes à court terme	FAUX
+425800	Autres représentants du personnel	Dettes à court terme	FAUX
+426100	Participation aux bénéfices	Dettes à court terme	FAUX
+426400	Participation au capital	Dettes à court terme	FAUX
+427000	Capital personnel	Dettes à court terme	FAUX
+428100	Dettes de vacances à payer	Dettes à court terme	FAUX
+428600	Autres charges à payer	Dettes à court terme	FAUX
+428700	Produits à recevoir	Client	VRAI
+431100	Allocations familiales	Dettes à court terme	FAUX
+431200	Accidents du travail	Dettes à court terme	FAUX
+431300	Fonds de pension obligatoire	Dettes à court terme	FAUX
+431400	Fonds de pension facultatif	Dettes à court terme	FAUX
+431800	Autres cotisations sociales	Dettes à court terme	FAUX
+432000	Fonds de pension complémentaires	Dettes à court terme	FAUX
+433100	Assurance mutuelle	Dettes à court terme	FAUX
+433200	Assurance retraite	Dettes à court terme	FAUX
+433300	Assurances et organismes de santé	Dettes à court terme	FAUX
+438100	Charges sociales sur les bonus à payer	Dettes à court terme	FAUX
+438200	Charges sociales sur les congés à payer	Dettes à court terme	FAUX
+438600	Charges sociales sur les congés à payer	Dettes à court terme	FAUX
+438700	Produits à recevoir	Client	VRAI
+441000	État, impôt sur le revenu	Dettes à court terme	FAUX
+442100	Taxes et redevances d'État	Dettes à court terme	FAUX
+442200	Taxes pour les autorités publiques	Dettes à court terme	FAUX
+442300	Taxes récupérables auprès des détenteurs d'obligations	Dettes à court terme	FAUX
+442400	Taxes récupérables auprès des associés	Dettes à court terme	FAUX
+442600	Droits de douane	Dettes à court terme	FAUX
+442800	Autres taxes	Dettes à court terme	FAUX
+443100	T.V.A. facturés sur les ventes	Dettes à court terme	FAUX
+443200	T.V.A. facturé sur les services fournis	Dettes à court terme	FAUX
+443300	T.V.A. facturé sur le travail	Dettes à court terme	FAUX
+443400	T.V.A. facturée sur la production livrée à domicile	Dettes à court terme	FAUX
+443500	T.V.A. sur les factures à émettre	Dettes à court terme	FAUX
+444100	Etat, V.A.T. due	Fournisseur	VRAI
+444500	Remboursement de l'État, de la T.V.A.	Client	VRAI
+444900	Report du crédit d'impôt de l'État et de la TVA	Actifs circulants	FAUX
+445100	TVA récupérable sur les immobilisations	Dettes à court terme	FAUX
+445200	T.V.A. recouvrable sur les achats	Dettes à court terme	FAUX
+445300	T.V.A. récupérable sur le transport	Dettes à court terme	FAUX
+445400	TVA récupérable sur les services externes et autres dépenses	Dettes à court terme	FAUX
+445500	T.V.A. récupérable sur les factures non reçues	Dettes à court terme	FAUX
+445600	T.V.A. transférés par d'autres entités	Dettes à court terme	FAUX
+446000	ÉTAT, AUTRES TAXES DE VENTE	Dettes à court terme	FAUX
+447100	Impôt général sur le revenu	Dettes à court terme	FAUX
+447200	Taxes sur les salaires	Dettes à court terme	FAUX
+447300	Contribution nationale	Dettes à court terme	FAUX
+447400	Contribution de solidarité nationale	Dettes à court terme	FAUX
+447800	Autres taxes et contributions	Dettes à court terme	FAUX
+448600	Dépenses accrues	Dettes à court terme	FAUX
+448700	Produits à recevoir	Dettes à court terme	FAUX
+449100	État, cautionnement	Dettes à court terme	FAUX
+449200	Etat, avances et acomptes sur impôts	Dettes à court terme	FAUX
+449300	État, dotation à recevoir	Dettes à court terme	FAUX
+449400	État, subventions d'investissement à recevoir	Dettes à court terme	FAUX
+449500	État, subventions de fonctionnement à recevoir	Dettes à court terme	FAUX
+449600	Etat, subventions d'équilibre à recevoir	Dettes à court terme	FAUX
+449700	État, avances sur subventions	Dettes à court terme	FAUX
+449900	État, fonds réglementé provisionné	Dettes à court terme	FAUX
+451000	Opérations avec les organisations africaine	Dettes à court terme	FAUX
+452000	Opérations avec d'autres organisations internationales	Dettes à court terme	FAUX
+458100	Organisations internationales, dotations à recevoir	Dettes à court terme	FAUX
+458200	Organisations internationales, subventions à recevoir	Dettes à court terme	FAUX
+461100	Contributeurs, contributions en nature	Dettes à court terme	FAUX
+461200	Contributeurs, contributions en espèces	Dettes à court terme	FAUX
+461300	Apporteurs, appelés, capital non versé	Dettes à court terme	FAUX
+461400	Cotisants, compte de cotisations, opérations de restructuration (fusion...)	Dettes à court terme	FAUX
+461500	Apports, paiements reçus sur l'augmentation de capital	Dettes à court terme	FAUX
+461600	Contributeurs, paiements anticipés	Dettes à court terme	FAUX
+461700	Contributeurs défaillants	Dettes à court terme	FAUX
+461800	Apporteurs, titres à échanger	Dettes à court terme	FAUX
+461900	Apporteurs, capital à rembourser	Dettes à court terme	FAUX
+462100	Partenaires, comptes courants : Principal	Dettes à court terme	FAUX
+462600	Partenaires, comptes courants : Intérêts courus	Dettes à court terme	FAUX
+463100	Partenaires, opérations conjointes et gestion : Opérations en cours	Dettes à court terme	FAUX
+463600	Partenaires, coentreprises et gestion conjointe : Intérêts courus	Dettes à court terme	FAUX
+465000	Associates, dividends to be paid	Dettes à court terme	FAUX
+466000	Groupe, comptes courants	Dettes à court terme	FAUX
+467000	Les contributions en suspens sur le capital appelé	Dettes à court terme	FAUX
+469000	Entité, dividendes à recevoir	Dettes à court terme	FAUX
+471100	Débiteurs divers	Dettes à court terme	FAUX
+471200	Créanciers divers	Dettes à court terme	FAUX
+471300	Débiteurs et autres créanciers : Obligations	Dettes à court terme	FAUX
+471500	Rémunération des administrateurs non membres	Dettes à court terme	FAUX
+471600	Compte d'affacturage et de titrisation	Dettes à court terme	FAUX
+471700	Créances diverses - retenues	Dettes à court terme	FAUX
+471800	Compte d'apport, compte de fusion et opérations similaires	Dettes à court terme	FAUX
+471900	Bons de souscription d'actions et d'obligations	Dettes à court terme	FAUX
+472100	Créances sur les ventes de titres de placement	Dettes à court terme	FAUX
+472600	Paiements en suspens sur les titres d'investissement non libérés	Dettes à court terme	FAUX
+473100	Intermédiaires, opérations pour compte de tiers : Commettants	Dettes à court terme	FAUX
+473200	Intermédiaires, opérations pour compte de tiers : Mandataires	Dettes à court terme	FAUX
+473300	Intermédiaires, opérations pour compte de tiers : Commettants	Dettes à court terme	FAUX
+473400	Intermédiaires, opérations pour compte de tiers : Commissionnaires	Dettes à court terme	FAUX
+473900	État, collectivités locales, fonds d'allocation globale	Dettes à court terme	FAUX
+474600	Compte de répartition des charges périodiques	Dettes à court terme	FAUX
+474700	Compte d'affectation des recettes périodiques	Dettes à court terme	FAUX
+475100	Compte transitoire, ajustement spécial : Compte d'actifs	Capitaux propres	FAUX
+475200	Compte transitoire, ajustement spécial : Compte de passif	Capitaux propres	FAUX
+476000	Dépenses prépayées	Actifs circulants	FAUX
+477000	Revenu différé	Dettes à court terme	FAUX
+478110	Diminution des créances d'exploitation	Actifs circulants	FAUX
+478180	Diminution des créances de la HAO	Actifs circulants	FAUX
+478200	Diminution des créances financières	Actifs circulants	FAUX
+478310	Augmentation des dettes d'exploitation	Actifs circulants	FAUX
+478380	Augmentation des dettes de HAO	Actifs circulants	FAUX
+478400	Augmentation des passifs financiers	Actifs circulants	FAUX
+478600	Ecarts de valorisation des instruments de trésorerie	Actifs circulants	FAUX
+478800	Différences compensées par la couverture de change	Actifs circulants	FAUX
+479110	Augmentation des créances d'exploitation	Dettes à court terme	FAUX
+479180	Augmentation des créances HAO	Dettes à court terme	FAUX
+479200	Augmentation des créances financières	Dettes à court terme	FAUX
+479310	Diminution des dettes d'exploitation	Dettes à court terme	FAUX
+479380	Diminution des dettes de la HAO	Dettes à court terme	FAUX
+479400	Diminution des passifs financiers	Dettes à court terme	FAUX
+479700	Ecarts de valorisation des instruments de trésorerie	Dettes à court terme	FAUX
+479800	Différences compensées par la couverture de change	Dettes à court terme	FAUX
+481100	Immobilisations incorporelles	Dettes à court terme	FAUX
+481200	Immobilisations corporelles	Dettes à court terme	FAUX
+481300	Paiements en suspens sur les titres de participation et les titres non acquis	Dettes à court terme	FAUX
+481610	Réserve de propriété - immobilisations incorporelles	Dettes à court terme	FAUX
+481620	Réserve de propriété - immobilisations corporelles	Dettes à court terme	FAUX
+481710	Retenues de garantie - immobilisations incorporelles	Dettes à court terme	FAUX
+481720	Retenues de garantie - immobilisations corporelles	Dettes à court terme	FAUX
+481810	Factures impayées - immobilisations incorporelles	Dettes à court terme	FAUX
+481820	Factures impayées - immobilisations corporelles	Dettes à court terme	FAUX
+482100	Immobilisations incorporelles	Dettes à court terme	FAUX
+482200	Immobilisations corporelles	Dettes à court terme	FAUX
+484000	Autres passifs non liés aux activités ordinaires (h.a.o.)	Dettes à court terme	FAUX
+485100	En compte, immobilisations incorporelles	Client	VRAI
+485200	En compte, les immobilisations corporelles	Client	VRAI
+485300	Effets à recevoir, actifs incorporels	Client	VRAI
+485400	Effets à recevoir, immobilisations corporelles	Client	VRAI
+485500	Effets escomptés non encore échus	Client	VRAI
+485600	Actifs financiers	Client	VRAI
+485700	Retenues	Client	VRAI
+485800	Factures à émettre	Client	VRAI
+488000	Autres créances non liées aux activités ordinaires (h.a.o.)	Client	VRAI
+490000	Dépréciation des comptes créditeurs	Actifs circulants	FAUX
+491100	Réclamations litigieuses	Actifs circulants	FAUX
+491200	Créances douteuses	Actifs circulants	FAUX
+492000	Dépréciation des comptes personnels	Actifs circulants	FAUX
+493000	Dépréciation des comptes de la sécurité sociale	Actifs circulants	FAUX
+494000	Dépréciation des comptes de l'état et des collectivités locales	Actifs circulants	FAUX
+495000	Dépréciation des comptes des organisations internationales	Actifs circulants	FAUX
+496200	Associés, comptes courants	Actifs circulants	FAUX
+496300	Partenaires, opérations conjointes et GIE	Actifs circulants	FAUX
+496600	Groupe, comptes courants	Actifs circulants	FAUX
+497000	Dépréciation des comptes débiteurs divers	Actifs circulants	FAUX
+498500	Créances sur la cession d'actifs immobilisés	Actifs circulants	FAUX
+498600	Créances sur les ventes de titres de placement	Actifs circulants	FAUX
+498800	Autres créances H.A.O.	Actifs circulants	FAUX
+499100	Provisions pour risques à court terme sur les activités opérationnelles	Actifs circulants	FAUX
+499700	Provisions pour risques à court terme sur opérations financières	Actifs circulants	FAUX
+499800	Provisions pour risques à court terme sur les opérations H.A.O.	Actifs circulants	FAUX
+501100	Titres de trésorerie à court terme	Actifs circulants	FAUX
+501200	Titres d'institutions financières	Actifs circulants	FAUX
+501300	Obligations de trésorerie à court terme	Actifs circulants	FAUX
+501600	Frais d'acquisition des titres du Trésor et des lettres de change	Actifs circulants	FAUX
+502100	Actions ou parts propres	Actifs circulants	FAUX
+502200	Actions cotées	Actifs circulants	FAUX
+502300	Actions non cotées	Actifs circulants	FAUX
+502400	Actions démembrées (certificats d'investissement ; droits de vote)	Actifs circulants	FAUX
+502500	Autres actions	Actifs circulants	FAUX
+502600	Coûts d'acquisition d'actions	Actifs circulants	FAUX
+503100	Obligations émises par l'entité et remboursées par elle	Actifs circulants	FAUX
+503200	Obligations cotées	Actifs circulants	FAUX
+503300	Obligations non cotées	Actifs circulants	FAUX
+503500	Autres obligations	Actifs circulants	FAUX
+503600	Coûts d'acquisition des obligations	Actifs circulants	FAUX
+504200	Bons de souscription d'actions	Actifs circulants	FAUX
+504300	Mandats d'obligations	Actifs circulants	FAUX
+505000	Titres négociables en dehors de la région	Actifs circulants	FAUX
+506100	Titres du Trésor et bons à court terme	Actifs circulants	FAUX
+506200	Actions	Actifs circulants	FAUX
+506300	Obligations	Actifs circulants	FAUX
+508000	Autres titres d'investissement et créances similaires	Actifs circulants	FAUX
+510000	Valeurs à encaisser	Banque et espèces	FAUX
+521001	Banque	Banque et espèces	VRAI
+521002	Compte d'attente de la banque	Actifs circulants	FAUX
+521003	Paiements entrants en suspens	Actifs circulants	VRAI
+521004	Paiements sortants en suspens	Actifs circulants	VRAI
+531000	Chèques postaux	Actifs circulants	FAUX
+532000	Trésorerie	Actifs circulants	FAUX
+533000	Sociétés de gestion et d'intermédiation (s.g.i.)	Actifs circulants	FAUX
+536000	Institutions financières, intérêts courus	Actifs circulants	FAUX
+538000	Autres organismes financiers	Actifs circulants	FAUX
+541000	Options de taux d'intérêt	Actifs circulants	FAUX
+542000	Options sur le taux de change	Actifs circulants	FAUX
+543000	Options sur taux d'actions	Actifs circulants	FAUX
+544000	Instruments du marché à terme	Actifs circulants	FAUX
+545000	Avoirs en or et autres métaux précieux	Actifs circulants	FAUX
+551000	Monnaie électronique - carte de carburant	Actifs circulants	FAUX
+552000	Monnaie électronique - téléphone portable	Actifs circulants	FAUX
+553000	Monnaie électronique - carte peage	Actifs circulants	FAUX
+554000	Porte-monnaie électronique	Actifs circulants	FAUX
+558000	Autres instruments de monnaie électronique	Actifs circulants	FAUX
+561000	Crédits d'argent	Actifs circulants	FAUX
+564000	Actualisation des crédits de campagne	Actifs circulants	FAUX
+565000	Actualisation des crédits de campagne	Actifs circulants	FAUX
+566000	Banques, crédits de trésorerie, intérêts courus	Actifs circulants	FAUX
+571100	Argent liquide en monnaie nationale	Actifs circulants	FAUX
+571200	Liquidités en devises étrangères	Actifs circulants	FAUX
+572100	Fonds de la branche A en monnaie nationale	Actifs circulants	FAUX
+572200	Branche A en monnaie étrangère	Actifs circulants	FAUX
+573100	Succursale B en monnaie nationale	Actifs circulants	FAUX
+573200	Caissier de la succursale B en monnaie étrangère	Actifs circulants	FAUX
+581000	Comptes d'avances	Actifs circulants	FAUX
+582000	Accréditifs	Actifs circulants	FAUX
+585000	Transferts de fonds	Actifs circulants	FAUX
+585001	Fonds en transit	Actifs circulants	VRAI
+590000	Dépréciation de valeur d'un titre d'investissement	Actifs circulants	FAUX
+591000	Dépréciation des titres et créances	Actifs circulants	FAUX
+592000	Dépréciation des comptes bancaires	Actifs circulants	FAUX
+593000	Dé perte de valeur d'institutions financières et d'un compte similaire	Actifs circulants	FAUX
+594000	Dépréciation des comptes d'instruments de trésorerie	Actifs circulants	FAUX
+599000	Provisions pour risques financiers à court terme	Actifs circulants	FAUX
+601100	Achats de biens dans la région	Charges	FAUX
+601200	Achats de biens en dehors de la région	Charges	FAUX
+601300	Achats de biens auprès d'entités du Groupe dans la Région	Charges	FAUX
+601400	Achats de biens auprès d'entités du Groupe en dehors de la Région	Charges	FAUX
+601500	Frais d'achat de marchandises sur les achats	Charges	FAUX
+601900	Rabais et remises obtenus (non ventilés)	Charges	FAUX
+602100	Achats de matières premières et de fournitures connexes dans la région	Charges	FAUX
+602200	Achats de matières premières et de fournitures connexes en dehors de la Région	Charges	FAUX
+602300	Achats de matières premières et de fournitures liés aux entités du groupe dans la Région	Charges	FAUX
+602400	Achats de matières premières et de fournitures liés aux entités du groupe en dehors de la Région	Charges	FAUX
+602500	Achats de matières premières et fournitures connexes charges sur achats	Charges	FAUX
+602900	Rabais, remises et ristournes obtenus (non ventilés)	Charges	FAUX
+603100	Variation des stocks de marchandises	Charges	FAUX
+603200	Variation des stocks de matières premières et fournitures connexes	Charges	FAUX
+603300	Variation des stocks d'autres fournitures	Charges	FAUX
+604100	Consommables	Charges	FAUX
+604200	Matériaux combustibles	Charges	FAUX
+604300	Produits de soins	Charges	FAUX
+604400	Fournitures d'atelier et d'usine	Charges	FAUX
+604500	Frais sur les achats	Charges	FAUX
+604600	Fournitures de magasin	Charges	FAUX
+604700	Fournitures de bureau	Charges	FAUX
+604900	Rabais, remises et ristournes obtenus (non ventilés)	Charges	FAUX
+605100	Fournitures non stockables -Eau	Charges	FAUX
+605200	Fournitures non stockables - Électricité	Charges	FAUX
+605300	Fournitures non stockables - Autres énergies	Charges	FAUX
+605400	Fournitures d'entretien non stockables	Charges	FAUX
+605500	Fournitures de bureau non stockables	Charges	FAUX
+605600	Achats de petits équipements et d'outils	Charges	FAUX
+605700	Achats d'études et prestations de services	Charges	FAUX
+605800	Achats de travaux, de matériaux et d'équipements	Charges	FAUX
+605900	Rabais, remises et ristournes obtenus (non ventilés)	Charges	FAUX
+608100	Emballage à sens unique	Charges	FAUX
+608200	Emballage consigné non identifiable	Charges	FAUX
+608300	Emballage à usage mixte	Charges	FAUX
+608500	Frais d'achat	Charges	FAUX
+608900	Rabais, remises et ristournes obtenus (non ventilés)	Charges	FAUX
+612000	Transport sur les ventes	Charges	FAUX
+613000	Transport pour le compte de tiers	Charges	FAUX
+614000	Transport du personnel	Charges	FAUX
+616000	Transports de plis	Charges	FAUX
+618100	Voyages et déplacements	Charges	FAUX
+618200	Transport entre établissements ou chantiers	Charges	FAUX
+618300	Transport administratif	Charges	FAUX
+621000	Sous-traitance générale	Charges	FAUX
+622100	Location de terrains	Charges	FAUX
+622200	Location d'immeubles	Charges	FAUX
+622300	Location d'équipements et d'outils	Charges	FAUX
+622400	Malus sur l'emballage	Charges	FAUX
+622500	Location d'emballages	Charges	FAUX
+622600	Loyers et rentes foncières	Charges	FAUX
+622800	Loyers divers et charges locatives	Charges	FAUX
+623200	Location de biens immobiliers	Charges	FAUX
+623300	Location de meubles	Charges	FAUX
+623400	Location vente	Charges	FAUX
+623800	Autres contrats de location-acquisition	Charges	FAUX
+624100	Entretien et réparation des propriétés	Charges	FAUX
+624200	Entretien et réparation des biens meubles	Charges	FAUX
+624300	Entretien	Charges	FAUX
+624400	Coûts de démantèlement et de restauration	Charges	FAUX
+624800	Autres entretiens et réparations	Charges	FAUX
+625100	Assurance multirisque	Charges	FAUX
+625200	Assurance du matériel de transport	Charges	FAUX
+625300	Assurance du risque d'exploitation	Charges	FAUX
+625400	Assurance responsabilité civile des producteurs	Charges	FAUX
+625500	Assurance contre l'insolvabilité des clients	Charges	FAUX
+625700	Assurance transport sur les ventes	Charges	FAUX
+625800	Autres primes d'assurance	Charges	FAUX
+626100	Études et recherches	Charges	FAUX
+626500	Documentation générale	Charges	FAUX
+626600	Documentation technique	Charges	FAUX
+627100	Annonces, encarts	Charges	FAUX
+627200	Catalogues, imprimés publicitaires	Charges	FAUX
+627300	Échantillons	Charges	FAUX
+627400	Foires et expositions	Charges	FAUX
+627500	Publications	Charges	FAUX
+627600	Cadeaux aux clients	Charges	FAUX
+627700	Coûts des symposiums, séminaires, conférences	Charges	FAUX
+627800	Autres dépenses de publicité et de relations publiques	Charges	FAUX
+628100	Frais de téléphone	Charges	FAUX
+628200	Frais de télex	Charges	FAUX
+628300	Frais de télécopie	Charges	FAUX
+628800	Autres frais de télécommunications	Charges	FAUX
+631100	Frais sur titres (vente, garde)	Charges	FAUX
+631200	Frais d'effet de commerce	Charges	FAUX
+631300	Location de coffres-forts	Charges	FAUX
+631400	Commissions d'affacturage et de titrisation	Charges	FAUX
+631500	Frais de carte de crédit	Charges	FAUX
+631600	Frais d'émission d'emprunt	Charges	FAUX
+631700	Taxes sur les instruments de monnaie électronique	Charges	FAUX
+631800	Autres frais bancaires	Charges	FAUX
+632200	Commissions et courtage sur les ventes	Charges	FAUX
+632400	Frais pour les professions réglementées	Charges	FAUX
+632500	Frais juridiques et de contentieux	Charges	FAUX
+632600	Commissions d'affacturage et de sécurisation	Charges	FAUX
+632700	Rémunération des autres prestataires de services	Charges	FAUX
+632800	Frais divers	Charges	FAUX
+633000	Les coûts de formation du personnel	Charges	FAUX
+634200	Redevances pour brevets, licences	Charges	FAUX
+634300	Redevances de logiciels	Charges	FAUX
+634400	Redevances sur les marques	Charges	FAUX
+634500	Redevances pour les sites web	Charges	FAUX
+634600	Redevances pour concessions, droits et valeurs similaires	Charges	FAUX
+635100	Contributions	Charges	FAUX
+635800	Diverses compétitions	Charges	FAUX
+637100	Agents temporaires	Charges	FAUX
+637200	Personnel détaché ou prêté à l'entité	Charges	FAUX
+638100	Frais de recrutement du personnel	Charges	FAUX
+638200	Frais de déménagement	Charges	FAUX
+638300	Receptions	Charges	FAUX
+638400	Tâches	Charges	FAUX
+638500	Charges de copropriété	Charges	FAUX
+638800	Charges externes diverses	Charges	FAUX
+641100	Impôts fonciers et taxes connexes	Charges	FAUX
+641200	Brevets, licences et taxes connexes	Charges	FAUX
+641300	Impôts sur les traitements et salaires	Charges	FAUX
+641400	Taxes d'apprentissage	Charges	FAUX
+641500	La formation professionnelle se poursuit	Charges	FAUX
+641800	Autres impôts et taxes directs	Charges	FAUX
+645000	Taxes et taxes indirectes	Charges	FAUX
+646100	Droits de mutation	Charges	FAUX
+646200	Droits de timbre	Charges	FAUX
+646300	Taxes sur les véhicules de société	Charges	FAUX
+646400	Vignettes	Charges	FAUX
+646800	Autres frais d'inscription	Charges	FAUX
+647100	Pénalités de base, impôts directs	Charges	FAUX
+647200	Pénalités de base, impôts indirects	Charges	FAUX
+647300	Pénalités de recouvrement, impôts directs	Charges	FAUX
+647400	Pénalités de recouvrement, impôts indirects	Charges	FAUX
+647800	Autres pénalités et amendes fiscales	Charges	FAUX
+648000	Autres taxes et droits	Charges	FAUX
+651100	Client	Charges	FAUX
+651500	Autres débiteurs	Charges	FAUX
+652100	Part des bénéfices transférée (comptabilité du gérant)	Charges	FAUX
+652500	Pertes imputées par cession (comptabilité des associés non gérants)	Charges	FAUX
+654100	Immobilisations incorporelles	Charges	FAUX
+654200	Immobilisations corporelles	Charges	FAUX
+656000	Perte de change sur les créances et dettes commerciales	Charges	FAUX
+657000	Pénalités et amendes pénales	Charges	FAUX
+658100	Indemnités de service et autres rémunérations des administrateurs	Charges	FAUX
+658200	Dons	Charges	FAUX
+658300	Mécénat	Charges	FAUX
+658800	Autres charges diverses	Charges	FAUX
+659100	Dotations aux dépréciations et provisions pour risques à court terme	Charges	FAUX
+659300	Charges pour dépréciation et provisions pour risques à court terme sur les stocks	Charges	FAUX
+659400	Dotations aux dépréciations et provisions pour risques à court terme sur créances	Charges	FAUX
+659800	Autres charges pour dépréciation et provisions pour risques à court terme	Charges	FAUX
+661100	Salaires et commissions	Charges	FAUX
+661200	Primes et gratifications	Charges	FAUX
+661300	Vacances payées	Charges	FAUX
+661400	Indemnité de préavis, de licenciement et de recherche d'emploi	Charges	FAUX
+661500	Prestations de maladie versées aux travailleurs	Charges	FAUX
+661600	Supplément familial	Charges	FAUX
+661700	Avantages en nature	Charges	FAUX
+661800	Autre rémunération directe	Charges	FAUX
+662100	Salaires et commissions	Charges	FAUX
+662200	Primes et gratifications	Charges	FAUX
+662300	Vacances payées	Charges	FAUX
+662400	Indemnité de préavis, de licenciement et de recherche d'emploi	Charges	FAUX
+662500	Prestations de maladie versées aux travailleurs	Charges	FAUX
+662600	Supplément familial	Charges	FAUX
+662700	Avantages en nature	Charges	FAUX
+662800	Autre rémunération directe	Charges	FAUX
+663100	Allocations de logement	Charges	FAUX
+663200	Indemnités de représentation	Charges	FAUX
+663300	Indemnités d'expatriation	Charges	FAUX
+663400	Indemnités de transport	Charges	FAUX
+663800	Autres indemnités et prestations diverses	Charges	FAUX
+664100	Charges sociales sur la rémunération du personnel national	Charges	FAUX
+664200	Charges sociales sur la rémunération du personnel non national	Charges	FAUX
+666100	Rémunération du travail de l'opérateur	Charges	FAUX
+666200	Charges sociales	Charges	FAUX
+667100	Agents temporaires	Charges	FAUX
+667200	Personnel détaché ou prêté à l'entité	Charges	FAUX
+668100	Paiements aux syndicats et aux comités d'entreprise et d'établissement	Charges	FAUX
+668200	Paiements aux comités de santé et de sécurité	Charges	FAUX
+668300	Paiements et contributions à d'autres œuvres sociales	Charges	FAUX
+668400	Médecine et pharmacie du travail	Charges	FAUX
+668500	Assurances et organismes de santé	Charges	FAUX
+668600	Assurance retraite et fonds de pension	Charges	FAUX
+668700	Majorations et pénalités sociales	Charges	FAUX
+668800	Charges sociales diverses	Charges	FAUX
+671100	Emissions d'obligations	Charges	FAUX
+671200	Emprunts auprès des établissements de crédit	Charges	FAUX
+671300	Dettes liées aux participations	Charges	FAUX
+671400	Primes de remboursement des obligations	Charges	FAUX
+672200	Intérêts sur les loyers provenant d'achats d'immobilisations/locations immobilières	Charges	FAUX
+672300	Intérêts sur les loyers des contrats de location-acquisition/location d'équipement	Charges	FAUX
+672400	Intérêt pour la location-achat/location-vente	Charges	FAUX
+672800	Intérêts sur les loyers d'autres contrats de location-acquisition	Charges	FAUX
+673000	Escomptes accordés	Charges	FAUX
+674100	Avances reçues et acomptes à payer	Charges	FAUX
+674200	Comptes courants bloqués	Charges	FAUX
+674300	Intérêts sur les obligations garanties	Charges	FAUX
+674400	Intérêts sur les dettes commerciales	Charges	FAUX
+674500	Intérêts bancaires et de financement (escompte, etc.)	Charges	FAUX
+674800	Intérêts sur dettes diverses	Charges	FAUX
+675000	Les remises sur les factures commerciales	Charges	FAUX
+676000	Pertes de change financières	Charges	FAUX
+677100	Pertes sur la vente de titres de placement	Charges	FAUX
+677200	Losses from the free allocation of shares to salaried staff and managers	Charges	FAUX
+678100	Pertes et charges sur rentes viagères	Charges	FAUX
+678200	Pertes et charges sur transactions financières	Charges	FAUX
+678400	Pertes et charges sur instruments de trésorerie	Charges	FAUX
+679100	Dotation aux amortissements et aux provisions pour risques financiers	Charges	FAUX
+679500	Dotation aux amortissements et provisions sur titres de placement	Charges	FAUX
+679800	Autres charges pour dépréciation et provisions pour risques financiers à court terme	Charges	FAUX
+681200	Amortissement des immobilisations incorporelles	Charges	FAUX
+681300	Amortissement des immobilisations corporelles	Charges	FAUX
+691100	Dotations aux provisions pour risques et charges	Charges	FAUX
+691300	Amortissement des immobilisations incorporelles	Charges	FAUX
+691400	Amortissement des immobilisations corporelles	Charges	FAUX
+697100	Dotations aux provisions pour risques et charges	Charges	FAUX
+697200	Amortissement des immobilisations financières	Charges	FAUX
+701100	Vente de marchandises dans la région	Revenus	FAUX
+701200	Vente de marchandises en dehors de la Région	Revenus	FAUX
+701300	Vente de biens à des entités du groupe dans la région	Revenus	FAUX
+701400	Vente de biens à des entités du groupe en dehors de la Région	Revenus	FAUX
+701500	Vente de marchandises sur Internet	Revenus	FAUX
+701900	Rabais, remises, ristournes accordés (non ventilés) sur la vente de marchandises	Revenus	FAUX
+702100	Ventes de produits finis dans la région	Revenus	FAUX
+702200	Ventes de produits finis en dehors de la région	Revenus	FAUX
+702300	Ventes de produits finis aux entités du groupe dans la Région	Revenus	FAUX
+702400	Ventes de produits finis à des entités du groupe en dehors de la Région	Revenus	FAUX
+702500	Vente en ligne de produits finis	Revenus	FAUX
+702900	Rabais, remises, ristournes accordés (non ventilés) sur les ventes de produits finis	Revenus	FAUX
+703100	Ventes de produits intermédiaires dans la région	Revenus	FAUX
+703200	Ventes de produits intermédiaires en dehors de la région	Revenus	FAUX
+703300	Ventes de produits intermédiaires aux entités du groupe dans la région	Revenus	FAUX
+703400	Ventes de produits intermédiaires à des entités du groupe en dehors de la région	Revenus	FAUX
+703500	Vente de produits intermédiaires sur Internet	Revenus	FAUX
+703900	Rabais, remises, ristournes accordés (non ventilés) sur les ventes de produits intermédiaires	Revenus	FAUX
+704100	Ventes de produits résiduels dans la région	Revenus	FAUX
+704200	Ventes de produits résiduels en dehors de la région	Revenus	FAUX
+704300	Ventes de produits résiduels aux entités du groupe dans la Région	Revenus	FAUX
+704400	Ventes de produits résiduels à des entités du groupe en dehors de la Région	Revenus	FAUX
+704500	Vente de produits résiduels sur Internet	Revenus	FAUX
+704900	Rabais, remises, ristournes accordés (non ventilés) sur les ventes de produits résiduels	Revenus	FAUX
+705100	Travaux facturés dans la Région	Revenus	FAUX
+705200	Travaux facturés en dehors de la région	Revenus	FAUX
+705300	Travaux facturés aux entités du groupe dans la région	Revenus	FAUX
+705400	Travaux facturés aux entités du groupe en dehors de la région	Revenus	FAUX
+705500	Travail facturé en ligne	Revenus	FAUX
+705900	Rabais, remises, ristournes accordés (non ventilés) sur les travaux facturés	Revenus	FAUX
+706100	Services vendus dans la région	Revenus	FAUX
+706200	Services vendus en dehors de la région	Revenus	FAUX
+706300	Services vendus aux entités du groupe dans la région	Revenus	FAUX
+706400	Services vendus à des entités du groupe en dehors de la Région	Revenus	FAUX
+706500	Services vendus sur Internet	Revenus	FAUX
+706900	Rabais, remises, ristournes accordés (non ventilés) sur les services vendus	Revenus	FAUX
+707100	Frais de port, perte d'emballage et autres frais facturés	Revenus	FAUX
+707200	Commissions et courtage	Revenus	FAUX
+707300	Loyers et frais de location - financement	Revenus	FAUX
+707400	Primes sur les reprises et cessions d'emballages	Revenus	FAUX
+707500	Mise à disposition de personnel	Revenus	FAUX
+707600	Redevances pour brevets, logiciels, marques et droits similaires	Revenus	FAUX
+707700	Services exploités dans l'intérêt du personnel	Revenus	FAUX
+707800	Autres produits accessoires	Revenus	FAUX
+711000	Sur les produits d'exportation	Revenus	FAUX
+712000	Sur les produits importés	Revenus	FAUX
+713000	Sur les produits de péréquation	Revenus	FAUX
+714000	Indemnites et subventions d'exploitation (entité agricole)	Revenus	FAUX
+718100	Versés par l'État et les collectivités publiques	Revenus	FAUX
+718200	Payé par les organisations internationales	Revenus	FAUX
+718300	Payé par des tiers	Revenus	FAUX
+721000	Immobilisations incorporelles	Revenus	FAUX
+722100	Immobilisations corporelles (à l'exclusion des actifs biologiques)	Revenus	FAUX
+722200	Immobilisations corporelles (actifs biologiques)	Revenus	FAUX
+724000	Production autoconsommée	Revenus	FAUX
+726000	Actifs financiers	Revenus	FAUX
+734100	Variation des stocks de produits en cours	Revenus	FAUX
+734200	Variations des stocks de travaux en cours	Revenus	FAUX
+735100	Changements dans les travaux en cours : Etudes en cours	Revenus	FAUX
+735200	Changements dans les services en cours : Services en cours	Revenus	FAUX
+736000	La variation des stocks de produits finis	Revenus	FAUX
+737100	Variation des stocks de produits intermédiaires	Revenus	FAUX
+737200	Variation du stock de produits résiduels	Revenus	FAUX
+751000	Profits on trade receivables and other debtors	Revenus	FAUX
+752100	Transfert de la part des pertes (comptabilité du gérant)	Revenus	FAUX
+752500	Bénéfices alloués par transfert (comptabilité des associés non gérants)	Revenus	FAUX
+754100	Immobilisations incorporelles	Revenus	FAUX
+754200	Actifs immobilisés	Revenus	FAUX
+756000	Gains de change sur les créances et dettes commerciales	Revenus	FAUX
+758100	Indemnités de service et autres rémunérations des administrateurs	Revenus	FAUX
+758200	Indemnité d'assurance reçue	Revenus	FAUX
+758800	Autres produits divers	Revenus	FAUX
+759100	Reprise des dotations aux amortissements et aux provisions pour risques à court terme	Revenus	FAUX
+759300	Récupération des charges pour dépréciation et provisions sur stocks	Revenus	FAUX
+759400	Récupération des charges pour dépréciation et provisions sur créances	Revenus	FAUX
+759800	Reprise des dotations aux amortissements et provisions pour autres dotations aux amortissements et provisions pour risques d'exploitation à court terme	Revenus	FAUX
+771200	Intérêts d'emprunt	Revenus	FAUX
+771300	Intérêts sur créances diverses	Revenus	FAUX
+772100	Revenus des titres de participation	Revenus	FAUX
+772200	Revenus des autres titres immobilisés	Revenus	FAUX
+773000	Remises obtenues	Revenus	FAUX
+774500	Revenu des obligations	Revenus	FAUX
+774600	Revenus des valeurs mobilières de placement	Revenus	FAUX
+775000	Intérêt des loyers de location financement	Revenus	FAUX
+776000	Gains de change financiers	Revenus	FAUX
+777000	Les gains sur la cession de titres de placement	Revenus	FAUX
+778100	Gains sur les rentes viagères	Revenus	FAUX
+778200	Gains sur opérations financières	Revenus	FAUX
+778400	Gains sur les instruments de trésorerie	Revenus	FAUX
+779100	Reprises de charges pour dépréciations et provisions à court terme sur risques financiers	Revenus	FAUX
+779500	Reprises de charges pour dépréciations et provisions à court terme sur titres de placement	Revenus	FAUX
+779800	Reprises de charges pour dépréciations et provisions à court terme sur d'autres charges pour dépréciations et provisions pour risques financiers à court terme	Revenus	FAUX
+781000	Transferts de charges d'exploitation	Revenus	FAUX
+787000	Transferts de charges financières	Revenus	FAUX
+791100	Reprises de provisions et amortissements d'exploitation pour risques et charges	Revenus	FAUX
+791300	Reprises de provisions et dépréciation d'exploitation des immobilisations incorporelles	Revenus	FAUX
+791400	Reprises de provisions et amortissements d'exploitation des immobilisations corporelles	Revenus	FAUX
+797100	Reprises de provisions et dépréciations financières pour risques et charges	Revenus	FAUX
+797200	Reprises de provisions et amortissements financiers d'immobilisations financières	Revenus	FAUX
+798000	Reprises d'amortissements	Revenus	FAUX
+799000	Reversal of investment grants	Revenus	FAUX
+811000	Immobilisations incorporelles	Charges	FAUX
+812000	Immobilisations corporelles	Charges	FAUX
+816000	Actifs financiers	Charges	FAUX
+821000	Immobilisations incorporelles	Revenus	FAUX
+822000	Immobilisations corporelles	Revenus	FAUX
+826000	Actifs financiers	Revenus	FAUX
+831000	H.A.O. reconnu	Charges	FAUX
+833000	Les charges liées aux opérations de restructuration	Charges	FAUX
+834000	Pertes sur h.a.o. créances	Charges	FAUX
+835000	Dons et liberté accordés	Charges	FAUX
+836000	Abandon de créances convenu	Charges	FAUX
+837000	Les dépenses liées aux opérations de liquidation	Charges	FAUX
+839000	Charges pour dépréciations et provisions pour risques à court terme h.a.o.	Charges	FAUX
+841000	H.A.O products observed	Revenus	FAUX
+843000	Produits liés aux opérations de restructuration	Revenus	FAUX
+844000	Indemnites et subventions h.a.o. (entité agricole)	Revenus	FAUX
+845000	Dons et libéralités obtenus	Revenus	FAUX
+846000	Abandon de créances obtenu	Revenus	FAUX
+847000	Produits liés aux opérations de liquidation	Revenus	FAUX
+848000	Transferts de dépenses d'h.a.o	Revenus	FAUX
+849000	Reversal of expenses for depreciations and provisions for short-term risks h.a.o.	Revenus	FAUX
+851000	Dotations aux provisions réglementées	Charges	FAUX
+852000	Dépréciation et amortissement h.a.o.	Charges	FAUX
+853000	Provisions pour dépréciation h.a.o	Charges	FAUX
+854000	Dotations aux provisions pour risques et charges h.a.o.	Charges	FAUX
+858000	Autres prix h.a.o.	Charges	FAUX
+861000	Reprises de provisions réglementéesreprises de provisions réglementées	Revenus	FAUX
+862000	Reprise de l'amortissement de l'h.a.o.	Revenus	FAUX
+863000	Reprises de dépréciation h.a.o.	Revenus	FAUX
+864000	Récupération des provisions pour risques et charges de l'h.a.o.	Revenus	FAUX
+868000	Autres h.a.o	Revenus	FAUX
+871000	Participation légale aux bénéfices	Charges	FAUX
+874000	Participation contractuelle aux bénéfices	Charges	FAUX
+878000	Autres participations	Charges	FAUX
+881000	Etat	Revenus	FAUX
+884000	Collectivités publiques	Revenus	FAUX
+886000	Groupe	Revenus	FAUX
+888000	Autres	Revenus	FAUX
+891100	Activités menées dans l'État	Charges	FAUX
+891200	Activités menées dans les autres États de la Région	Charges	FAUX
+891300	Activités réalisées en dehors de la Région	Charges	FAUX
+892000	Rappel fiscal sur les résultats précédents	Charges	FAUX
+895000	Impôt minimum fixe (i.m.f.)	Charges	FAUX
+899100	Réductions	Charges	FAUX
+899400	CLIENTS, FACTURES IMPAYÉES ET ESCOMPTÉES	Charges	FAUX
+901100	Crédits confirmés acquis	Hors bilan	FAUX
+901200	Des prêts encore à recouvrer	Hors bilan	FAUX
+901300	Facilités de financement renouvelables	Hors bilan	FAUX
+901400	Facilités d'émission	Hors bilan	FAUX
+901800	Autres engagements financiers obtenus	Hors bilan	FAUX
+902100	Approbations obtenues	Hors bilan	FAUX
+902200	Dépôts, garanties obtenues	Hors bilan	FAUX
+902300	Hypothèques obtenues	Hors bilan	FAUX
+902400	Articles approuvés par des tiers	Hors bilan	FAUX
+902800	Autres garanties accordées	Hors bilan	FAUX
+903100	Achats à terme de produits de base	Hors bilan	FAUX
+903200	Achats à terme de devises	Hors bilan	FAUX
+903300	Commandes fermes des clients	Hors bilan	FAUX
+903800	Autres engagements réciproques	Hors bilan	FAUX
+904100	Abandons de créances conditionnels	Hors bilan	FAUX
+904300	Ventes avec clause de réserve de propriété	Hors bilan	FAUX
+904800	Divers engagements obtenus	Hors bilan	FAUX
+905100	Prêts accordés mais non décaissés	Hors bilan	FAUX
+905800	Autres engagements financiers accordés	Hors bilan	FAUX
+906100	Approbations accordées	Hors bilan	FAUX
+906200	Dépôts, garanties accordées	Hors bilan	FAUX
+906300	Hypothèques accordées	Hors bilan	FAUX
+906400	Éléments endossés par l'entité	Hors bilan	FAUX
+906800	Autres garanties accordées	Hors bilan	FAUX
+907100	Ventes à terme de produits de base	Hors bilan	FAUX
+907200	Ventes à terme de devises	Hors bilan	FAUX
+907300	Commandes fermes aux fournisseurs	Hors bilan	FAUX
+907800	Autres engagements réciproques	Hors bilan	FAUX
+908100	Annulations conditionnelles de dettes	Hors bilan	FAUX
+908200	Engagements de retraite	Hors bilan	FAUX
+908300	Achats avec clause de réserve de propriété	Hors bilan	FAUX
+908800	Engagements divers accordés	Hors bilan	FAUX
+911100	Contreparties - Crédits confirmés obtenus	Hors bilan	FAUX
+911200	Contreparties - Prêts restant à recouvrer	Hors bilan	FAUX
+911300	Contreparties - Facilités de financement renouvelables	Hors bilan	FAUX
+911400	Contreparties - Facilités d'émission	Hors bilan	FAUX
+911800	Contreparties - Autres engagements financiers obtenus	Hors bilan	FAUX
+912100	Contreparties - Avenants obtenus	Hors bilan	FAUX
+912200	Contreparties - Cautions, garanties obtenues	Hors bilan	FAUX
+912300	Considérations - Hypothèques obtenues	Hors bilan	FAUX
+912400	Contreparties - Articles avalisés par des tiers	Hors bilan	FAUX
+912800	Contreparties - Autres garanties obtenues	Hors bilan	FAUX
+913100	Contreparties - Achats à terme de produits de base	Hors bilan	FAUX
+913200	Contreparties - Achats à terme de devises	Hors bilan	FAUX
+913300	Contreparties - Ordres fermes des clients	Hors bilan	FAUX
+913800	Considérations - Hypothèques obtenues	Hors bilan	FAUX
+914100	Contreparties - Abandons de créances conditionnels	Hors bilan	FAUX
+914300	Considérations - Ventes avec clause de réserve de propriété	Hors bilan	FAUX
+914800	Considérations - Divers engagements obtenus	Hors bilan	FAUX
+915100	Contreparties - Prêts accordés mais non déboursés	Hors bilan	FAUX
+915800	Contreparties - Autres engagements de financement accordés	Hors bilan	FAUX
+916100	Considérations - Garanties accordées	Hors bilan	FAUX
+916200	Contreparties - Cautions, garanties accordées	Hors bilan	FAUX
+916300	Considérations - Hypothèques accordées	Hors bilan	FAUX
+916400	Considérations - Éléments approuvés par l'entité	Hors bilan	FAUX
+916800	Contreparties - Autres garanties accordées	Hors bilan	FAUX
+917100	Contreparties - Ventes à terme de produits de base	Hors bilan	FAUX
+917200	Contreparties - Ventes à terme de devises	Hors bilan	FAUX
+917300	Considérations - Commandes fermes aux fournisseurs	Hors bilan	FAUX
+917800	Considérations - Hypothèques obtenues	Hors bilan	FAUX
+918100	Contreparties - Annulations conditionnelles de dettes	Hors bilan	FAUX
+918200	Contreparties - Engagements de retraite	Hors bilan	FAUX
+918300	Contreparties - Achats avec clause de réserve de propriété	Hors bilan	FAUX
+918800	Considérations - Divers engagements accordés	Hors bilan	FAUX
+920000	Comptes de réflexion	Hors bilan	FAUX
+930000	Comptes de reclassement	Hors bilan	FAUX
+940000	Contributeurs, capital souscrit, non appelé	Hors bilan	FAUX
+950000	Comptes d'actions	Hors bilan	FAUX
+960000	Comptes d'évolution des coûts préliminaires	Hors bilan	FAUX
+970000	Comptes d'écarts comptables	Hors bilan	FAUX
+980000	Comptes de résultat	Hors bilan	FAUX
+990000	Comptes de lien interne	Hors bilan	FAUX
+999001	Gain de change	Autres produits	FAUX
+999002	Perte de change	Charges	FAUX
+999999	Affectation du résultat	Bénéfices de l'exercice cours	

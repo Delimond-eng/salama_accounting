@@ -24,9 +24,11 @@ class AuthServiceProvider extends ServiceProvider
         $this->registerPolicies();
 
         Gate::before(function ($user, $ability) {
-            $role = strtolower((string) ($user->role ?? ''));
-            if ($user->hasRole('admin') || $user->hasRole('manager') || $role === 'admin' || $role === 'manager') {
-                return true; // full access
+            $fullAccess = config('accounting_roles.full_access', ['super_admin']);
+            foreach ($fullAccess as $roleName) {
+                if ($user->hasRole($roleName)) {
+                    return true;
+                }
             }
             return null;
         });

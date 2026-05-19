@@ -1,7 +1,22 @@
 @extends("layouts.app")
 
 @section("content")
-    <div class="content pb-0" id="App">
+@include('components.vue-splash')
+    <div class="content pb-0" id="App" v-cloak>
+    <template v-if="!pageReady">
+        @include('components.vue-page-loading')
+    </template>
+    <template v-else>
+        <div v-if="errorList.length" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <ul class="mb-0 ps-3">
+                <li v-for="(err, i) in errorList" :key="i">@{{ err }}</li>
+            </ul>
+            <button type="button" class="btn-close" @click="error = null"></button>
+        </div>
+        <div v-if="message" class="alert alert-success alert-dismissible fade show" role="alert">
+            @{{ message }}
+            <button type="button" class="btn-close" @click="message = null"></button>
+        </div>
         <!-- Page Header -->
         <div class="d-flex align-items-center justify-content-between gap-2 mb-4 flex-wrap">
             <div>
@@ -15,22 +30,7 @@
                 </nav>
             </div>
             <div class="gap-2 d-flex align-items-center flex-wrap">
-                <div class="dropdown">
-                    <a href="javascript:void(0);" class="dropdown-toggle btn btn-outline-light px-2 shadow"
-                        data-bs-toggle="dropdown"><i class="ti ti-package-export me-2"></i>Export</a>
-                    <div class="dropdown-menu dropdown-menu-end">
-                        <ul>
-                            <li>
-                                <a href="javascript:void(0);" class="dropdown-item"><i
-                                        class="ti ti-file-type-pdf me-1"></i>Exporter en PDF</a>
-                            </li>
-                            <li>
-                                <a href="javascript:void(0);" class="dropdown-item"><i
-                                        class="ti ti-file-type-xls me-1"></i>Exporter en Excel</a>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
+                @include('components.export-buttons')
                 <a href="javascript:void(0);" class="btn btn-icon btn-outline-light shadow"
                     data-bs-toggle="tooltip" data-bs-placement="top" aria-label="Refresh"
                     data-bs-original-title="Refresh"><i class="ti ti-refresh"></i></a>
@@ -50,7 +50,7 @@
                     <input type="text" class="form-control" placeholder="Rechercher un utilisateur...">
                 </div>
                 @can('users.create')
-                <a href="javascript:void(0);" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#add_users">
+                <a href="javascript:void(0);" class="btn btn-primary" @click="openCreateUser">
                     <i class="ti ti-square-rounded-plus-filled me-1"></i>Ajout Utilisateur
                 </a>
                 @endcan
@@ -86,7 +86,7 @@
                                         <label class="form-label">Rôle</label>
                                         <select class="form-select">
                                             <option value="">Tous les rôles</option>
-                                            <option v-for="role in allRoles" :value="role.name">@{{ role.name }}</option>
+                                            <option v-for="role in allRoles" :value="role.name">@{{ role.label || roleLabel(role.name) }}</option>
                                         </select>
                                     </div>
                                     <div class="d-flex align-items-center gap-2">
@@ -138,7 +138,6 @@
                             <th>Utilisateur</th>
                             <th>Email</th>
                             <th>Rôle</th>
-                            <th>Station</th>
                             <th>Statut</th>
                             <th>Créé le</th>
                             <th class="no-sort">Action</th>
@@ -163,21 +162,20 @@
                             </td>
                             <td>@{{ data.email }}</td>
                             <td>
-                                <span :class="data.role ==='admin' ? 'badge-pink-transparent' : 'badge-info-transparent'"
-                                      class="badge badge-md p-2 fs-10">@{{ data.role }}</span>
+                                <span class="badge badge-md p-2 fs-10 badge-info-transparent"
+                                      :title="data.role">@{{ data.role_label || roleLabel(data.roles?.[0]?.name || data.role) }}</span>
                             </td>
-                            <td><span class="badge badge-purple">@{{ data.station?.name ?? '-' }}</span></td>
                             <td>
                                 <span class="badge badge-success d-inline-flex align-items-center badge-xs">
                                     <i class="ti ti-point-filled me-1"></i>Actif
                                 </span>
                             </td>
-                            <td>@{{ data.created_at }}</td>
+                            <td>@{{ formatDateTime(data.created_at) }}</td>
                             <td class="action-table-data">
                                 <div class="edit-delete-action">
                                     @can('users.update')
                                         <a href="javascript:void(0);" class="me-2 p-2" @click="getAccess(data)" title="Accès">
-                                            <i :class="{'text-gray-3':data.role==='admin' || data.role==='manager' }" class="ti ti-shield-lock text-warning"></i>
+                                            <i :class="{'text-gray-3': isProtectedRole(data.roles?.[0]?.name || data.role)}" class="ti ti-shield-lock text-warning"></i>
                                         </a>
                                         <a href="javascript:void(0);" class="me-2 p-2" @click="editUser(data)" title="Modifier">
                                             <i class="ti ti-edit text-info"></i>
@@ -214,7 +212,7 @@
             <div class="modal-dialog modal-dialog-centered modal-lg">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h4 class="modal-title">@{{ form.id ? 'Modifier l\'utilisateur' : 'Création compte utilisateur' }}</h4>
+                        <h4 class="modal-title">@{{ form.user_id ? 'Modifier l\'utilisateur' : 'Création compte utilisateur' }}</h4>
                         <button type="button" class="btn-close custom-btn-close" data-bs-dismiss="modal"
                                 aria-label="Close">
                             <i class="ti ti-x"></i>
@@ -222,6 +220,11 @@
                     </div>
                     <form @submit.prevent="createUser">
                         <div class="modal-body pb-0">
+                            <div v-if="errorList.length" class="alert alert-danger py-2 mb-3">
+                                <ul class="mb-0 ps-3 small">
+                                    <li v-for="(err, i) in errorList" :key="i">@{{ err }}</li>
+                                </ul>
+                            </div>
                             <div class="row">
                                 <div class="col-md-6">
                                     <div class="mb-3">
@@ -237,9 +240,9 @@
                                 </div>
                                 <div class="col-md-6">
                                     <div class="mb-3">
-                                        <label class="form-label">Mot de passe @{{ form.id ? '(laisser vide si inchangé)' : '' }}</label>
+                                        <label class="form-label">Mot de passe @{{ form.user_id ? '(laisser vide si inchangé)' : '' }}</label>
                                         <div class="pass-group">
-                                            <input type="password" v-model="form.password" placeholder="***************" class="pass-input form-control">
+                                            <input type="password" v-model="form.password" placeholder="***************" class="pass-input form-control" :required="!form.user_id">
                                             <span class="ti toggle-password ti-eye-off"></span>
                                         </div>
                                     </div>
@@ -249,18 +252,8 @@
                                         <label class="form-label">Rôle</label>
                                         <select class="form-select" v-model="form.role" required>
                                             <option value="" hidden selected>--Sélectionner un rôle</option>
-                                            <option v-for="(data, i) in allRoles" :value="data.name">@{{ data.name }}</option>
+                                            <option v-for="(data, i) in allRoles" :value="data.name">@{{ data.label || roleLabel(data.name) }}</option>
                                         </select>
-                                    </div>
-                                </div>
-                                <div class="col-md-6" v-if="form.role !== 'admin'">
-                                    <div class="mb-3">
-                                        <label class="form-label">Station</label>
-                                        <select class="form-select" v-model="form.station_id">
-                                            <option value="">--Sélectionner une station--</option>
-                                            <option v-for="s in allSites" :key="s.id" :value="s.id">@{{ s.name }}</option>
-                                        </select>
-                                        <small class="text-muted">Obligatoire pour les utilisateurs non admin</small>
                                     </div>
                                 </div>
                             </div>
@@ -297,7 +290,7 @@
                                     <thead class="table-light">
                                     <tr>
                                         <th>Module Permissions</th>
-                                        <th v-for="col in ['voir', 'créer', 'modifier', 'supprimer', 'importer', 'exporter']" :key="col" class="text-center">@{{ col.charAt(0).toUpperCase() + col.slice(1) }}</th>
+                                        <th v-for="col in permissionColumns" :key="col" class="text-center">@{{ columnLabels[col] || col }}</th>
                                     </tr>
                                     </thead>
                                     <tbody>
@@ -305,14 +298,13 @@
                                         <td>
                                             <h6 class="fs-14 fw-normal text-gray-9 mb-0">@{{ module.label }}</h6>
                                         </td>
-                                        <td v-for="col in ['view', 'create', 'update', 'delete', 'import', 'export']" :key="col" class="text-center">
-                                            <div class="form-check form-check-md d-inline-block">
+                                        <td v-for="col in permissionColumns" :key="col" class="text-center">
+                                            <div class="form-check form-check-md d-inline-block" v-if="moduleHasAction(module, col)">
                                                 <input
                                                     class="form-check-input"
                                                     type="checkbox"
                                                     :value="`${module.entity}.${col}`"
                                                     v-model="form.permissions"
-                                                    :disabled="!module.actions.some(a => a.action === col)"
                                                 >
                                             </div>
                                         </td>
@@ -333,12 +325,10 @@
             </div>
         </div>
         @endcan
+    </template>
     </div>
 @endsection
 
 @push("scripts")
-    <script>
-        window.__SITES__ = @json($sites ?? []);
-    </script>
     <script type="module" src="{{ asset("assets/js/scripts/user.js") }}"></script>
 @endpush

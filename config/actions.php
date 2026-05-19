@@ -1,97 +1,80 @@
 <?php
 
+/**
+ * Permissions comptables — format Spatie : {entity}.{action}
+ * Synchronisées par AccountingRolesPermissionsSeeder et DatabaseSeeder.
+ */
 return [
 
-    /*
-    |--------------------------------------------------------------------------
-    | DASHBOARD
-    |--------------------------------------------------------------------------
-    */
-    'dashboard_admin' => [
-        'entity' => 'dashboard_admin',
-        'label'  => 'Tableau de bord (vue globale)',
+    'dashboard' => [
+        'entity' => 'dashboard',
+        'label' => 'Tableau de bord',
         'actions' => ['view'],
     ],
 
-    /*
-    |--------------------------------------------------------------------------
-    | COMPTABILITÉ
-    |--------------------------------------------------------------------------
-    */
-    'accounting_journal' => [
-        'entity' => 'accounting_journal',
-        'label'  => 'Journal comptable',
-        'actions' => ['view', 'create', 'update', 'delete', 'export', 'validate'],
+    'saisie' => [
+        'entity' => 'saisie',
+        'label' => 'Saisie comptable',
+        'actions' => ['view', 'create', 'update', 'validate', 'delete'],
     ],
 
-    'accounting_ledger' => [
-        'entity' => 'accounting_ledger',
-        'label'  => 'Grand livre',
+    'livres' => [
+        'entity' => 'livres',
+        'label' => 'Livres comptables',
         'actions' => ['view', 'export'],
     ],
 
-    'accounting_trial_balance' => [
-        'entity' => 'accounting_trial_balance',
-        'label'  => 'Balance générale',
+    'tresorerie' => [
+        'entity' => 'tresorerie',
+        'label' => 'Trésorerie (caisse & banque)',
+        'actions' => ['view', 'create', 'update', 'export'],
+    ],
+
+    'etats' => [
+        'entity' => 'etats',
+        'label' => 'États financiers',
         'actions' => ['view', 'export'],
     ],
 
-    'accounting_subsidiary_balance' => [
-        'entity' => 'accounting_subsidiary_balance',
-        'label'  => 'Balance auxiliaire',
-        'actions' => ['view', 'export'],
+    'exercices' => [
+        'entity' => 'exercices',
+        'label' => 'Exercices comptables',
+        'actions' => ['view', 'create', 'update', 'process'],
     ],
 
-    'accounting_cash_draft' => [
-        'entity' => 'accounting_cash_draft',
-        'label'  => 'Brouillard de caisse',
-        'actions' => ['view', 'create', 'update', 'delete', 'validate'],
+    'parametres' => [
+        'entity' => 'parametres',
+        'label' => 'Paramètres & référentiel',
+        'actions' => ['view', 'create', 'update', 'delete'],
     ],
 
-    'accounting_reconciliation' => [
-        'entity' => 'accounting_reconciliation',
-        'label'  => 'Lettrage des comptes',
-        'actions' => ['view', 'process'],
+    'fiscalite' => [
+        'entity' => 'fiscalite',
+        'label' => 'Fiscalité',
+        'actions' => ['view', 'export', 'process'],
     ],
 
-    'accounting_closing' => [
-        'entity' => 'accounting_closing',
-        'label'  => 'Clôture comptable',
-        'actions' => ['view', 'process'],
-    ],
-
-    'accounting_reopening' => [
-        'entity' => 'accounting_reopening',
-        'label'  => 'Réouverture d\'exercice',
-        'actions' => ['view', 'process'],
-    ],
-
-    'accounting_exports' => [
-        'entity' => 'accounting_exports',
-        'label'  => 'Exports comptables',
-        'actions' => ['view', 'export'],
-    ],
-
-    /*
-    |--------------------------------------------------------------------------
-    | ADMINISTRATION
-    |--------------------------------------------------------------------------
-    */
     'users' => [
         'entity' => 'users',
-        'label'  => 'Utilisateurs',
+        'label' => 'Utilisateurs',
         'actions' => ['view', 'create', 'update', 'delete'],
     ],
 
     'roles' => [
         'entity' => 'roles',
-        'label'  => 'Roles & permissions',
+        'label' => 'Rôles & permissions',
         'actions' => ['view', 'create', 'update', 'delete'],
     ],
 
-    'logs' => [
-        'entity' => 'logs',
-        'label'  => 'Journal accès',
+    'audit' => [
+        'entity' => 'audit',
+        'label' => 'Journal d\'audit',
         'actions' => ['view'],
+    ],
+
+    'facturation' => [
+        'entity' => 'facturation',
+        'label' => 'Facturation & trésorerie',
+        'actions' => ['view', 'create', 'update', 'validate', 'delete', 'export', 'process'],
     ],
 ];

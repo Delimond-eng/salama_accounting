@@ -1,7 +1,20 @@
 @extends("layouts.app")
 
 @section("content")
-    <div class="content pb-0" id="App">
+@include('components.vue-splash')
+    <div class="content pb-0" id="App" v-cloak>
+    <template v-if="!pageReady">
+        @include('components.vue-page-loading')
+    </template>
+    <template v-else>
+        <div v-if="errorList.length" class="alert alert-danger alert-dismissible fade show">
+            <ul class="mb-0 ps-3"><li v-for="(err, i) in errorList" :key="i">@{{ err }}</li></ul>
+            <button type="button" class="btn-close" @click="error = null"></button>
+        </div>
+        <div v-if="message" class="alert alert-success alert-dismissible fade show">
+            @{{ message }}
+            <button type="button" class="btn-close" @click="message = null"></button>
+        </div>
         <!-- Page Header -->
         <div class="d-flex align-items-center justify-content-between gap-2 mb-4 flex-wrap">
             <div>
@@ -15,16 +28,7 @@
                 </nav>
             </div>
             <div class="gap-2 d-flex align-items-center flex-wrap">
-                <div class="dropdown">
-                    <a href="javascript:void(0);" class="dropdown-toggle btn btn-outline-light px-2 shadow"
-                        data-bs-toggle="dropdown"><i class="ti ti-package-export me-2"></i>Export</a>
-                    <div class="dropdown-menu dropdown-menu-end">
-                        <ul>
-                            <li><a href="javascript:void(0);" class="dropdown-item"><i class="ti ti-file-type-pdf me-1"></i>Exporter en PDF</a></li>
-                            <li><a href="javascript:void(0);" class="dropdown-item"><i class="ti ti-file-type-xls me-1"></i>Exporter en Excel</a></li>
-                        </ul>
-                    </div>
-                </div>
+                @include('components.export-buttons')
                 <a href="javascript:void(0);" class="btn btn-icon btn-outline-light shadow"
                     data-bs-toggle="tooltip" data-bs-placement="top" title="Refresh"><i class="ti ti-refresh"></i></a>
                 <a href="javascript:void(0);" class="btn btn-icon btn-outline-light shadow"
@@ -98,9 +102,12 @@
                                     <input class="form-check-input" type="checkbox">
                                 </div>
                             </td>
-                            <td class="fw-medium text-dark">@{{ data.name }}</td>
-                            <td>@{{ data.created_at }}</td>
-                            <td>@{{ data.updated_at }}</td>
+                            <td class="fw-medium text-dark">
+                                @{{ data.label || roleLabel(data.name) }}
+                                <small class="d-block text-muted fs-12">@{{ data.name }}</small>
+                            </td>
+                            <td>@{{ formatDateTime(data.created_at) }}</td>
+                            <td>@{{ formatDateTime(data.updated_at) }}</td>
                             <td>
                                 <span class="badge badge-success d-inline-flex align-items-center badge-xs">
                                     <i class="ti ti-point-filled me-1"></i>Actif
@@ -110,12 +117,12 @@
                                 <div class="edit-delete-action">
                                     @can('roles.update')
                                         <a href="javascript:void(0);" class="me-2 p-2" @click="editRole(data)" title="Modifier">
-                                            <i :class="{'text-gray-3':data.name==='admin' || data.name==='manager'}" class="ti ti-edit text-info"></i>
+                                            <i :class="{'text-gray-3': isProtectedRole(data.name)}" class="ti ti-edit text-info"></i>
                                         </a>
                                     @endcan
                                     @can('roles.delete')
                                         <a href="javascript:void(0);" class="p-2" data-bs-toggle="modal" data-bs-target="#delete_modal" title="Supprimer">
-                                            <i class="ti ti-trash text-danger" :class="{'text-gray-3':data.name==='admin' || data.name==='manager'}"></i>
+                                            <i class="ti ti-trash text-danger" :class="{'text-gray-3': isProtectedRole(data.name)}"></i>
                                         </a>
                                     @endcan
                                 </div>
@@ -157,7 +164,7 @@
                                     <thead class="table-light">
                                     <tr>
                                         <th>Module Permissions</th>
-                                        <th v-for="col in ['voir', 'créer', 'modifier', 'supprimer', 'importer', 'exporter']" :key="col" class="text-center">@{{ col.charAt(0).toUpperCase() + col.slice(1) }}</th>
+                                        <th v-for="col in permissionColumns" :key="col" class="text-center">@{{ columnLabels[col] || col }}</th>
                                     </tr>
                                     </thead>
                                     <tbody>
@@ -165,14 +172,13 @@
                                         <td>
                                             <h6 class="fs-14 fw-normal text-gray-9 mb-0">@{{ module.label }}</h6>
                                         </td>
-                                        <td v-for="col in ['view', 'create', 'update', 'delete', 'import', 'export']" :key="col" class="text-center">
-                                            <div class="form-check form-check-md d-inline-block">
+                                        <td v-for="col in permissionColumns" :key="col" class="text-center">
+                                            <div class="form-check form-check-md d-inline-block" v-if="moduleHasAction(module, col)">
                                                 <input
                                                     class="form-check-input"
                                                     type="checkbox"
                                                     :value="`${module.entity}.${col}`"
                                                     v-model="formRole.permissions"
-                                                    :disabled="!module.actions.some(a => a.action === col)"
                                                 >
                                             </div>
                                         </td>
@@ -194,6 +200,7 @@
             </div>
         </div>
         @endcanany
+    </template>
     </div>
 @endsection
 
