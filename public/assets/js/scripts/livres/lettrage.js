@@ -10,10 +10,11 @@ new Vue({
             lignes: [],
             numCompte: "41",
             tiersId: "",
+            exportBase: "/accounting/export/livres/lettrage",
         };
     },
     methods: {
-        queryParams() {
+        queryParams(extra = {}) {
             const p = new URLSearchParams();
             const compte = (this.numCompte || "").trim();
             if (compte) {
@@ -22,6 +23,11 @@ new Vue({
             if (this.tiersId) {
                 p.set("tiers_id", this.tiersId);
             }
+            Object.entries(extra).forEach(([k, v]) => {
+                if (v !== null && v !== undefined && v !== "") {
+                    p.set(k, v);
+                }
+            });
             return p.toString();
         },
 
@@ -35,15 +41,7 @@ new Vue({
         async loadData() {
             this.isLoading = true;
             try {
-                const p = new URLSearchParams();
-                const compte = (this.numCompte || "").trim();
-                if (compte) {
-                    p.set("num_compte", compte);
-                }
-                if (this.tiersId) {
-                    p.set("tiers_id", this.tiersId);
-                }
-                const { data } = await get(`/accounting/livres/lettrage/data?${p}`);
+                const { data } = await get(`/accounting/livres/lettrage/data?${this.queryParams()}`);
                 if (!this.handleResponse(data)) {
                     return;
                 }

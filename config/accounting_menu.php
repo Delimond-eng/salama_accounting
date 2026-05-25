@@ -361,7 +361,7 @@ return [
             'title' => 'Paramètres',
             'subtitle' => 'Configuration du référentiel et de l\'organisation',
             'icon' => 'ti-settings',
-            'color' => 'dark',
+            'color' => 'info',
             'items' => [
                 [
                     'title' => 'Plan comptable SYSCOHADA',

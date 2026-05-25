@@ -111,8 +111,8 @@ export const etatsMixin = {
         },
 
         rowClass(l) {
-            if (this.isTitre(l)) return "table-secondary fw-bold";
-            if (this.isTotal(l)) return "table-light fw-bold";
+            if (this.isTitre(l)) return "bg-light fw-bold text-uppercase";
+            if (this.isTotal(l)) return "bg-primary text-white fw-bold";
             return "";
         },
 

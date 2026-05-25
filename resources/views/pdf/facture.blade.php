@@ -41,7 +41,7 @@
         <table>
             <tr>
                 <td>
-                    <div class="logo">{{ $societe->raison_sociale ?? 'SociÃ©tÃ©' }}</div>
+                    <div class="logo">{{ $societe->raison_sociale ?? 'Société' }}</div>
                     @if($societe->adresse)<div style="font-size:9px;color:#64748b;margin-top:4px;">{{ $societe->adresse }}</div>@endif
                     @if($societe->nif)<div style="font-size:9px;">NIF : {{ $societe->nif }}</div>@endif
                 </td>
@@ -71,9 +71,9 @@
                     <div class="box">
                         <h4>Informations document</h4>
                         <p>Date : <strong>{{ $facture->date_facture->format('d/m/Y') }}</strong></p>
-                        @if($facture->date_echeance)<p>Ã‰chÃ©ance : <strong>{{ $facture->date_echeance->format('d/m/Y') }}</strong></div>@endif
+                        @if($facture->date_echeance)<p>Echéance : <strong>{{ $facture->date_echeance->format('d/m/Y') }}</strong></div>@endif
                         <p>Devise : <strong>{{ $facture->devise }}</strong></p>
-                        @if($facture->factureOrigine)<p>RÃ©f. origine : {{ $facture->factureOrigine->numero }}</div>@endif
+                        @if($facture->factureOrigine)<p>Réf. origine : {{ $facture->factureOrigine->numero }}</div>@endif
                     </div>
                 </td>
             </tr>
@@ -86,8 +86,8 @@
         <thead>
         <tr>
             <th style="width:40px;">#</th>
-            <th>DÃ©signation</th>
-            <th style="width:60px;text-align:right;">QtÃ©</th>
+            <th>Désignation</th>
+            <th style="width:60px;text-align:right;">Qté</th>
             <th style="width:80px;text-align:right;">P.U.</th>
             <th style="width:90px;text-align:right;">Montant HT</th>
         </tr>
@@ -118,7 +118,7 @@
     @if($facture->notes)<div class="notes"><strong>Notes :</strong> {{ $facture->notes }}</div>@endif
 
     <div class="footer">
-        Document gÃ©nÃ©rÃ© le {{ now()->format('d/m/Y H:i') }} â€” {{ $societe->raison_sociale ?? '' }} â€” SYSCOHADA
+        Document généré le {{ now()->format('d/m/Y H:i') }} â€” {{ $societe->raison_sociale ?? '' }} â€” SYSCOHADA
     </div>
 </body>
 </html>

@@ -11,6 +11,7 @@ new Vue({
             numCompte: "",
             dataCompte: null,
             dataGeneral: null,
+            exportBase: "/accounting/export/livres/grand-livre",
         };
     },
     methods: {

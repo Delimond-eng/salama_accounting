@@ -15,11 +15,11 @@
                     <tr><th>Libellé</th><th class="text-end">Ouverture</th><th class="text-end">Variation</th><th class="text-end">Clôture</th></tr>
                 </thead>
                 <tbody>
-                    <tr v-for="(l,i) in data.lignes" :key="i">
+                    <tr v-for="(l,i) in data.lignes" :key="i" :class="l.type === 'total' || l.libelle.toLowerCase().includes('total') ? 'bg-primary text-white fw-bold' : ''">
                         <td>@{{ l.libelle }}</td>
                         <td class="text-end">@{{ fmt(l.ouverture) }}</td>
                         <td class="text-end">@{{ fmt(l.variation) }}</td>
-                        <td class="text-end fw-medium">@{{ fmt(l.cloture) }}</td>
+                        <td class="text-end fw-medium" :class="l.type === 'total' ? 'text-white' : ''">@{{ fmt(l.cloture) }}</td>
                     </tr>
                 </tbody>
             </table>

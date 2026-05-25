@@ -15,6 +15,7 @@ export const saisieMixin = {
             message: null,
             warnings: [],
             isLoading: false,
+            total_count: 0,
             filtres: {
                 date_debut: "",
                 date_fin: "",
@@ -33,6 +34,12 @@ export const saisieMixin = {
     },
 
     methods: {
+        async loadData() {
+            if (typeof this.loadList === "function") {
+                return await this.loadList();
+            }
+        },
+
         async loadMetadata(journalId = null) {
             const params = new URLSearchParams({ page: this.page });
             if (journalId) params.set("journal_id", journalId);
@@ -54,22 +61,13 @@ export const saisieMixin = {
 
         queryParams(extra = {}) {
             const p = new URLSearchParams({ page: this.page });
-            if (this.filtres.date_debut) {
-                p.set("date_debut", this.filtres.date_debut);
-            }
-            if (this.filtres.date_fin) {
-                p.set("date_fin", this.filtres.date_fin);
-            }
-            if (this.search) {
-                p.set("search", this.search);
-            }
-            if (this.filtreStatut) {
-                p.set("statut", this.filtreStatut);
-            }
+            if (this.filtres.date_debut) p.set("date_debut", this.filtres.date_debut);
+            if (this.filtres.date_fin) p.set("date_fin", this.filtres.date_fin);
+            if (this.search) p.set("search", this.search);
+            if (this.filtreStatut) p.set("statut", this.filtreStatut);
+
             Object.entries(extra).forEach(([k, v]) => {
-                if (v !== null && v !== undefined && v !== "") {
-                    p.set(k, v);
-                }
+                if (v !== null && v !== undefined && v !== "") p.set(k, v);
             });
             return p.toString();
         },

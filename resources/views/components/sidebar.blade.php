@@ -39,13 +39,29 @@
                             if (! auth()->user()->can($perm)) {
                                 continue;
                             }
-                            $isActive = request()->routeIs('accounting.modules.show') && request()->route('module') === $key;
+
+                            // 1. Actif si c'est la page d'accueil du module ou le tableau de bord racine
+                            $isActive = (request()->routeIs('accounting.modules.show') && request()->route('module') === $key)
+                                        || ($key === 'dashboard' && request()->routeIs('dashboard*'));
+
+                            // 2. Actif si l'une des routes des sous-items du module est active
+                            if (!$isActive && isset($mod['items'])) {
+                                foreach ($mod['items'] as $item) {
+                                    if (isset($item['route']) && $item['route'] !== 'accounting.modules.show') {
+                                        if (request()->routeIs($item['route'] . '*')) {
+                                            $isActive = true;
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
+
                             $href = $key === 'dashboard'
                                 ? route('dashboard')
                                 : route('accounting.modules.show', ['module' => $key]);
                         @endphp
-                        <li>
-                            <a href="{{ $href }}" class="{{ $isActive ? 'active' : '' }}">
+                        <li class="{{ $isActive ? 'active' : '' }}">
+                            <a href="{{ $href }}" >
                                 <i class="ti {{ $mod['icon'] }}"></i>
                                 <span>{{ $mod['number'] }} {{ $mod['title'] }}</span>
                             </a>
@@ -59,22 +75,22 @@
                 <li>
                     <ul>
                         @can('users.view')
-                        <li>
-                            <a href="{{ route('admin.users') }}" class="{{ request()->routeIs('admin.users*') ? 'active' : '' }}">
+                        <li class="{{ request()->routeIs('admin.users*') ? 'active' : '' }}">
+                            <a href="{{ route('admin.users') }}">
                                 <i class="ti ti-users"></i><span>Utilisateurs</span>
                             </a>
                         </li>
                         @endcan
                         @can('roles.view')
-                        <li>
-                            <a href="{{ route('admin.roles') }}" class="{{ request()->routeIs('admin.roles*') ? 'active' : '' }}">
+                        <li class="{{ request()->routeIs('admin.roles*') ? 'active' : '' }}">
+                            <a href="{{ route('admin.roles') }}" >
                                 <i class="ti ti-shield-lock"></i><span>Rôles & Permissions</span>
                             </a>
                         </li>
                         @endcan
                         @can('audit.view')
-                        <li>
-                            <a href="{{ route('admin.logs') }}" class="{{ request()->routeIs('admin.logs*') ? 'active' : '' }}">
+                        <li class="{{ request()->routeIs('admin.logs*') ? 'active' : '' }}">
+                            <a href="{{ route('admin.logs') }}" >
                                 <i class="ti ti-file-description"></i><span>Journal d'audit</span>
                             </a>
                         </li>

@@ -67,70 +67,74 @@
                 </div>
             </div>
             <div class="card-body p-0">
-                <table class="table mb-0">
-                    <thead class="table-light">
-                        <tr>
-                            <th style="width:12%">Compte</th>
-                            <th style="width:18%">Tiers</th>
-                            <th>Libellé</th>
-                            <th class="text-end" style="width:10%">Débit</th>
-                            <th class="text-end" style="width:10%">Crédit</th>
-                            <th v-if="multiDevise" class="text-end" style="width:10%">M. devise</th>
-                            <th style="width:4%"></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr v-for="(l, idx) in lignes" :key="idx">
-                            <td>
-                                <div class="compte-select-wrap position-relative">
-                                    <input type="text" class="form-control form-control-sm"
-                                        :value="compteDisplayText(idx)"
-                                        @input="onCompteSearchInput(idx, $event)"
-                                        @focus="onCompteSearchFocus(idx)"
-                                        @blur="onCompteSearchBlur(idx)"
-                                        placeholder="Rechercher un compte…"
-                                        autocomplete="off">
-                                    <ul v-show="compteUiOpen(idx)" class="dropdown-menu show w-100 shadow-sm compte-select-dropdown">
-                                        <li v-if="compteUiLoading(idx)"><span class="dropdown-item text-muted">Recherche…</span></li>
-                                        <li v-else-if="!compteUiResults(idx).length"><span class="dropdown-item text-muted">Aucun compte</span></li>
-                                        <li v-for="c in compteUiResults(idx)" :key="c.id">
-                                            <a href="javascript:void(0)" class="dropdown-item py-2" @mousedown.prevent="selectCompteOption(idx, c)">
-                                                <span class="fw-medium text-primary">@{{ c.num_compte }}</span>
-                                                <span class="d-block text-muted fs-12 text-truncate">@{{ c.libelle }}</span>
-                                            </a>
-                                        </li>
-                                    </ul>
-                                </div>
-                            </td>
-                            <td>
-                                <select class="form-select form-select-sm" v-model.number="l.tiers_id">
-                                    <option :value="null">—</option>
-                                    <option v-for="t in tiersOptions" :key="t.id" :value="t.id">@{{ t.code }} @{{ t.nom }}</option>
-                                </select>
-                            </td>
-                            <td><input type="text" class="form-control form-control-sm" v-model="l.libelle"></td>
-                            <td><input type="number" step="0.01" min="0" class="form-control form-control-sm text-end" v-model.number="l.debit" @input="onMontant(l,'debit')"></td>
-                            <td><input type="number" step="0.01" min="0" class="form-control form-control-sm text-end" v-model.number="l.credit" @input="onMontant(l,'credit')"></td>
-                            <td v-if="multiDevise"><input type="number" step="0.01" class="form-control form-control-sm text-end" v-model.number="l.montant_devise"></td>
-                            <td><button type="button" class="btn btn-sm btn-outline-danger" @click="supprimerLigne(idx)" :disabled="lignes.length<=2"><i class="ti ti-x"></i></button></td>
-                        </tr>
-                    </tbody>
-                    <tfoot class="table-light">
-                        <tr>
-                            <th colspan="3" class="text-end">Totaux</th>
-                            <th class="text-end" :class="{'text-danger': !equilibre}">@{{ formatMontantDevise(totalDebit, entete.devise) }}</th>
-                            <th class="text-end" :class="{'text-danger': !equilibre}">@{{ formatMontantDevise(totalCredit, entete.devise) }}</th>
-                            <th :colspan="multiDevise ? 2 : 1">
-                                <span v-if="!equilibre" class="badge badge-soft-danger">Écart @{{ formatMontantDevise(ecart, entete.devise) }}</span>
-                                <span v-else class="badge badge-soft-success">Équilibrée</span>
-                            </th>
-                        </tr>
-                    </tfoot>
-                </table>
+                <div class="table-responsive">
+                    <table class="table table-bordered mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th style="width:12%">Compte</th>
+                                <th style="width:18%">Tiers</th>
+                                <th>Libellé</th>
+                                <th class="text-end" style="width:12%">Débit</th>
+                                <th class="text-end" style="width:12%">Crédit</th>
+                                <th v-if="multiDevise" class="text-end" style="width:10%">M. devise</th>
+                                <th style="width:4%"></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="(l, idx) in lignes" :key="idx">
+                                <td>
+                                    <div class="compte-select-wrap position-relative">
+                                        <input type="text" class="form-control form-control-sm"
+                                            :value="compteDisplayText(idx)"
+                                            @input="onCompteSearchInput(idx, $event)"
+                                            @focus="onCompteSearchFocus(idx)"
+                                            @blur="onCompteSearchBlur(idx)"
+                                            placeholder="Rechercher..."
+                                            autocomplete="off">
+                                        <ul v-show="compteUiOpen(idx)" class="dropdown-menu show w-100 shadow-sm compte-select-dropdown">
+                                            <li v-if="compteUiLoading(idx)"><span class="dropdown-item text-muted">Recherche…</span></li>
+                                            <li v-else-if="!compteUiResults(idx).length"><span class="dropdown-item text-muted">Aucun compte</span></li>
+                                            <li v-for="c in compteUiResults(idx)" :key="c.id">
+                                                <a href="javascript:void(0)" class="dropdown-item py-2" @mousedown.prevent="selectCompteOption(idx, c)">
+                                                    <span class="fw-medium text-primary">@{{ c.num_compte }}</span>
+                                                    <span class="d-block text-muted fs-12 text-truncate">@{{ c.libelle }}</span>
+                                                </a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </td>
+                                <td>
+                                    <select class="form-select form-select-sm" v-model.number="l.tiers_id">
+                                        <option :value="null">—</option>
+                                        <option v-for="t in tiersOptions" :key="t.id" :value="t.id">@{{ t.code }} @{{ t.nom }}</option>
+                                    </select>
+                                </td>
+                                <td><input type="text" class="form-control form-control-sm" v-model="l.libelle"></td>
+                                <td><input type="number" step="0.01" min="0" class="form-control form-control-sm text-end" v-model.number="l.debit" @input="onMontant(l,'debit')"></td>
+                                <td><input type="number" step="0.01" min="0" class="form-control form-control-sm text-end" v-model.number="l.credit" @input="onMontant(l,'credit')"></td>
+                                <td v-if="multiDevise"><input type="number" step="0.01" class="form-control form-control-sm text-end" v-model.number="l.montant_devise"></td>
+                                <td class="text-center">
+                                    <button type="button" class="btn btn-sm text-danger" @click="supprimerLigne(idx)" :disabled="lignes.length<=2"><i class="ti ti-trash"></i></button>
+                                </td>
+                            </tr>
+                        </tbody>
+                        <tfoot class="bg-primary text-white fw-bold">
+                            <tr>
+                                <td colspan="3" class="text-end">TOTAUX</td>
+                                <td class="text-end">@{{ formatMontantDevise(totalDebit, entete.devise) }}</td>
+                                <td class="text-end">@{{ formatMontantDevise(totalCredit, entete.devise) }}</td>
+                                <td :colspan="multiDevise ? 2 : 1">
+                                    <span v-if="!equilibre" class="badge bg-danger">ÉCART @{{ formatMontantDevise(ecart, entete.devise) }}</span>
+                                    <span v-else class="text-white-50 fs-12">ÉQUILIBRÉE</span>
+                                </td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
             </div>
         </div>
 
-        <div class="d-flex gap-2 justify-content-end">
+        <div class="d-flex gap-2 justify-content-end mb-4">
             <a :href="listeUrl" class="btn btn-white border">Annuler</a>
             <button type="submit" class="btn btn-outline-primary" :disabled="isLoading || !equilibre">Enregistrer brouillon</button>
             <button type="button" class="btn btn-primary" :disabled="isLoading || !equilibre" @click="save(true)">Valider l'écriture</button>

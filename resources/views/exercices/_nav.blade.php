@@ -7,7 +7,8 @@
     ];
     $active = $active ?? $page ?? '';
 @endphp
-<div class="d-flex align-items-center justify-content-between gap-2 mb-3 flex-wrap">
+
+<div class="d-flex align-items-center justify-content-between gap-2 mb-4 flex-wrap">
     <div>
         <h4 class="mb-1">{{ $title ?? 'Exercices comptables' }}</h4>
         <nav aria-label="breadcrumb">
@@ -18,10 +19,16 @@
             </ol>
         </nav>
     </div>
-    <a href="{{ route('accounting.etats.comparatif') }}" class="btn btn-sm btn-outline-primary">
-        <i class="ti ti-chart-dots-3 me-1"></i>Comparatif N / N-1
-    </a>
+    <div class="gap-2 d-flex align-items-center flex-wrap">
+        <a href="{{ route('accounting.etats.comparatif') }}" class="btn btn-outline-primary shadow px-3">
+            <i class="ti ti-chart-dots-3 me-1"></i>Comparatif N / N-1
+        </a>
+        <a href="javascript:void(0);" class="btn btn-icon btn-outline-light shadow" id="collapse-header">
+            <i class="ti ti-transition-top"></i>
+        </a>
+    </div>
 </div>
+
 <ul class="nav nav-tabs nav-tabs-solid nav-tabs-rounded mb-4 flex-wrap">
     @foreach ($navItems as $key => $item)
         <li class="nav-item">
@@ -31,6 +38,7 @@
         </li>
     @endforeach
 </ul>
+
 <div v-if="error" class="alert alert-danger alert-dismissible fade show">
     <ul class="mb-0" v-if="Array.isArray(error)"><li v-for="(e,i) in error" :key="i">@{{ e }}</li></ul>
     <span v-else>@{{ error }}</span>

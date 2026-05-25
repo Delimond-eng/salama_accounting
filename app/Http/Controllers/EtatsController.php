@@ -9,7 +9,6 @@ use App\Services\LivresComptablesService;
 use App\Support\SocieteContext;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Http\Response;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -110,30 +109,13 @@ class EtatsController extends Controller
 
             return response()->json(['status' => 'success', 'data' => $data]);
         } catch (\App\Exceptions\BilanDesequilibreException $e) {
-            $payload = $e->context['payload'] ?? [
-                'equilibre' => false,
-                'ecart' => $e->ecart,
-                'total_actif' => $e->totalActif,
-                'total_passif' => $e->totalPassif,
-                'total_capitaux_propres' => $e->totalCapitauxPropres,
-                'actif' => [],
-                'passif' => [],
-            ];
-
             return response()->json([
                 'status' => 'error',
                 'errors' => [$e->getMessage()],
-                'data' => array_merge($payload, [
-                    'equilibre' => false,
-                    'ecart' => $e->ecart,
-                ]),
+                'data' => $e->context['payload'] ?? null,
             ], 422);
         } catch (\Throwable $e) {
-            report($e);
-
-            return response()->json([
-                'errors' => ['Erreur lors du calcul du bilan : '.$e->getMessage()],
-            ], 500);
+            return response()->json(['errors' => [$e->getMessage()]], 500);
         }
     }
 
@@ -141,12 +123,9 @@ class EtatsController extends Controller
     {
         $societeId = SocieteContext::requireId();
         $ctx = $this->contexte($request, $societeId);
-        if (isset($ctx['error'])) {
-            return response()->json(['errors' => [$ctx['error']]], 422);
-        }
+        if (isset($ctx['error'])) return response()->json(['errors' => [$ctx['error']]], 422);
 
         $data = $this->etats->compteResultat($societeId, $ctx['exercice'], $ctx['dateArrete'], $ctx['devise'], $ctx['mode'], $ctx['n1']);
-
         return response()->json(['status' => 'success', 'data' => $data]);
     }
 
@@ -154,12 +133,9 @@ class EtatsController extends Controller
     {
         $societeId = SocieteContext::requireId();
         $ctx = $this->contexte($request, $societeId);
-        if (isset($ctx['error'])) {
-            return response()->json(['errors' => [$ctx['error']]], 422);
-        }
+        if (isset($ctx['error'])) return response()->json(['errors' => [$ctx['error']]], 422);
 
         $data = $this->etats->fluxTresorerie($societeId, $ctx['exercice'], $ctx['dateArrete'], $ctx['devise'], $ctx['mode'], $ctx['n1']);
-
         return response()->json(['status' => 'success', 'data' => $data]);
     }
 
@@ -167,12 +143,9 @@ class EtatsController extends Controller
     {
         $societeId = SocieteContext::requireId();
         $ctx = $this->contexte($request, $societeId);
-        if (isset($ctx['error'])) {
-            return response()->json(['errors' => [$ctx['error']]], 422);
-        }
+        if (isset($ctx['error'])) return response()->json(['errors' => [$ctx['error']]], 422);
 
         $data = $this->etats->variationCapitauxPropres($societeId, $ctx['exercice'], $ctx['dateArrete'], $ctx['devise'], $ctx['mode'], $ctx['n1']);
-
         return response()->json(['status' => 'success', 'data' => $data]);
     }
 
@@ -183,68 +156,19 @@ class EtatsController extends Controller
 
     public function apiComparatif(Request $request): JsonResponse
     {
-        $societeId = SocieteContext::requireId();
-        $ctx = $this->contexte($request, $societeId);
-        if (isset($ctx['error'])) {
-            return response()->json(['errors' => [$ctx['error']]], 422);
+        try {
+            $societeId = SocieteContext::requireId();
+            $ctx = $this->contexte($request, $societeId);
+            if (isset($ctx['error'])) return response()->json(['errors' => [$ctx['error']]], 422);
+
+            $data = $this->etats->comparatif($societeId, $ctx['exercice'], $ctx['dateArrete'], $ctx['devise'], $ctx['mode']);
+            return response()->json(['status' => 'success', 'data' => $data]);
+        } catch (\App\Exceptions\BilanDesequilibreException $e) {
+            return response()->json([
+                'status' => 'success', // On laisse success pour que Vue affiche les données même déséquilibrées
+                'data' => $e->context['payload_comparatif'] ?? null,
+                'warning' => $e->getMessage()
+            ]);
         }
-
-        $data = $this->etats->comparatif($societeId, $ctx['exercice'], $ctx['dateArrete'], $ctx['devise'], $ctx['mode']);
-
-        return response()->json(['status' => 'success', 'data' => $data]);
-    }
-
-    public function exportCsv(Request $request, string $type): StreamedResponse|JsonResponse
-    {
-        $societeId = SocieteContext::requireId();
-        $ctx = $this->contexte($request, $societeId);
-        if (isset($ctx['error'])) {
-            return response()->json(['errors' => [$ctx['error']]], 422);
-        }
-
-        $data = match ($type) {
-            'bilan' => $this->etats->bilan($societeId, $ctx['exercice'], $ctx['dateArrete'], $ctx['devise'], $ctx['mode'], $ctx['n1']),
-            'compte-resultat' => $this->etats->compteResultat($societeId, $ctx['exercice'], $ctx['dateArrete'], $ctx['devise'], $ctx['mode'], $ctx['n1']),
-            'flux-tresorerie' => $this->etats->fluxTresorerie($societeId, $ctx['exercice'], $ctx['dateArrete'], $ctx['devise'], $ctx['mode'], $ctx['n1']),
-            'variation-kp' => $this->etats->variationCapitauxPropres($societeId, $ctx['exercice'], $ctx['dateArrete'], $ctx['devise'], $ctx['mode'], $ctx['n1']),
-            default => null,
-        };
-
-        if (! $data) {
-            return response()->json(['errors' => ['Type d\'export inconnu.']], 422);
-        }
-
-        $filename = "etat_{$type}_{$ctx['dateArrete']}.csv";
-
-        return response()->streamDownload(function () use ($type, $data) {
-            $out = fopen('php://output', 'w');
-            fprintf($out, chr(0xEF).chr(0xBB).chr(0xBF));
-            if ($type === 'bilan') {
-                fputcsv($out, ['Bloc', 'Réf', 'Libellé', 'Compte', 'Montant N'], ';');
-                foreach (['actif' => 'ACTIF', 'passif' => 'PASSIF'] as $key => $label) {
-                    foreach ($data[$key] ?? [] as $l) {
-                        fputcsv($out, [
-                            $label,
-                            $l['ref'] ?? '',
-                            $l['libelle'] ?? '',
-                            $l['num_compte'] ?? '',
-                            $l['net_n'] ?? '',
-                        ], ';');
-                    }
-                }
-            } else {
-                fputcsv($out, ['Réf', 'Libellé', 'Note', 'Montant N', 'Montant N-1'], ';');
-                foreach ($data['lignes'] ?? [] as $l) {
-                    fputcsv($out, [
-                        $l['ref'] ?? '',
-                        $l['libelle'] ?? '',
-                        $l['note'] ?? '',
-                        $l['montant_n'] ?? $l['cloture'] ?? '',
-                        $l['montant_n1'] ?? $l['ouverture'] ?? '',
-                    ], ';');
-                }
-            }
-            fclose($out);
-        }, $filename, ['Content-Type' => 'text/csv; charset=UTF-8']);
     }
 }

@@ -30,11 +30,11 @@ new Vue({
         },
 
         async initPage() {
-            await this.loadTiers();
+            await this.loadData();
         },
 
         async onSocieteChanged() {
-            await this.loadTiers();
+            await this.loadData();
         },
 
         emptyForm() {
@@ -53,10 +53,10 @@ new Vue({
 
         debounceSearch() {
             clearTimeout(searchTimer);
-            searchTimer = setTimeout(() => this.loadTiers(), 350);
+            searchTimer = setTimeout(() => this.loadData(), 350);
         },
 
-        async loadTiers() {
+        async loadData() {
             this.isLoading = true;
             const params = new URLSearchParams();
             if (this.search) params.set("search", this.search);
@@ -88,7 +88,7 @@ new Vue({
             this.isLoading = false;
             if (!this.handleResponse(data)) return;
             bootstrap.Modal.getInstance(document.getElementById("modal_tiers"))?.hide();
-            this.loadTiers();
+            this.loadData();
         },
     },
 });

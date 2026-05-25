@@ -59,6 +59,17 @@
                             <td class="text-end">@{{ fmt(r.solde_fin_crediteur) }}</td>
                         </tr>
                     </tbody>
+                    <tfoot class="bg-primary text-white fw-bold" v-if="lignes.length">
+                        <tr>
+                            <td colspan="2" class="text-end">TOTAUX</td>
+                            <td class="text-end">@{{ fmt(lignes.reduce((s,l) => s + (Number(l.solde_debut_debiteur)||0), 0)) }}</td>
+                            <td class="text-end">@{{ fmt(lignes.reduce((s,l) => s + (Number(l.solde_debut_crediteur)||0), 0)) }}</td>
+                            <td class="text-end">@{{ fmt(lignes.reduce((s,l) => s + (Number(l.mouvement_debit)||0), 0)) }}</td>
+                            <td class="text-end">@{{ fmt(lignes.reduce((s,l) => s + (Number(l.mouvement_credit)||0), 0)) }}</td>
+                            <td class="text-end">@{{ fmt(lignes.reduce((s,l) => s + (Number(l.solde_fin_debiteur)||0), 0)) }}</td>
+                            <td class="text-end">@{{ fmt(lignes.reduce((s,l) => s + (Number(l.solde_fin_crediteur)||0), 0)) }}</td>
+                        </tr>
+                    </tfoot>
                 </table>
             </div>
         </div>

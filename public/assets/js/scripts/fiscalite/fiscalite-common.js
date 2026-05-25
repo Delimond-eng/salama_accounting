@@ -64,7 +64,7 @@ export const fiscaliteMixin = {
             }).toString();
         },
 
-        onExerciceChange() {
+        async onExerciceChange() {
             const ex = this.exercices.find((e) => e.id === this.filtres.exercice_id);
             if (ex?.date_debut) {
                 this.filtres.date_debut = String(ex.date_debut).slice(0, 10);
@@ -73,7 +73,19 @@ export const fiscaliteMixin = {
                 this.filtres.date_fin = String(ex.date_fin).slice(0, 10);
             }
             this.exercice = ex || this.exercice;
-            this.loadData();
+            await this.loadData();
+        },
+
+        async onDatesChange() {
+            await this.loadData();
+        },
+
+        async onFiltreChange() {
+            await this.loadData();
+        },
+
+        async loadData() {
+            console.warn("loadData non implémenté");
         },
 
         handleResponse(data) {

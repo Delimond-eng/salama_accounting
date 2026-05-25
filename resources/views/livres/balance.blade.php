@@ -43,7 +43,7 @@
                             <td class="text-end">@{{ fmt(r.solde_fin_crediteur) }}</td>
                         </tr>
                     </tbody>
-                    <tfoot class="table-light fw-semibold" v-if="totaux">
+                    <tfoot class="bg-primary text-white fw-bold" v-if="totaux">
                         <tr>
                             <td colspan="2" class="text-end">TOTAUX</td>
                             <td class="text-end">@{{ fmt(totaux.solde_debut_debiteur) }}</td>

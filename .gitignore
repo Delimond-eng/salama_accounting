@@ -21,6 +21,7 @@ yarn-error.log
 /.vscode
 backup.cnf
 /*.zip
+old
 
 # Firebase
 storage/app/firebase/credentials.json

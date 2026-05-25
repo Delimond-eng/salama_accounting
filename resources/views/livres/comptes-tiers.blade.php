@@ -16,7 +16,7 @@
         </div>
         <div class="card-body p-0">
             <div class="table-responsive">
-                <table class="table table-nowrap mb-0">
+                <table class="table table-nowrap table-bordered mb-0">
                     <thead class="table-light">
                         <tr>
                             <th>Code</th><th>Nom</th><th>Type</th><th>Compte collectif</th>
@@ -34,6 +34,13 @@
                             <td class="text-end">@{{ fmt(t.solde_fin_crediteur) }}</td>
                         </tr>
                     </tbody>
+                    <tfoot class="bg-primary text-white fw-bold" v-if="tiers.length">
+                        <tr>
+                            <td colspan="4" class="text-end">TOTAL GÉNÉRAL</td>
+                            <td class="text-end">@{{ fmt(tiers.reduce((s,t) => s + (Number(t.solde_fin_debiteur)||0), 0)) }}</td>
+                            <td class="text-end">@{{ fmt(tiers.reduce((s,t) => s + (Number(t.solde_fin_crediteur)||0), 0)) }}</td>
+                        </tr>
+                    </tfoot>
                 </table>
             </div>
         </div>

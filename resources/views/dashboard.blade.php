@@ -51,7 +51,7 @@
                             <h4 class="mb-0">@{{ fmt(data.kpis.tresorerie.banque) }}</h4>
                             <div class="custom-card-icon">
                                 <div class="avatar avatar-rounded avatar-lg bg-primary-gradient-100 position-absolute top-0 end-0">
-                                    <i class="ti ti-building-bank fs-24 text-primary"></i>
+                                    <i class="ti ti-building-bank fs-24 text-white"></i>
                                 </div>
                             </div>
                         </div>
@@ -77,7 +77,7 @@
                             <h4 class="mb-0">@{{ fmt(data.kpis.tresorerie.total) }}</h4>
                             <div class="custom-card-icon">
                                 <div class="avatar avatar-rounded avatar-lg bg-info-gradient-100 position-absolute top-0 end-0">
-                                    <i class="ti ti-wallet fs-24 text-info"></i>
+                                    <i class="ti ti-wallet fs-24 text-white"></i>
                                 </div>
                             </div>
                         </div>
@@ -119,7 +119,7 @@
                             <h4 class="mb-0">@{{ fmt(data.kpis.dettes_fournisseurs) }}</h4>
                             <div class="custom-card-icon">
                                 <div class="avatar avatar-rounded avatar-lg bg-pink-gradient-100 position-absolute top-0 end-0">
-                                    <i class="ti ti-truck-delivery fs-24 text-pink"></i>
+                                    <i class="ti ti-truck-delivery fs-24 text-white"></i>
                                 </div>
                             </div>
                         </div>

@@ -17,7 +17,7 @@ new Vue({
 
     methods: {
         async initPage() {
-            await this.loadDetail();
+            await this.loadData();
         },
 
         emptySociete() {
@@ -53,7 +53,7 @@ new Vue({
             };
         },
 
-        async loadDetail() {
+        async loadData() {
             this.isLoading = true;
             try {
                 const { data } = await get("/accounting/parametres/societe/detail");
@@ -104,7 +104,7 @@ new Vue({
                 this.formSociete = { ...data.societe };
             }
             await this.loadContext();
-            this.loadDetail();
+            this.loadData();
         },
 
         openExerciceForm() {
@@ -123,7 +123,7 @@ new Vue({
             this.isLoading = false;
             if (!this.handleResponse(data)) return;
             bootstrap.Modal.getInstance(document.getElementById("modal_exercice"))?.hide();
-            this.loadDetail();
+            this.loadData();
             await this.loadContext();
         },
 
@@ -132,7 +132,7 @@ new Vue({
                 exercice_id: ex.id,
             });
             if (!this.handleResponse(data)) return;
-            this.loadDetail();
+            this.loadData();
             await this.loadContext();
         },
     },

@@ -50,6 +50,14 @@
                             <td><span class="badge badge-soft-secondary">@{{ l.devise_saisie }}</span></td>
                         </tr>
                     </tbody>
+                    <tfoot class="bg-primary text-white fw-bold" v-if="lignes.length">
+                        <tr>
+                            <td colspan="6" class="text-end">TOTAL GÉNÉRAL</td>
+                            <td class="text-end">@{{ fmt(lignes.reduce((s, l) => s + (Number(l.debit) || 0), 0)) }}</td>
+                            <td class="text-end">@{{ fmt(lignes.reduce((s, l) => s + (Number(l.credit) || 0), 0)) }}</td>
+                            <td></td>
+                        </tr>
+                    </tfoot>
                 </table>
             </div>
         </div>
