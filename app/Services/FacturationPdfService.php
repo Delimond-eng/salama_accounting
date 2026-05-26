@@ -11,13 +11,18 @@ class FacturationPdfService
 {
     public function facture(Facture $facture): \Barryvdh\DomPDF\PDF
     {
-        $facture->load(['lignes', 'tiers', 'societe', 'factureOrigine']);
+        $facture->load(['lignes', 'tiers', 'factureOrigine']);
+        $societe = Societe::with('banques')->find($facture->societe_id);
 
         return Pdf::loadView('pdf.facture', [
             'facture' => $facture,
-            'societe' => $facture->societe,
+            'societe' => $societe,
             'titre' => $this->titreFacture($facture),
-        ])->setPaper('a4');
+        ])
+            ->setPaper('a4')
+            ->setOption('defaultFont', 'DejaVu Sans')
+            ->setOption('isHtml5ParserEnabled', true)
+            ->setOption('isRemoteEnabled', true);
     }
 
     public function recuPaiement(Paiement $paiement): \Barryvdh\DomPDF\PDF

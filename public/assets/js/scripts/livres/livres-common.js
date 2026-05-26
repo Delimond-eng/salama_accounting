@@ -10,12 +10,13 @@ export const livresMixin = {
             page: window.__LIVRES_PAGE__ || "balance",
             societe: null,
             exercice: null,
-            options: { devises: [], devise_affichage: "CDF", mode_conversion: "origine" },
+            options: { devises: [], devise_affichage: "CDF", mode_conversion: "origine", scope_devise: "consolide" },
             journaux: [],
             filtres: {
                 date_debut: "",
                 date_fin: "",
                 devise_affichage: "CDF",
+                scope_devise: "consolide",
                 mode_conversion: "origine",
             },
             tauxUsd: 2200,
@@ -51,6 +52,7 @@ export const livresMixin = {
             this.filtres.date_debut = data.date_debut || this.filtres.date_debut;
             this.filtres.date_fin = data.date_fin || this.filtres.date_fin;
             this.filtres.devise_affichage = this.options.devise_affichage || "CDF";
+            this.filtres.scope_devise = this.options.scope_devise || "consolide";
             this.filtres.mode_conversion = this.options.mode_conversion || "origine";
         },
 
@@ -59,6 +61,7 @@ export const livresMixin = {
                 date_debut: this.filtres.date_debut,
                 date_fin: this.filtres.date_fin,
                 devise_affichage: this.filtres.devise_affichage,
+                scope_devise: this.filtres.scope_devise,
                 mode_conversion: this.filtres.mode_conversion,
             });
             if (this.page === "journal" && this.journalId) {

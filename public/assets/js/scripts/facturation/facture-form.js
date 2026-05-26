@@ -7,6 +7,7 @@ new Vue({
     data() {
         return {
             tiers: [],
+            produits: [],
             form: {
                 id: window.__FACTURE_ID__ || null,
                 type_document: window.__TYPE_DOCUMENT__ || "vente_client",
@@ -14,19 +15,26 @@ new Vue({
                 date_facture: new Date().toISOString().slice(0, 10),
                 date_echeance: "",
                 objet: "",
+                notes: "",
                 tva_active: false,
                 taux_tva: 16,
                 devise: "CDF",
-                lignes: [{ libelle: "", quantite: 1, prix_unitaire: 0 }],
+                lignes: [{ rubrique: "", libelle: "", quantite: 1, prix_unitaire: 0, produit_id: null }],
             },
             totaux: { ht: 0, tva: 0, ttc: 0 },
+            statut: "brouillon",
         };
+    },
+    computed: {
+        lectureSeule() {
+            return this.statut && this.statut !== "brouillon";
+        },
     },
     async mounted() {
         await this.bootPage(async () => {
             await this.loadMeta();
             if (this.meta?.taux_tva_defaut) this.form.taux_tva = this.meta.taux_tva_defaut;
-            await this.loadTiers();
+            await Promise.all([this.loadTiers(), this.loadProduits()]);
             if (this.form.id) await this.loadFacture();
             this.recalc();
         });
@@ -37,10 +45,15 @@ new Vue({
             const { data } = await get(`/accounting/facturation/tiers?cible=${cible}`);
             if (data.status === "success") this.tiers = data.tiers || [];
         },
+        async loadProduits() {
+            const { data } = await get("/accounting/facturation/produits/list");
+            if (data.status === "success") this.produits = data.produits || [];
+        },
         async loadFacture() {
             const { data } = await get(`/accounting/facturation/factures/${this.form.id}`);
             if (data.status !== "success") return;
             const f = data.facture;
+            this.statut = f.statut || "brouillon";
             this.form = {
                 id: f.id,
                 type_document: f.type_document,
@@ -48,10 +61,12 @@ new Vue({
                 date_facture: String(f.date_facture).slice(0, 10),
                 date_echeance: f.date_echeance ? String(f.date_echeance).slice(0, 10) : "",
                 objet: f.objet || "",
+                notes: f.notes || "",
                 tva_active: !!f.tva_active,
                 taux_tva: Number(f.taux_tva) || 16,
                 devise: f.devise || "CDF",
                 lignes: (f.lignes || []).map((l) => ({
+                    rubrique: l.rubrique || "",
                     libelle: l.libelle,
                     quantite: Number(l.quantite),
                     prix_unitaire: Number(l.prix_unitaire),
@@ -59,6 +74,27 @@ new Vue({
                     produit_id: l.produit_id,
                 })),
             };
+        },
+        prixProduit(p, devise) {
+            if (!p) return 0;
+            return devise === "USD" ? Number(p.prix_unitaire_usd) || 0 : Number(p.prix_unitaire_cdf ?? p.prix_unitaire) || 0;
+        },
+        appliquerProduit(index) {
+            const l = this.form.lignes[index];
+            const p = this.produits.find((x) => x.id === l.produit_id);
+            if (!p) return;
+            l.libelle = p.libelle;
+            l.prix_unitaire = this.prixProduit(p, this.form.devise);
+            if (p.unite && Number(l.quantite) === 1) {
+                l.quantite = 1;
+            }
+            this.recalc();
+        },
+        onDeviseChange() {
+            this.form.lignes.forEach((l, i) => {
+                if (l.produit_id) this.appliquerProduit(i);
+            });
+            this.recalc();
         },
         ligneHt(l) {
             return (Number(l.quantite) || 0) * (Number(l.prix_unitaire) || 0);
@@ -73,7 +109,7 @@ new Vue({
             this.totaux = { ht, tva, ttc: Math.round((ht + tva) * 100) / 100 };
         },
         addLigne() {
-            this.form.lignes.push({ libelle: "", quantite: 1, prix_unitaire: 0 });
+            this.form.lignes.push({ rubrique: "", libelle: "", quantite: 1, prix_unitaire: 0, produit_id: null });
         },
         async save(etValider) {
             this.isLoading = true;

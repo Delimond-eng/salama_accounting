@@ -12,6 +12,7 @@ new Vue({
             formExercice: this.emptyExercice(),
             logoPreview: null,
             logoFile: null,
+            banques: [],
         };
     },
 
@@ -34,10 +35,16 @@ new Vue({
                 email: "",
                 rccm: "",
                 num_contribuable: "",
+                identification_nationale: "",
+                num_cnps: "",
                 regime_fiscal: "",
                 devise_principale: "CDF",
                 statut: "active",
             };
+        },
+
+        emptyBanque() {
+            return { banque: "", numero_compte: "", devise: "CDF", est_defaut: false };
         },
 
         emptyExercice() {
@@ -62,6 +69,12 @@ new Vue({
                     this.exercices = data.exercices || [];
                     if (data.societe) {
                         this.formSociete = { ...data.societe };
+                        this.banques = (data.societe.banques || []).map((b) => ({
+                            banque: b.banque,
+                            numero_compte: b.numero_compte,
+                            devise: b.devise || "CDF",
+                            est_defaut: !!b.est_defaut,
+                        }));
                         this.logoPreview = data.societe.logo_url || null;
                     }
                 }
@@ -95,13 +108,31 @@ new Vue({
             this.logoFile = null;
         },
 
+        ajouterBanque() {
+            this.banques.push(this.emptyBanque());
+        },
+
+        definirBanqueDefaut(index) {
+            if (!this.banques[index]?.est_defaut) return;
+            this.banques.forEach((b, i) => {
+                if (i !== index) b.est_defaut = false;
+            });
+        },
+
         async saveSociete() {
             this.isLoading = true;
-            const { data } = await postJson("/accounting/parametres/societe/save", this.formSociete);
+            const payload = { ...this.formSociete, banques: this.banques };
+            const { data } = await postJson("/accounting/parametres/societe/save", payload);
             this.isLoading = false;
             if (!this.handleResponse(data)) return;
             if (data.societe) {
                 this.formSociete = { ...data.societe };
+                this.banques = (data.societe.banques || []).map((b) => ({
+                    banque: b.banque,
+                    numero_compte: b.numero_compte,
+                    devise: b.devise || "CDF",
+                    est_defaut: !!b.est_defaut,
+                }));
             }
             await this.loadContext();
             this.loadDetail();

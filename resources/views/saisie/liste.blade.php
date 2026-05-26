@@ -16,13 +16,13 @@
             <table class="table table-nowrap mb-0">
                 <thead class="table-light">
                     <tr>
-                        <th>Date enregistrement</th><th>PiÃ¨ce</th><th>Journal</th><th>LibellÃ©</th><th>Devise</th>
-                        <th class="text-end">DÃ©bit</th><th class="text-end">CrÃ©dit</th><th>Statut</th><th></th>
+                        <th>Date enregistrement</th><th>Pièce</th><th>Journal</th><th>Libellé</th><th>Devise</th>
+                        <th class="text-end">Débit</th><th class="text-end">Crédit</th><th>Statut</th><th></th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr v-if="isLoading"><td colspan="9" class="text-center py-4">Chargementâ€¦</td></tr>
-                    <tr v-else-if="!ecritures.length"><td colspan="9" class="text-center py-4 text-muted">Aucune Ã©criture</td></tr>
+                    <tr v-if="isLoading"><td colspan="9" class="text-center py-4">Chargement…</td></tr>
+                    <tr v-else-if="!ecritures.length"><td colspan="9" class="text-center py-4 text-muted">Aucune écriture</td></tr>
                     <tr v-for="e in ecritures" :key="e.id">
                         <td class="text-nowrap">@{{ formatDateTime(e.created_at) }}</td>
                         <td><span class="fw-medium">@{{ e.num_piece }}</span></td>

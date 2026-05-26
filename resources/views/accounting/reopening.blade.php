@@ -70,7 +70,7 @@
                         <tr>
                             <td>01/01/2024</td>
                             <td>2024</td>
-                            <td>Admin Salama</td>
+                            <td>Administrateur</td>
                             <td><span class="badge bg-success-light">Terminé</span></td>
                             <td><a href="#" class="btn btn-sm btn-outline-info">Voir détail</a></td>
                         </tr>

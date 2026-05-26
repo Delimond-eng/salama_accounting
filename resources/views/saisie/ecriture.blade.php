@@ -6,7 +6,7 @@
     </template>
     <template v-else>
     @include('saisie._nav', ['active' => $page, 'title' => $title, 'breadcrumb' => $title])
-
+    
     <div v-if="warnings.length" class="alert alert-warning alert-dismissible fade show">
         <strong>Avertissements (écriture enregistrée)</strong>
         <ul class="mb-0 mt-1">

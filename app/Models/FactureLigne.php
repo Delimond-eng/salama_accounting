@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class FactureLigne extends Model
 {
     protected $fillable = [
-        'facture_id', 'produit_id', 'ordre', 'libelle',
+        'facture_id', 'produit_id', 'ordre', 'rubrique', 'libelle',
         'quantite', 'prix_unitaire', 'montant_ht', 'compte_comptable',
     ];
 

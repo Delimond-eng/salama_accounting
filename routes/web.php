@@ -16,7 +16,7 @@ use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
-| Web Routes - SALAMA ACCOUNTING
+| Web Routes - Millenium ERP
 |--------------------------------------------------------------------------
 */
 
@@ -144,8 +144,12 @@ Route::middleware(['auth', 'accounting.permission'])->group(function () {
             Route::get('/demandes/nouvelle', [FacturationController::class, 'demandeForm'])->name('demandes.create');
             Route::get('/demandes/{id}', [FacturationController::class, 'demandeForm'])->whereNumber('id')->name('demandes.show');
             Route::get('/workflow', [FacturationController::class, 'workflow'])->name('workflow');
+            Route::get('/stock', [\App\Http\Controllers\StockController::class, 'inventaire'])->name('stock');
+            Route::get('/stock/bons-commande', [\App\Http\Controllers\StockController::class, 'bonsCommande'])->name('stock.bons-commande');
+            Route::get('/stock/mouvements', [\App\Http\Controllers\StockController::class, 'mouvements'])->name('stock.mouvements');
 
             Route::get('/metadata', [FacturationController::class, 'metadata'])->name('metadata');
+            Route::get('/comptes-tresorerie', [FacturationController::class, 'apiComptesTresorerie'])->name('comptes-tresorerie');
             Route::get('/factures', [FacturationController::class, 'apiFactures'])->name('factures.list');
             Route::get('/factures/{id}', [FacturationController::class, 'apiFactureShow'])->whereNumber('id')->name('factures.show');
             Route::post('/factures/save', [FacturationController::class, 'apiFactureSave'])->name('factures.save');
@@ -165,6 +169,14 @@ Route::middleware(['auth', 'accounting.permission'])->group(function () {
             Route::post('/demandes/{id}/traiter', [FacturationController::class, 'apiDemandeTraiter'])->whereNumber('id')->name('demandes.traiter');
             Route::get('/workflow/list', [FacturationController::class, 'apiWorkflows'])->name('workflow.list');
             Route::post('/workflow/save', [FacturationController::class, 'apiWorkflowSave'])->name('workflow.save');
+
+            Route::get('/stock/metadata', [\App\Http\Controllers\StockController::class, 'apiMetadata'])->name('stock.metadata');
+            Route::get('/stock/inventaire', [\App\Http\Controllers\StockController::class, 'apiInventaire'])->name('stock.inventaire');
+            Route::get('/stock/mouvements/list', [\App\Http\Controllers\StockController::class, 'apiMouvements'])->name('stock.mouvements.list');
+            Route::post('/stock/mouvement', [\App\Http\Controllers\StockController::class, 'apiMouvementManuel'])->name('stock.mouvement');
+            Route::get('/stock/mouvements/{id}/pdf', [\App\Http\Controllers\StockController::class, 'pdfMouvement'])->whereNumber('id')->name('stock.mouvement.pdf');
+            Route::get('/stock/bons-commande/list', [\App\Http\Controllers\StockController::class, 'apiBonsCommande'])->name('stock.bons-commande.list');
+            Route::post('/stock/bons-commande/save', [\App\Http\Controllers\StockController::class, 'apiBonCommandeSave'])->name('stock.bons-commande.save');
         });
 
         Route::prefix('fiscalite')->name('fiscalite.')->group(function () {

@@ -39,7 +39,7 @@
                                 <tr>
                                     <td><input type="checkbox" class="form-check-input"></td>
                                     <td>12/06/2024</td>
-                                    <td>FAC-001 - SALAMA</td>
+                                    <td>FAC-001 - Client démo</td>
                                     <td>1,200.00</td>
                                 </tr>
                             </tbody>
@@ -68,7 +68,7 @@
                                 <tr>
                                     <td><input type="checkbox" class="form-check-input"></td>
                                     <td>14/06/2024</td>
-                                    <td>VIR SALAMA - FAC-001</td>
+                                    <td>VIR Client - FAC-001</td>
                                     <td>1,200.00</td>
                                 </tr>
                             </tbody>

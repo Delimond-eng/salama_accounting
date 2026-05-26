@@ -24,19 +24,26 @@ class LivresComptablesService
             'devise_principale' => $societe->devise_principale ?? 'CDF',
             'devise_affichage' => $params['devise_affichage'] ?? ($societe->devise_principale ?? 'CDF'),
             'mode_conversion' => $params['mode_conversion'] ?? 'origine',
+            'scope_devise' => $params['scope_devise'] ?? 'consolide',
             'devises' => $this->devises->devisesPourAffichage(),
         ];
     }
 
-    protected function baseLignesQuery(int $societeId, int $exerciceId)
+    protected function baseLignesQuery(int $societeId, int $exerciceId, string $scopeDevise = 'consolide', ?string $deviseAffichage = null)
     {
-        return DB::table('lignes_ecritures as l')
+        $query = DB::table('lignes_ecritures as l')
             ->join('ecritures as e', 'e.id', '=', 'l.ecriture_id')
             ->leftJoin('plan_comptable as pc', 'pc.id', '=', 'l.compte_id')
             ->where('l.societe_id', $societeId)
             ->where('l.exercice_id', $exerciceId)
             ->where('e.statut', 'validee')
             ->whereNull('e.deleted_at');
+
+        if ($scopeDevise === 'natif' && $deviseAffichage) {
+            $query->where('e.devise', strtoupper($deviseAffichage));
+        }
+
+        return $query;
     }
 
     protected function convertDebitCredit(
@@ -161,12 +168,13 @@ class LivresComptablesService
         string $dateFin,
         string $deviseAffichage,
         string $modeConversion,
-        ?int $classe = null
+        ?int $classe = null,
+        string $scopeDevise = 'consolide'
     ): array {
         $societe = Societe::findOrFail($societeId);
         $this->devises->setDevisePrincipale($societe->devise_principale ?? 'CDF');
 
-        $query = $this->baseLignesQuery($societeId, $exerciceId)
+        $query = $this->baseLignesQuery($societeId, $exerciceId, $scopeDevise, $deviseAffichage)
             ->where('e.date_ecriture', '<=', $dateFin)
             ->select([
                 'l.num_compte',
@@ -201,6 +209,7 @@ class LivresComptablesService
             'totaux' => $totaux,
             'devise_affichage' => $deviseAffichage,
             'mode_conversion' => $modeConversion,
+            'scope_devise' => $scopeDevise,
         ];
     }
 
@@ -211,12 +220,13 @@ class LivresComptablesService
         string $dateFin,
         string $deviseAffichage,
         string $modeConversion,
-        ?int $journalId = null
+        ?int $journalId = null,
+        string $scopeDevise = 'consolide'
     ): Collection {
         $societe = Societe::findOrFail($societeId);
         $this->devises->setDevisePrincipale($societe->devise_principale ?? 'CDF');
 
-        $query = $this->baseLignesQuery($societeId, $exerciceId)
+        $query = $this->baseLignesQuery($societeId, $exerciceId, $scopeDevise, $deviseAffichage)
             ->join('journaux as j', 'j.id', '=', 'l.journal_id')
             ->leftJoin('tiers as t', 't.id', '=', 'l.tiers_id')
             ->whereBetween('e.date_ecriture', [$dateDebut, $dateFin])
@@ -270,14 +280,15 @@ class LivresComptablesService
         string $dateDebut,
         string $dateFin,
         string $deviseAffichage,
-        string $modeConversion
+        string $modeConversion,
+        string $scopeDevise = 'consolide'
     ): array {
         $societe = Societe::findOrFail($societeId);
         $this->devises->setDevisePrincipale($societe->devise_principale ?? 'CDF');
 
         $compte = PlanComptable::query()->parSociete($societeId)->where('num_compte', $numCompte)->first();
 
-        $lignesOuverture = $this->baseLignesQuery($societeId, $exerciceId)
+        $lignesOuverture = $this->baseLignesQuery($societeId, $exerciceId, $scopeDevise, $deviseAffichage)
             ->where('l.num_compte', $numCompte)
             ->where('e.date_ecriture', '<', $dateDebut)
             ->select(['l.debit', 'l.credit', 'e.date_ecriture', 'e.devise as devise_ecriture', 'e.taux_change'])
@@ -298,7 +309,7 @@ class LivresComptablesService
             $soldeOuv += $conv['debit'] - $conv['credit'];
         }
 
-        $mouvements = $this->baseLignesQuery($societeId, $exerciceId)
+        $mouvements = $this->baseLignesQuery($societeId, $exerciceId, $scopeDevise, $deviseAffichage)
             ->join('journaux as j', 'j.id', '=', 'l.journal_id')
             ->leftJoin('tiers as t', 't.id', '=', 'l.tiers_id')
             ->where('l.num_compte', $numCompte)
@@ -370,9 +381,10 @@ class LivresComptablesService
         string $dateDebut,
         string $dateFin,
         string $deviseAffichage,
-        string $modeConversion
+        string $modeConversion,
+        string $scopeDevise = 'consolide'
     ): array {
-        $balance = $this->balanceGenerale($societeId, $exerciceId, $dateDebut, $dateFin, $deviseAffichage, $modeConversion);
+        $balance = $this->balanceGenerale($societeId, $exerciceId, $dateDebut, $dateFin, $deviseAffichage, $modeConversion, null, $scopeDevise);
         $lignes = collect($balance['lignes'])->filter(function ($row) {
             return ($row['mouvement_debit'] ?? 0) != 0
                 || ($row['mouvement_credit'] ?? 0) != 0;

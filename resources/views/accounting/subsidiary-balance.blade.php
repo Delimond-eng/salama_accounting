@@ -97,7 +97,7 @@
                     <tbody>
                         <tr>
                             <td>CLI-001</td>
-                            <td>SALAMA DRC</td>
+                            <td>Client démo</td>
                             <td>411100</td>
                             <td>1,200.00</td>
                             <td>0.00</td>

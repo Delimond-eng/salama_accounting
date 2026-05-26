@@ -12,6 +12,7 @@ use App\Models\WorkflowEtape;
 use App\Services\DemandeFondsService;
 use App\Services\FacturationPdfService;
 use App\Services\FacturationService;
+use App\Services\LivresComptablesService;
 use App\Services\PaiementFacturationService;
 use App\Services\SaisieComptableService;
 use App\Support\SocieteContext;
@@ -27,7 +28,8 @@ class FacturationController extends Controller
         protected PaiementFacturationService $paiements,
         protected DemandeFondsService $demandes,
         protected FacturationPdfService $pdf,
-        protected SaisieComptableService $saisie
+        protected SaisieComptableService $saisie,
+        protected LivresComptablesService $livres
     ) {}
 
     public function index(): View
@@ -53,11 +55,21 @@ class FacturationController extends Controller
         ]);
     }
 
-    public function factureForm(?string $type = 'clients', ?int $id = null): View
+    public function factureForm(?int $id = null, ?string $type = 'clients'): View
     {
         $typeDoc = $type === 'fournisseurs'
             ? Facture::TYPE_ACHAT_FOURNISSEUR
             : Facture::TYPE_VENTE_CLIENT;
+
+        if ($id) {
+            $facture = Facture::parSociete(SocieteContext::requireId())->find($id);
+            if ($facture) {
+                $typeDoc = $facture->type_document;
+                $type = in_array($typeDoc, [Facture::TYPE_ACHAT_FOURNISSEUR, Facture::TYPE_AVOIR_FOURNISSEUR], true)
+                    ? 'fournisseurs'
+                    : 'clients';
+            }
+        }
 
         return view('facturation.facture-form', [
             'page' => $type,
@@ -134,12 +146,17 @@ class FacturationController extends Controller
             'exercice' => $exercice,
             'taux_tva_defaut' => config('facturation.taux_tva_defaut'),
             'comptes' => config('facturation.comptes'),
+            'comptes_tresorerie_defaut' => [
+                'banque' => config('facturation.comptes.banque'),
+                'caisse' => config('facturation.comptes.caisse'),
+            ],
             'types_document' => [
                 Facture::TYPE_VENTE_CLIENT,
                 Facture::TYPE_ACHAT_FOURNISSEUR,
                 Facture::TYPE_AVOIR_CLIENT,
                 Facture::TYPE_AVOIR_FOURNISSEUR,
             ],
+            'devises' => config('facturation.devises_autorisees', ['CDF', 'USD']),
         ]);
     }
 
@@ -153,6 +170,9 @@ class FacturationController extends Controller
         }
         if ($statut = $request->get('statut')) {
             $q->where('statut', $statut);
+        }
+        if ($devise = $request->get('devise')) {
+            $q->where('devise', strtoupper($devise));
         }
         if ($search = trim((string) $request->get('search', ''))) {
             $q->where(fn ($s) => $s->where('numero', 'like', "%{$search}%")
@@ -183,10 +203,12 @@ class FacturationController extends Controller
                 'objet' => 'nullable|string',
                 'tva_active' => 'boolean',
                 'taux_tva' => 'nullable|numeric',
-                'devise' => 'nullable|string|size:3',
+                'devise' => 'nullable|string|in:CDF,USD',
                 'facture_origine_id' => 'nullable|integer',
                 'notes' => 'nullable|string',
                 'lignes' => 'required|array|min:1',
+                'notes' => 'nullable|string',
+                'lignes.*.rubrique' => 'nullable|string|max:120',
                 'lignes.*.libelle' => 'required|string',
                 'lignes.*.quantite' => 'nullable|numeric',
                 'lignes.*.prix_unitaire' => 'nullable|numeric',
@@ -255,19 +277,41 @@ class FacturationController extends Controller
             'id' => 'nullable|integer',
             'code' => 'nullable|string|max:40',
             'libelle' => 'required|string',
-            'prix_unitaire' => 'nullable|numeric',
-            'compte_vente' => 'nullable|string',
-            'compte_achat' => 'nullable|string',
+            'type_article' => 'nullable|in:produit,service',
+            'unite' => 'nullable|string|max:20',
+            'prix_unitaire_cdf' => 'nullable|numeric',
+            'prix_unitaire_usd' => 'nullable|numeric',
+            'gestion_stock' => 'boolean',
+            'stock_minimum' => 'nullable|numeric',
         ]);
 
         $produit = isset($data['id'])
             ? Produit::parSociete($societeId)->findOrFail($data['id'])
             : new Produit(['societe_id' => $societeId]);
 
-        $produit->fill($data);
+        $cdf = (float) ($data['prix_unitaire_cdf'] ?? 0);
+        $usd = (float) ($data['prix_unitaire_usd'] ?? 0);
+        $gestionStock = ($data['type_article'] ?? 'produit') === 'produit' && ($data['gestion_stock'] ?? false);
+
+        $produit->fill(array_merge($data, [
+            'prix_unitaire' => $cdf,
+            'prix_unitaire_cdf' => $cdf,
+            'prix_unitaire_usd' => $usd,
+            'gestion_stock' => $gestionStock,
+            'compte_vente' => config('facturation.comptes.vente'),
+            'compte_achat' => config('facturation.comptes.achat'),
+        ]));
         $produit->save();
 
         return response()->json(['status' => 'success', 'produit' => $produit]);
+    }
+
+    public function apiComptesTresorerie(Request $request): JsonResponse
+    {
+        $type = $request->validate(['type' => 'required|in:banque,caisse'])['type'];
+        $comptes = $this->livres->comptesTresorerie(SocieteContext::requireId(), $type);
+
+        return response()->json(['status' => 'success', 'comptes' => $comptes]);
     }
 
     public function apiTiers(Request $request): JsonResponse
@@ -361,7 +405,7 @@ class FacturationController extends Controller
         try {
             $data = $request->validate([
                 'montant' => 'required|numeric|min:0.01',
-                'devise' => 'nullable|string|size:3',
+                'devise' => 'nullable|string|in:CDF,USD',
                 'motif' => 'required|string',
                 'journal_id' => 'nullable|integer',
                 'workflow_definition_id' => 'nullable|integer',

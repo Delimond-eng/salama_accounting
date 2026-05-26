@@ -41,6 +41,6 @@
         @endforeach
         </tbody>
     </table>
-    <div class="footer">SALAMA Accounting</div>
+    <div class="footer">{{ config('brand.name', 'Millenium ERP') }}</div>
 </body>
 </html>

@@ -95,6 +95,7 @@ class FacturationService
                     'facture_id' => $facture->id,
                     'produit_id' => $l['produit_id'] ?? null,
                     'ordre' => $i + 1,
+                    'rubrique' => $l['rubrique'] ?? null,
                     'libelle' => $l['libelle'],
                     'quantite' => $q,
                     'prix_unitaire' => $pu,

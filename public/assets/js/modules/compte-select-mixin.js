@@ -1,4 +1,4 @@
-import { get } from "./http.js";
+import {get } from "./http.js";
 
 const SEARCH_URL = "/accounting/saisie/comptes/search";
 
@@ -35,15 +35,15 @@ export const compteSelectMixin = {
 
         getCompteNumero(key) {
             if (key === "journal_cp") {
-                return this.form?.compte_contrepartie || "";
+                return this.form ? .compte_contrepartie || "";
             }
             if (key === "tiers_collectif") {
-                return this.form?.num_compte_collectif || "";
+                return this.form ? .num_compte_collectif || "";
             }
             if (key === "gl_compte" || key === "lettrage_compte") {
                 return this.numCompte || "";
             }
-            if (typeof key === "number" && this.lignes?.[key]) {
+            if (typeof key === "number" && this.lignes ? .[key]) {
                 return this.lignes[key].num_compte || "";
             }
             return "";
@@ -56,7 +56,7 @@ export const compteSelectMixin = {
                 this.form.num_compte_collectif = numCompte;
             } else if (key === "gl_compte" || key === "lettrage_compte") {
                 this.numCompte = numCompte;
-            } else if (typeof key === "number" && this.lignes?.[key]) {
+            } else if (typeof key === "number" && this.lignes ? .[key]) {
                 this.lignes[key].num_compte = numCompte;
             }
             if (numCompte && libelle) {
@@ -94,7 +94,7 @@ export const compteSelectMixin = {
             ui.loading = true;
 
             clearTimeout(ui._timer);
-            ui._timer = setTimeout(async () => {
+            ui._timer = setTimeout(async() => {
                 try {
                     ui.results = await this.searchComptes(ui.query);
                 } finally {
@@ -134,7 +134,7 @@ export const compteSelectMixin = {
 
         selectCompteOption(key, compte) {
             this.setCompteNumero(key, compte.num_compte, compte.libelle);
-            if (typeof key === "number" && this.lignes?.[key] && compte.est_compte_tiers) {
+            if (typeof key === "number" && this.lignes ? .[key] && compte.est_compte_tiers) {
                 // suggère un tiers si besoin — pas de changement auto
             }
         },

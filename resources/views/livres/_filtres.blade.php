@@ -32,16 +32,24 @@
                     </select>
                 </div>
                 <div class="col-md-2">
-                    <label class="form-label">Devise affichage</label>
+                    <label class="form-label">Devise</label>
                     <select class="form-select" v-model="filtres.devise_affichage" @change="onFiltreChange">
-                        <option v-for="d in options.devises" :key="d.code_iso" :value="d.code_iso">@{{ d.code_iso }} &mdash; @{{ d.libelle }}</option>
+                        <option value="CDF">CDF — Franc congolais</option>
+                        <option value="USD">USD — Dollar</option>
                     </select>
                 </div>
                 <div class="col-md-2">
-                    <label class="form-label">Conversion</label>
+                    <label class="form-label">Présentation</label>
+                    <select class="form-select" v-model="filtres.scope_devise" @change="onFiltreChange">
+                        <option value="natif">Native (@{{ filtres.devise_affichage }})</option>
+                        <option value="consolide">Consolidée</option>
+                    </select>
+                </div>
+                <div class="col-md-2" v-if="filtres.scope_devise==='consolide'">
+                    <label class="form-label">Taux</label>
                     <select class="form-select" v-model="filtres.mode_conversion" @change="onFiltreChange">
-                        <option value="origine">Taux d'origine (a la saisie)</option>
-                        <option value="actuel">Taux actuel / du jour</option>
+                        <option value="origine">Taux d'origine</option>
+                        <option value="actuel">Taux actuel</option>
                     </select>
                 </div>
                 <div class="col-md-2">
@@ -64,7 +72,7 @@
             <div class="row mt-2" v-if="exercice">
                 <div class="col-12">
                     <span class="badge badge-soft-info me-1">@{{ exercice.libelle }}</span>
-                    <span class="badge badge-soft-primary">Montants affiches en @{{ filtres.devise_affichage }}</span>
+                    <span class="badge badge-soft-primary">@{{ filtres.scope_devise === 'natif' ? 'Écritures ' + filtres.devise_affichage : 'Consolidé ' + filtres.devise_affichage }}</span>
                 </div>
             </div>
         </div>

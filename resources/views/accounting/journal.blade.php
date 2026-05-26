@@ -153,7 +153,7 @@
                             <td>FAC-001</td>
                             <td>Ventes (VT)</td>
                             <td>411100 - Clients</td>
-                            <td>Facture Client - SALAMA</td>
+                            <td>Facture Client - Client démo</td>
                             <td>1,200.00</td>
                             <td>0.00</td>
                             <td class="action-table-data">

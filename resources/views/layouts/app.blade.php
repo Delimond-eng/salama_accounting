@@ -3,16 +3,17 @@
 <head>
 
 	<!-- Meta Tags -->
-	<meta charset="utf-8">
+	<meta charset="UTF-8">
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>Dashboard | SALAMA ACCOUNTING</title>
+	<title>Dashboard | {{ $appBrand ?? 'Millenium ERP' }}</title>
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 	<meta name="description"
 		content="Application de comptabilité sur mesure.">
 	<meta name="keywords"
 		content="Comptabilité, accounting">
-	<meta name="author" content="SALAMA DRC">
+	<meta name="author" content="{{ $appBrand ?? 'Millenium ERP' }}">
 	<meta name="robots" content="index, follow">
 
 	<!-- Favicon -->
@@ -86,7 +87,7 @@
 			<footer class="footer d-block d-md-flex justify-content-between text-md-start text-center">
 				<p class="mb-md-0 mb-1">Copyright &copy;
 					<script>document.write(new Date().getFullYear())</script> <a href="javascript:void(0);"
-						class="link-primary text-decoration-underline">SALAMA ACCOUNTING</a>
+						class="link-primary text-decoration-underline">{{ $appBrand ?? 'Millenium ERP' }}</a>
 				</p>
 				<div class="d-flex align-items-center gap-2 footer-links justify-content-center justify-content-md-end">
 					<a href="javascript:void(0);">About</a>

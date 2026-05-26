@@ -35,7 +35,8 @@ class BilanComptableService
         Exercice $exercice,
         string $dateFin,
         string $deviseAffichage = 'CDF',
-        string $modeConversion = 'origine'
+        string $modeConversion = 'origine',
+        string $scopeDevise = 'consolide'
     ): Collection {
         $balance = $this->livres->balanceGenerale(
             $societeId,
@@ -43,7 +44,9 @@ class BilanComptableService
             $exercice->date_debut->format('Y-m-d'),
             $dateFin,
             $deviseAffichage,
-            $modeConversion
+            $modeConversion,
+            null,
+            $scopeDevise
         );
 
         $comptesMeta = PlanComptable::query()
@@ -91,15 +94,22 @@ class BilanComptableService
         Exercice $exercice,
         string $dateFin,
         string $deviseAffichage = 'CDF',
-        string $modeConversion = 'origine'
+        string $modeConversion = 'origine',
+        string $scopeDevise = 'consolide'
     ): float {
-        $rows = DB::table('lignes_ecritures as l')
+        $query = DB::table('lignes_ecritures as l')
             ->join('ecritures as e', 'e.id', '=', 'l.ecriture_id')
             ->where('l.societe_id', $societeId)
             ->where('l.exercice_id', $exercice->id)
             ->where('e.statut', 'validee')
             ->whereNull('e.deleted_at')
-            ->whereBetween('e.date_ecriture', [$exercice->date_debut->format('Y-m-d'), $dateFin])
+            ->whereBetween('e.date_ecriture', [$exercice->date_debut->format('Y-m-d'), $dateFin]);
+
+        if ($scopeDevise === 'natif') {
+            $query->where('e.devise', strtoupper($deviseAffichage));
+        }
+
+        $rows = $query
             ->where(function ($q): void {
                 $q->where('l.num_compte', 'like', '6%')
                     ->orWhere('l.num_compte', 'like', '7%');
@@ -602,10 +612,11 @@ class BilanComptableService
         Exercice $exercice,
         string $dateArrete,
         string $deviseAffichage = 'CDF',
-        string $modeConversion = 'origine'
+        string $modeConversion = 'origine',
+        string $scopeDevise = 'consolide'
     ): array {
-        $soldes = $this->getAccountBalances($societeId, $exercice, $dateArrete, $deviseAffichage, $modeConversion);
-        $resultatNet = $this->resultatNetExercice($societeId, $exercice, $dateArrete, $deviseAffichage, $modeConversion);
+        $soldes = $this->getAccountBalances($societeId, $exercice, $dateArrete, $deviseAffichage, $modeConversion, $scopeDevise);
+        $resultatNet = $this->resultatNetExercice($societeId, $exercice, $dateArrete, $deviseAffichage, $modeConversion, $scopeDevise);
 
         $assignations = $this->classerComptes($soldes);
         $assignations = $this->injecterResultatExercice($assignations, $resultatNet);

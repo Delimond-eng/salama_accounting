@@ -5,8 +5,11 @@
         ['key' => 'avoirs-clients', 'route' => 'accounting.facturation.avoirs-clients', 'label' => 'Avoirs clients', 'icon' => 'ti-receipt-refund'],
         ['key' => 'paiements', 'route' => 'accounting.facturation.paiements', 'label' => 'Paiements', 'icon' => 'ti-cash'],
         ['key' => 'demandes', 'route' => 'accounting.facturation.demandes', 'label' => 'Demandes de fonds', 'icon' => 'ti-git-pull-request'],
-        ['key' => 'echeancier-clients', 'route' => 'accounting.facturation.echeancier-clients', 'label' => 'Ã‰chÃ©ancier clients', 'icon' => 'ti-calendar-due'],
+        ['key' => 'echeancier-clients', 'route' => 'accounting.facturation.echeancier-clients', 'label' => 'Échéancier clients', 'icon' => 'ti-calendar-due'],
         ['key' => 'produits', 'route' => 'accounting.facturation.produits', 'label' => 'Produits', 'icon' => 'ti-package'],
+        ['key' => 'stock', 'route' => 'accounting.facturation.stock', 'label' => 'Stock', 'icon' => 'ti-box'],
+        ['key' => 'bons-commande', 'route' => 'accounting.facturation.stock.bons-commande', 'label' => 'Bons de commande', 'icon' => 'ti-shopping-cart'],
+        ['key' => 'mouvements', 'route' => 'accounting.facturation.stock.mouvements', 'label' => 'Mouvements', 'icon' => 'ti-arrows-exchange'],
     ];
 @endphp
 <div class="d-flex align-items-center justify-content-between gap-2 mb-4 flex-wrap">
@@ -30,4 +33,3 @@
     </li>
     @endforeach
 </ul>
-
