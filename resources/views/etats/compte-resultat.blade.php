@@ -5,30 +5,84 @@
     <template v-else>
     @include('etats._nav', ['active' => $page, 'title' => $title, 'breadcrumb' => $title])
     @include('etats._filtres')
-    <div class="card border-0 rounded-0" v-if="data">
-        <div class="card-header d-flex justify-content-between">
-            <h5 class="mb-0">@{{ data.titre }}<br><small class="text-muted fw-normal">@{{ data.periode }}</small></h5>
+    <div class="card border-0 shadow-sm" v-if="data">
+        <div class="card-header bg-white border-bottom-0 pt-4 px-4 d-flex justify-content-between align-items-center">
+            <div>
+                <h4 class="mb-0 text-primary fw-bold">@{{ data.titre }}</h4>
+                <p class="text-muted mb-0 small"><i class="ti ti-calendar-event me-1"></i>@{{ data.periode }}</p>
+            </div>
+            <div class="text-end">
+                <span class="badge bg-soft-info text-info fs-13 px-3 py-2">@{{ data.devise || 'CDF' }}</span>
+            </div>
         </div>
         <div class="card-body p-0">
-            <table class="table table-bordered table-sm mb-0">
-                <thead class="table-light">
-                    <tr><th>Réf</th><th>Libellés</th><th>Note</th><th class="text-end">@{{ data.exercice_n }}</th><th class="text-end" v-if="filtres.avec_n1">@{{ data.exercice_n1 || 'N-1' }}</th></tr>
-                </thead>
-                <tbody>
-                    <tr v-for="(l,i) in data.lignes" :key="i" :class="l.type === 'formule' ? 'bg-primary text-white fw-bold' : (isTitre(l) ? 'bg-light fw-bold text-uppercase' : '')">
-                        <td>@{{ l.ref || '' }}</td>
-                        <td>@{{ l.libelle }}</td>
-                        <td class="text-center">@{{ l.note || '' }}</td>
-                        <td class="text-end">@{{ fmt(l.montant_n) }}</td>
-                        <td class="text-end" :class="l.type === 'formule' ? 'text-white' : 'text-muted'" v-if="filtres.avec_n1">@{{ fmt(l.montant_n1) }}</td>
-                    </tr>
-                </tbody>
-            </table>
+            <div class="table-responsive">
+                <table class="table table-hover table-bordered table-etats mb-0">
+                    <thead>
+                        <tr>
+                            <th style="width: 80px">Réf</th>
+                            <th>Libellés</th>
+                            <th class="text-center" style="width: 60px">Note</th>
+                            <th class="text-end" style="width: 180px">@{{ data.exercice_n }}</th>
+                            <th class="text-end" style="width: 180px" v-if="filtres.avec_n1">@{{ data.exercice_n1 || 'N-1' }}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="(l,i) in data.lignes" :key="i" :class="rowClass(l)">
+                            <td class="text-muted fs-12">@{{ l.ref || '' }}</td>
+                            <td :class="{'ps-4': !isTitre(l) && !isTotal(l)}">@{{ l.libelle }}</td>
+                            <td class="text-center text-muted">@{{ l.note || '' }}</td>
+                            <td class="text-end fw-semibold">@{{ fmt(l.montant_n) }}</td>
+                            <td class="text-end text-muted" v-if="filtres.avec_n1">@{{ fmt(l.montant_n1) }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
     </template>
 </div>
 @endsection
+
+@push('styles')
+<style>
+    .table-etats thead th {
+        background-color: #f8f9fa;
+        text-transform: uppercase;
+        font-size: 11px;
+        letter-spacing: 0.5px;
+        font-weight: 700;
+        padding: 12px 15px;
+        border-bottom: 2px solid #dee2e6;
+        color: #475569;
+    }
+    .table-etats tbody td {
+        padding: 10px 15px;
+        vertical-align: middle;
+        border-bottom: 1px solid #f1f5f9;
+        font-size: 13.5px;
+    }
+    .row-titre td {
+        background-color: #f8fafc !important;
+        color: #1e293b !important;
+        font-weight: 700 !important;
+        border-top: 1px solid #e2e8f0 !important;
+    }
+    .row-formule td {
+        background-color: #f0f7ff !important;
+        color: #0d6efd !important;
+        border-top: 2px solid #0d6efd !important;
+        border-bottom: 2px solid #0d6efd !important;
+        border-left: none !important;
+        border-right: none !important;
+        font-weight: 700 !important;
+    }
+    .table-hover tbody tr.row-formule:hover td {
+        background-color: #e0efff !important;
+    }
+</style>
+@endpush
+
 @push('scripts')
 <script>window.__ETATS_PAGE__ = @json($page);</script>
 <script type="module" src="{{ asset('assets/js/scripts/etats/compte-resultat.js') }}"></script>

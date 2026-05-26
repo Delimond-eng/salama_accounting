@@ -6,10 +6,10 @@ new Vue({
     data() {
         return {
             exports: [
-                { type: "bilan", label: "Bilan actif/passif", desc: "Export Excel/CSV du bilan SYSCOHADA.", icon: "ti-columns", color: "primary" },
-                { type: "compte-resultat", label: "Compte de résultat", desc: "Charges, produits et soldes intermédiaires.", icon: "ti-chart-bar", color: "success" },
-                { type: "flux-tresorerie", label: "Flux de trésorerie", desc: "Tableau des flux par activité.", icon: "ti-arrows-shuffle", color: "info" },
-                { type: "variation-kp", label: "Variation capitaux propres", desc: "Mouvements des capitaux propres.", icon: "ti-trending-up", color: "warning" },
+                { type: "bilan", ref: "BI", label: "Bilan actif/passif", desc: "Export Excel/CSV du bilan SYSCOHADA.", icon: "ti-columns", color: "primary" },
+                { type: "compte-resultat", ref: "CR", label: "Compte de résultat", desc: "Charges, produits et soldes intermédiaires.", icon: "ti-chart-bar", color: "success" },
+                { type: "flux-tresorerie", ref: "TFT", label: "Flux de trésorerie", desc: "Tableau des flux par activité.", icon: "ti-arrows-shuffle", color: "info" },
+                { type: "variation-kp", ref: "TVCP", label: "Variation capitaux propres", desc: "Mouvements des capitaux propres.", icon: "ti-trending-up", color: "warning" },
             ],
         };
     },

@@ -34,4 +34,19 @@ class HomeController extends Controller
             ], 500);
         }
     }
+
+    public function notifications(): JsonResponse
+    {
+        try {
+            $societeId = SocieteContext::requireId();
+            $payload = $this->dashboard->assembler($societeId);
+
+            return response()->json([
+                'status' => 'success',
+                'alertes' => $payload['alertes'] ?? ['items' => [], 'count' => 0]
+            ]);
+        } catch (\Throwable $e) {
+            return response()->json(['status' => 'error', 'message' => $e->getMessage()], 500);
+        }
+    }
 }

@@ -17,6 +17,7 @@
 
 	<!-- Favicon -->
 	<link rel="shortcut icon" href="{{ asset('assets/img/icon.png') }}">
+    <link rel="icon" href="{{ asset('assets/img/icon.png') }}">
 
 	<!-- Apple Icon -->
 	<link rel="apple-touch-icon" href="{{ asset('assets/img/icon.png') }}">

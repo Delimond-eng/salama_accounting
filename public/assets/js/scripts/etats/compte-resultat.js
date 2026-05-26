@@ -11,7 +11,9 @@ new Vue({
         async loadData() {
             this.isLoading = true;
             try {
-                const { data } = await get(`/accounting/etats/compte-resultat/data?${this.queryParams()}`);
+                const { data } = await get(
+                    `/accounting/etats/compte-resultat/data?${this.queryParams()}`,
+                );
                 if (!this.handleResponse(data)) return;
                 this.data = data.data;
             } finally {

@@ -26,6 +26,7 @@ Route::middleware(['auth', 'accounting.permission'])->group(function () {
     // Dashboard
     Route::get('/', [HomeController::class, 'index'])->name('dashboard');
     Route::get('/dashboard/data', [HomeController::class, 'data'])->name('dashboard.data');
+    Route::get('/accounting/notifications', [HomeController::class, 'notifications'])->name('accounting.notifications');
 
     // Accounting Routes
     Route::prefix('accounting')->name('accounting.')->group(function () {

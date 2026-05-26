@@ -124,13 +124,19 @@ class DashboardComptableService
         $items = [];
 
         foreach ($kpis['journaux']['desequilibrees'] ?? [] as $e) {
-            $items[] = ['niveau' => 'danger', 'titre' => 'Écriture déséquilibrée', 'detail' => $e['libelle']];
+            $items[] = [
+                'niveau' => 'danger',
+                'titre' => 'Écriture déséquilibrée',
+                'detail' => $e['libelle'],
+                'url' => route('accounting.saisie.nouvelle')
+            ];
         }
         if (($kpis['journaux']['brouillons_od'] ?? 0) > 0) {
             $items[] = [
                 'niveau' => 'warning',
                 'titre' => 'OD non validées',
                 'detail' => $kpis['journaux']['brouillons_od'].' écriture(s) en brouillon (journal OD).',
+                'url' => route('accounting.saisie.od', ['statut' => 'brouillon'])
             ];
         }
         if (($kpis['journaux']['brouillons_total'] ?? 0) > 0) {
@@ -138,31 +144,72 @@ class DashboardComptableService
                 'niveau' => 'info',
                 'titre' => 'Brouillons en attente',
                 'detail' => $kpis['journaux']['brouillons_total'].' écriture(s) à valider.',
+                'url' => route('accounting.saisie.nouvelle', ['statut' => 'brouillon'])
             ];
         }
         foreach ($controles['comptes_anormaux']['items'] ?? [] as $a) {
-            $items[] = ['niveau' => 'warning', 'titre' => 'Compte anormal', 'detail' => $a];
+            $items[] = [
+                'niveau' => 'warning',
+                'titre' => 'Compte anormal',
+                'detail' => $a,
+                'url' => route('accounting.livres.balance')
+            ];
         }
         foreach ($controles['journal']['items'] ?? [] as $j) {
-            $items[] = ['niveau' => 'warning', 'titre' => 'Contrôle journal', 'detail' => $j];
+            $items[] = [
+                'niveau' => 'warning',
+                'titre' => 'Contrôle journal',
+                'detail' => $j,
+                'url' => route('accounting.livres.journal')
+            ];
         }
         if (! ($controles['balance']['ok'] ?? true)) {
-            $items[] = ['niveau' => 'danger', 'titre' => 'Balance déséquilibrée', 'detail' => $controles['balance']['message']];
+            $items[] = [
+                'niveau' => 'danger',
+                'titre' => 'Balance déséquilibrée',
+                'detail' => $controles['balance']['message'],
+                'url' => route('accounting.livres.balance')
+            ];
         }
         if (! ($controles['bilan']['ok'] ?? true)) {
-            $items[] = ['niveau' => 'danger', 'titre' => 'Bilan déséquilibré', 'detail' => $controles['bilan']['message']];
+            $items[] = [
+                'niveau' => 'danger',
+                'titre' => 'Bilan déséquilibré',
+                'detail' => $controles['bilan']['message'],
+                'url' => route('accounting.etats.bilan')
+            ];
         }
         if (! ($controles['tft']['ok'] ?? true)) {
-            $items[] = ['niveau' => 'warning', 'titre' => 'Contrôle TFT', 'detail' => $controles['tft']['message']];
+            $items[] = [
+                'niveau' => 'warning',
+                'titre' => 'Contrôle TFT',
+                'detail' => $controles['tft']['message'],
+                'url' => route('accounting.etats.flux-tresorerie')
+            ];
         }
         if (($kpis['tresorerie']['caisse'] ?? 0) < 0) {
-            $items[] = ['niveau' => 'danger', 'titre' => 'Caisse négative', 'detail' => 'Le solde caisse (571) est débiteur en trésorerie.'];
+            $items[] = [
+                'niveau' => 'danger',
+                'titre' => 'Caisse négative',
+                'detail' => 'Le solde caisse (571) est débiteur en trésorerie.',
+                'url' => route('accounting.livres.caisse')
+            ];
         }
         if (($kpis['tresorerie']['banque'] ?? 0) < 0) {
-            $items[] = ['niveau' => 'danger', 'titre' => 'Banque négative', 'detail' => 'Découvert bancaire détecté sur les comptes 52x.'];
+            $items[] = [
+                'niveau' => 'danger',
+                'titre' => 'Banque négative',
+                'detail' => 'Découvert bancaire détecté sur les comptes 52x.',
+                'url' => route('accounting.livres.banque')
+            ];
         }
         if (($devises['taux_manquant'] ?? false)) {
-            $items[] = ['niveau' => 'info', 'titre' => 'Taux de change', 'detail' => 'Taux USD/CDF du jour non renseigné.'];
+            $items[] = [
+                'niveau' => 'info',
+                'titre' => 'Taux de change',
+                'detail' => 'Taux USD/CDF du jour non renseigné.',
+                'url' => route('accounting.parametres.devises')
+            ];
         }
 
         return ['items' => $items, 'count' => count($items)];
@@ -177,7 +224,7 @@ class DashboardComptableService
             ->where('statut', 'validee')
             ->orderByDesc('date_ecriture')
             ->orderByDesc('created_at')
-            ->limit(12)
+            ->limit(10)
             ->get(['id', 'journal_id', 'num_piece', 'date_ecriture', 'libelle', 'total_debit', 'total_credit', 'devise'])
             ->map(fn ($e) => [
                 'date' => $e->date_ecriture->format('d/m/Y'),
@@ -220,7 +267,6 @@ class DashboardComptableService
                 'est_courant' => $e->est_courant,
                 'date_debut' => $e->date_debut->format('d/m/Y'),
                 'date_fin' => $e->date_fin->format('d/m/Y'),
-                'date_cloture' => $e->date_cloture?->format('d/m/Y'),
             ])
             ->all();
     }
@@ -279,14 +325,24 @@ class DashboardComptableService
     protected function liensRapides(): array
     {
         return [
-            ['label' => 'Journal général', 'route' => 'accounting.livres.journal', 'icon' => 'ti-notebook', 'color' => 'primary'],
-            ['label' => 'Grand livre', 'route' => 'accounting.livres.grand-livre', 'icon' => 'ti-book-2', 'color' => 'info'],
-            ['label' => 'Balance', 'route' => 'accounting.livres.balance', 'icon' => 'ti-scale', 'color' => 'secondary'],
-            ['label' => 'Balance auxiliaire', 'route' => 'accounting.livres.auxiliaire', 'icon' => 'ti-scale-outline', 'color' => 'secondary'],
-            ['label' => 'Bilan', 'route' => 'accounting.etats.bilan', 'icon' => 'ti-report-money', 'color' => 'success'],
-            ['label' => 'Compte de résultat', 'route' => 'accounting.etats.compte-resultat', 'icon' => 'ti-chart-bar', 'color' => 'success'],
-            ['label' => 'TFT', 'route' => 'accounting.etats.flux-tresorerie', 'icon' => 'ti-arrows-shuffle', 'color' => 'warning'],
-            ['label' => 'Exports', 'route' => 'accounting.etats.exports', 'icon' => 'ti-download', 'color' => 'dark'],
+            'Saisie & Opérations' => [
+                ['label' => 'Nouvelle écriture', 'route' => 'accounting.saisie.nouvelle', 'icon' => 'ti-plus', 'color' => 'primary'],
+                ['label' => 'Saisie Ventes', 'route' => 'accounting.saisie.ventes', 'icon' => 'ti-shopping-cart', 'color' => 'success'],
+                ['label' => 'Saisie Caisse', 'route' => 'accounting.saisie.caisse', 'icon' => 'ti-wallet', 'color' => 'info'],
+                ['label' => 'Import Relevé', 'route' => 'accounting.saisie.import-releve', 'icon' => 'ti-file-import', 'color' => 'secondary'],
+            ],
+            'Consultation & Livres' => [
+                ['label' => 'Journal général', 'route' => 'accounting.livres.journal', 'icon' => 'ti-notebook', 'color' => 'primary'],
+                ['label' => 'Grand livre', 'route' => 'accounting.livres.grand-livre', 'icon' => 'ti-book-2', 'color' => 'info'],
+                ['label' => 'Balance générale', 'route' => 'accounting.livres.balance', 'icon' => 'ti-scale', 'color' => 'secondary'],
+                ['label' => 'Lettrage', 'route' => 'accounting.livres.lettrage', 'icon' => 'ti-checkup-list', 'color' => 'warning'],
+            ],
+            'États & Rapports' => [
+                ['label' => 'Bilan', 'route' => 'accounting.etats.bilan', 'icon' => 'ti-report-money', 'color' => 'success'],
+                ['label' => 'Compte de résultat', 'route' => 'accounting.etats.compte-resultat', 'icon' => 'ti-chart-bar', 'color' => 'success'],
+                ['label' => 'Tableau de flux', 'route' => 'accounting.etats.flux-tresorerie', 'icon' => 'ti-arrows-shuffle', 'color' => 'warning'],
+                ['label' => 'Exports fiscaux', 'route' => 'accounting.etats.exports', 'icon' => 'ti-download', 'color' => 'dark'],
+            ]
         ];
     }
 
@@ -351,7 +407,7 @@ class DashboardComptableService
             ->where('exercice_id', $exerciceId)
             ->whereIn('statut', ['validee', 'brouillon'])
             ->whereRaw('ABS(total_debit - total_credit) >= 0.01')
-            ->limit(10)
+            ->limit(5)
             ->get(['num_piece', 'libelle', 'total_debit', 'total_credit'])
             ->map(fn ($e) => [
                 'libelle' => $e->num_piece.' — '.$e->libelle.' (Δ '.number_format(abs($e->total_debit - $e->total_credit), 2).')',
@@ -397,7 +453,7 @@ class DashboardComptableService
             'total_debit' => $d,
             'total_credit' => $c,
             'ecart' => round($d - $c, 2),
-            'message' => $ok ? 'Total débit = total crédit.' : 'Écart de '.number_format(abs($d - $c), 2).' sur la période.',
+            'message' => $ok ? 'Équilibrée.' : 'Écart de '.number_format(abs($d - $c), 2),
         ];
     }
 
@@ -406,7 +462,7 @@ class DashboardComptableService
         try {
             $this->bilan->generer($societeId, $exercice, $dateFin, $devise, $mode);
 
-            return ['ok' => true, 'message' => 'Actif = Passif (bilan équilibré).'];
+            return ['ok' => true, 'message' => 'Actif = Passif.'];
         } catch (BilanDesequilibreException $e) {
             return ['ok' => false, 'message' => $e->getMessage()];
         }
@@ -420,9 +476,7 @@ class DashboardComptableService
 
             return [
                 'ok' => $ok,
-                'message' => $ok
-                    ? 'ZH ≈ variation trésorerie (521+571).'
-                    : 'Écart TFT : '.number_format(abs($tft['controle']['ecart_controle'] ?? 0), 2),
+                'message' => $ok ? 'TFT valide.' : 'Écart TFT détecté.',
                 'detail' => $tft['controle'] ?? null,
             ];
         } catch (\Throwable $e) {
@@ -450,17 +504,17 @@ class DashboardComptableService
                 continue;
             }
             if (str_starts_with($num, '401') && $net > 0) {
-                $items[] = "Compte {$num} débiteur (".number_format($net, 2).') — fournisseur anormal.';
+                $items[] = "{$num} débiteur (".number_format($net, 0).')';
             }
             if (str_starts_with($num, '411') && $net < 0) {
-                $items[] = "Compte {$num} créditeur (".number_format(abs($net), 2).') — client anormal.';
+                $items[] = "{$num} créditeur (".number_format(abs($net), 0).')';
             }
             if ((str_starts_with($num, '521') || str_starts_with($num, '571')) && $net < 0) {
-                $items[] = "Trésorerie {$num} négative (".number_format(abs($net), 2).').';
+                $items[] = "{$num} négative (".number_format(abs($net), 0).')';
             }
         }
 
-        return ['items' => array_slice($items, 0, 8), 'count' => count($items)];
+        return ['items' => array_slice($items, 0, 5), 'count' => count($items)];
     }
 
     protected function controleJournaux(int $societeId, int $exerciceId): array
@@ -475,11 +529,11 @@ class DashboardComptableService
             ->select('num_piece', DB::raw('COUNT(*) as n'))
             ->groupBy('num_piece')
             ->having('n', '>', 1)
-            ->limit(5)
+            ->limit(3)
             ->get();
 
         foreach ($doublons as $d) {
-            $items[] = "Pièce dupliquée : {$d->num_piece} ({$d->n} fois).";
+            $items[] = "Doublon : {$d->num_piece}";
         }
 
         $ex = Exercice::find($exerciceId);
@@ -495,7 +549,7 @@ class DashboardComptableService
             : 0;
 
         if ($horsExercice > 0) {
-            $items[] = "{$horsExercice} écriture(s) avec date hors période d'exercice.";
+            $items[] = "{$horsExercice} hors période.";
         }
 
         return ['items' => $items, 'count' => count($items)];

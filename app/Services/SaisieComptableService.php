@@ -23,13 +23,14 @@ class SaisieComptableService
     ) {
     }
     public const PAGES = [
-        'nouvelle' => ['code' => null, 'type' => null, 'title' => 'Nouvelle écriture', 'icon' => 'ti-file-plus'],
+        'nouvelle' => ['code' => null, 'type' => null, 'title' => 'Toutes les écritures', 'icon' => 'ti-file-plus'],
         'achats' => ['code' => 'HA', 'type' => 'achats', 'title' => 'Journal des achats', 'icon' => 'ti-shopping-cart'],
         'ventes' => ['code' => 'VT', 'type' => 'ventes', 'title' => 'Journal des ventes', 'icon' => 'ti-receipt'],
         'banque' => ['code' => 'BQ', 'type' => 'banque', 'title' => 'Journal de banque', 'icon' => 'ti-building-bank'],
         'caisse' => ['code' => 'CA', 'type' => 'caisse', 'title' => 'Journal de caisse', 'icon' => 'ti-cash'],
         'od' => ['code' => 'OD', 'type' => 'operations_diverses', 'title' => 'Opérations diverses', 'icon' => 'ti-adjustments'],
         'devises' => ['code' => null, 'type' => null, 'title' => 'Écritures en devises', 'icon' => 'ti-currency-dollar', 'multi_devise' => true],
+        'import' => ['code' => null, 'type' => null, 'title' => 'Import de relevés', 'icon' => 'ti-file-upload'],
     ];
 
     public function pageMeta(string $page): array

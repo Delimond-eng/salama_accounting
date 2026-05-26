@@ -10,7 +10,10 @@
     <div class="row g-3">
         <div class="col-lg-5">
             <div class="card border-0 rounded-0">
-                <div class="card-header"><h5 class="mb-0">Paramètres import</h5></div>
+                <div class="card-header d-flex justify-content-between align-items-center py-3">
+                    <h5 class="mb-0 fw-bold text-uppercase fs-14"><i class="ti ti-file-upload me-2 text-primary"></i>Import relevé bancaire</h5>
+                    <span class="badge bg-label-primary">Banque</span>
+                </div>
                 <div class="card-body">
                     <div class="mb-3">
                         <label class="form-label">Journal banque</label>
@@ -31,7 +34,9 @@
         </div>
         <div class="col-lg-7">
             <div class="card border-0 rounded-0">
-                <div class="card-header"><h5 class="mb-0">Aperçu</h5></div>
+                <div class="card-header d-flex align-items-center py-3">
+                    <h5 class="mb-0 fw-bold text-uppercase fs-14">Aperçu du fichier</h5>
+                </div>
                 <div class="card-body">
                     <pre class="bg-light p-3 rounded fs-12 mb-0" style="max-height:400px;overflow:auto">@{{ csvContent || 'Aucun fichier chargé' }}</pre>
                 </div>

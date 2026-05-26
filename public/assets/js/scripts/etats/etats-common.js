@@ -1,4 +1,4 @@
-import { get } from "../../modules/http.js";
+import {get } from "../../modules/http.js";
 import { vuePageMixin } from "../../modules/vue-page-mixin.js";
 import { exportMixin } from "../../modules/export-mixin.js";
 
@@ -19,6 +19,7 @@ export const etatsMixin = {
                 devise_affichage: "CDF",
                 mode_conversion: "origine",
                 avec_n1: true,
+                taux: 1,
             },
             data: null,
             error: null,
@@ -28,7 +29,7 @@ export const etatsMixin = {
     },
 
     async mounted() {
-        await this.bootPage(async () => {
+        await this.bootPage(async() => {
             await this.loadMetadata();
             if (typeof this.initPage === "function") {
                 await this.initPage();
@@ -51,6 +52,10 @@ export const etatsMixin = {
             this.filtres.exercice_id = data.exercice?.id || null;
             this.filtres.devise_affichage = this.options.devise_affichage || "CDF";
             this.filtres.mode_conversion = this.options.mode_conversion || "origine";
+
+            if (data.taux_usd) {
+                this.filtres.taux = data.taux_usd;
+            }
         },
 
         queryParams() {
@@ -60,6 +65,7 @@ export const etatsMixin = {
                 devise_affichage: this.filtres.devise_affichage,
                 mode_conversion: this.filtres.mode_conversion,
                 avec_n1: this.filtres.avec_n1 ? "1" : "0",
+                taux: this.filtres.taux,
             }).toString();
         },
 
@@ -98,6 +104,20 @@ export const etatsMixin = {
             }).format(Number(v) || 0);
         },
 
+        fmtCompact(v) {
+            if (v === null || v === undefined || v === "") {
+                return "—";
+            }
+            const n = Number(v) || 0;
+            const d = this.filtres?.devise_affichage || "CDF";
+            const formatter = new Intl.NumberFormat("fr-FR", {
+                notation: "compact",
+                compactDisplay: "short",
+                maximumFractionDigits: 1,
+            });
+            return formatter.format(n) + ` ${d}`;
+        },
+
         fmtMontant(v) {
             return this.fmt(v);
         },
@@ -107,13 +127,13 @@ export const etatsMixin = {
         },
 
         isTotal(l) {
-            return (l.type || "") === "total";
+            return (l.type || "") === "total" || (l.type || "") === "formule";
         },
 
         rowClass(l) {
-            if (this.isTitre(l)) return "bg-light fw-bold text-uppercase";
-            if (this.isTotal(l)) return "bg-primary text-white fw-bold";
-            return "";
+            if (this.isTitre(l)) return "row-titre bg-light fw-bold text-uppercase text-dark small";
+            if (this.isTotal(l)) return "row-formule fw-bold bg-primary-soft text-primary border-top border-primary border-opacity-25";
+            return "align-middle";
         },
 
         exportUrl(format) {

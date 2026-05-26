@@ -1,9 +1,9 @@
 @php
     $navItems = [
-        'bilan' => ['route' => 'accounting.etats.bilan', 'label' => 'Bilan', 'icon' => 'ti-columns'],
-        'compte-resultat' => ['route' => 'accounting.etats.compte-resultat', 'label' => 'Compte de résultat', 'icon' => 'ti-chart-bar'],
-        'flux-tresorerie' => ['route' => 'accounting.etats.flux-tresorerie', 'label' => 'Flux trésorerie', 'icon' => 'ti-arrows-shuffle'],
-        'variation-kp' => ['route' => 'accounting.etats.variation-kp', 'label' => 'Variation KP', 'icon' => 'ti-trending-up'],
+        'bilan' => ['route' => 'accounting.etats.bilan', 'label' => 'Bilan', 'icon' => 'ti-columns', 'ref' => 'BI'],
+        'compte-resultat' => ['route' => 'accounting.etats.compte-resultat', 'label' => 'Compte de résultat', 'icon' => 'ti-chart-bar', 'ref' => 'CR'],
+        'flux-tresorerie' => ['route' => 'accounting.etats.flux-tresorerie', 'label' => 'Flux trésorerie', 'icon' => 'ti-arrows-shuffle', 'ref' => 'TFT'],
+        'variation-kp' => ['route' => 'accounting.etats.variation-kp', 'label' => 'Variation KP', 'icon' => 'ti-trending-up', 'ref' => 'TVCP'],
         'annexes' => ['route' => 'accounting.etats.annexes', 'label' => 'Annexes', 'icon' => 'ti-file-description'],
         'comparatif' => ['route' => 'accounting.etats.comparatif', 'label' => 'Comparatif N/N-1', 'icon' => 'ti-git-compare'],
         'exports' => ['route' => 'accounting.etats.exports', 'label' => 'Exports', 'icon' => 'ti-file-export'],
@@ -39,7 +39,11 @@
     @foreach ($navItems as $key => $item)
         <li class="nav-item">
             <a class="nav-link {{ $active === $key ? 'active' : '' }}" href="{{ route($item['route']) }}">
-                <i class="ti {{ $item['icon'] }} me-1"></i>{{ $item['label'] }}
+                <i class="ti {{ $item['icon'] }} me-1"></i>
+                <span>{{ $item['label'] }}</span>
+                @if(isset($item['ref']))
+                    <span class="badge bg-info-subtle text-info ms-1 fs-10 px-1">#{{ $item['ref'] }}</span>
+                @endif
             </a>
         </li>
     @endforeach
@@ -50,3 +54,8 @@
     <span v-else>@{{ error }}</span>
     <button type="button" class="btn-close" @click="error=null"></button>
 </div>
+
+<style>
+    .bg-label-info { background-color: #d7f5fc !important; color: #03c3ec !important; }
+    .fs-10 { font-size: 10px !important; }
+</style>

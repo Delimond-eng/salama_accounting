@@ -34,7 +34,7 @@ class SaisieController extends Controller
 
     public function importReleve(): View
     {
-        return view('saisie.import-releve', $this->saisie->pageMeta('banque'));
+        return view('saisie.import-releve', $this->saisie->pageMeta('import'));
     }
 
     public function metadata(Request $request): JsonResponse

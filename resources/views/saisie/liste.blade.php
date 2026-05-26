@@ -9,8 +9,15 @@
     @include('saisie._filtres')
 
     <div class="card border-0 rounded-0">
-        <div class="card-header d-flex justify-content-end">
-            <a :href="createUrl" class="btn btn-primary"><i class="ti ti-square-rounded-plus-filled me-1"></i>Nouvelle écriture</a>
+        <div class="card-header d-flex justify-content-between align-items-center py-3">
+            <div>
+                <h5 class="mb-0 fw-bold text-uppercase fs-14">
+                    <i class="ti {{ $icon ?? 'ti-list' }} me-2 text-primary"></i>
+                    @{{ pageTitle }}
+                </h5>
+                <p class="mb-0 text-muted fs-12 mt-1">@{{ pageSubtitle }}</p>
+            </div>
+            <a :href="createUrl" class="btn btn-primary btn-sm"><i class="ti ti-square-rounded-plus-filled me-1"></i>Nouvelle écriture</a>
         </div>
         <div class="card-body p-0">
             <div class="table-responsive">

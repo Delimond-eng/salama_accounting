@@ -17,7 +17,10 @@
 
     <form @submit.prevent="save(false)">
         <div class="card border-0 rounded-0 mb-3">
-            <div class="card-header"><h5 class="mb-0 fs-16">En-tête pièce</h5></div>
+            <div class="card-header d-flex justify-content-between align-items-center py-3">
+                <h5 class="mb-0 fw-bold text-uppercase fs-14"><i class="ti {{ $icon ?? 'ti-edit' }} me-2 text-primary"></i>{{ $title }} — En-tête</h5>
+                <a :href="listeUrl" class="btn btn-sm btn-label-secondary"><i class="ti ti-arrow-left me-1"></i>Retour</a>
+            </div>
             <div class="card-body">
                 <div class="row g-3">
                     <div class="col-md-3">
@@ -59,11 +62,11 @@
         </div>
 
         <div class="card border-0 rounded-0 mb-3">
-            <div class="card-header d-flex justify-content-between">
-                <h5 class="mb-0 fs-16">Lignes d'écriture <span class="badge badge-soft-secondary ms-1">@{{ lignes.length }}</span></h5>
-                <div>
-                    <button type="button" class="btn btn-sm btn-outline-light me-1" @click="appliquerTemplate"><i class="ti ti-template me-1"></i>Modèle SYSCOHADA</button>
-                    <button type="button" class="btn btn-sm btn-primary" @click="ajouterLigne"><i class="ti ti-plus me-1"></i>Ligne</button>
+            <div class="card-header d-flex justify-content-between align-items-center py-3">
+                <h5 class="mb-0 fw-bold text-uppercase fs-14">Lignes d'écriture <span class="badge bg-label-secondary ms-1">@{{ lignes.length }}</span></h5>
+                <div class="d-flex gap-2">
+                    <button type="button" class="btn btn-xs btn-outline-secondary" @click="appliquerTemplate"><i class="ti ti-template me-1"></i>Modèle</button>
+                    <button type="button" class="btn btn-xs btn-primary" @click="ajouterLigne"><i class="ti ti-plus me-1"></i>Ligne</button>
                 </div>
             </div>
             <div class="card-body p-0">
@@ -142,6 +145,12 @@
     </form>
     </template>
 </div>
+
+<style>
+    .btn-xs { padding: 0.2rem 0.4rem; font-size: 0.75rem; }
+    .btn-label-secondary { background: #f1f3f4; color: #5f6368; border: none; }
+    .btn-label-secondary:hover { background: #e8eaed; color: #3c4043; }
+</style>
 @endsection
 @push('scripts')
 <script>

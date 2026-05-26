@@ -30,6 +30,9 @@ new Vue({
     },
 
     async mounted() {
+        if (window.moment) {
+            moment.locale('fr');
+        }
         await this.bootPage(() => this.loadData());
         this.scheduleCharts();
     },
@@ -83,6 +86,22 @@ new Vue({
                     maximumFractionDigits: 0,
                 }).format(n) + ` ${d}`
             );
+        },
+
+        humanizeDate(dateStr) {
+            if (!dateStr || !window.moment) return dateStr;
+            const m = moment(dateStr, 'DD/MM/YYYY');
+            if (!m.isValid()) return dateStr;
+
+            const now = moment().startOf('day');
+            if (m.isSame(now, 'day')) return "Aujourd'hui";
+            if (m.isSame(now.clone().subtract(1, 'days'), 'day')) return "Hier";
+
+            if (m.isAfter(now.clone().subtract(7, 'days'))) {
+                return m.format('dddd');
+            }
+
+            return m.format('DD MMMM YYYY');
         },
 
         routeUrl(name) {
