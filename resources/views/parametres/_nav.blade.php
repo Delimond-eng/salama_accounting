@@ -28,6 +28,8 @@
             </select>
         </div>
 
+        @include('components.export-buttons')
+
         <a href="javascript:void(0);" class="btn btn-icon btn-outline-light shadow"
            @click="loadData" :disabled="isLoading" data-bs-toggle="tooltip" title="Actualiser">
             <i class="ti ti-refresh" :class="{'ti-spin': isLoading}"></i>
@@ -50,13 +52,13 @@
 </ul>
 @endcan
 
-<div v-if="error" class="alert alert-danger alert-dismissible fade show">
+<div v-if="error" class="alert alert-danger alert-dismissible fade show border-0 shadow-sm">
     <ul class="mb-0" v-if="Array.isArray(error)"><li v-for="(e,i) in error" :key="i">@{{ e }}</li></ul>
     <span v-else>@{{ error }}</span>
     <button type="button" class="btn-close" @click="error=null"></button>
 </div>
 
-<div v-if="message" class="alert alert-success alert-dismissible fade show">
-    @{{ message }}
+<div v-if="message" class="alert alert-success alert-dismissible fade show border-0 shadow-sm">
+    <i class="ti ti-circle-check me-2"></i>@{{ message }}
     <button type="button" class="btn-close" @click="message=null"></button>
 </div>

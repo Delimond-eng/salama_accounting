@@ -9,45 +9,156 @@ use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ComptableExportService
 {
-    public function downloadExcel(array $headers, array $rows, string $filename, ?string $title = null, ?Societe $societe = null): StreamedResponse
+    public function downloadExcel(array $headers, array $rows, string $filename, ?string $title = null, ?Societe $societe = null, array $meta = []): StreamedResponse
+    {
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+        $rowIdx = 1;
+        $numCols = count($headers);
+        $lastCol = Coordinate::stringFromColumnIndex($numCols);
+
+        if ($societe) {
+            $sheet->mergeCells("A{$rowIdx}:{$lastCol}{$rowIdx}");
+            $sheet->setCellValue('A' . $rowIdx, strtoupper($societe->raison_sociale));
+            $sheet->getStyle('A' . $rowIdx)->applyFromArray([
+                'font' => ['bold' => true, 'size' => 22, 'color' => ['rgb' => '800000']],
+                'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER]
+            ]);
+            $rowIdx++;
+
+            $sheet->mergeCells("A{$rowIdx}:{$lastCol}{$rowIdx}");
+            $sheet->setCellValue('A' . $rowIdx, ($societe->sigle ? $societe->sigle . ' | ' : '') . $societe->adresse . ' ' . $societe->ville);
+            $sheet->getStyle('A' . $rowIdx)->applyFromArray([
+                'font' => ['size' => 11, 'italic' => true],
+                'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER]
+            ]);
+            $rowIdx++;
+
+            if ($societe->rccm) {
+                $sheet->mergeCells("A{$rowIdx}:{$lastCol}{$rowIdx}");
+                $sheet->setCellValue('A' . $rowIdx, "RCCM: {$societe->rccm} | ID Nat: {$societe->num_contribuable}");
+                $sheet->getStyle('A' . $rowIdx)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+                $rowIdx++;
+            }
+            $rowIdx++;
+        }
+
+        foreach ($meta as $label => $value) {
+            $sheet->mergeCells("A{$rowIdx}:{$lastCol}{$rowIdx}");
+            $sheet->setCellValue('A' . $rowIdx, "{$label} : {$value}");
+            $sheet->getStyle('A' . $rowIdx)->applyFromArray([
+                'font' => ['bold' => true, 'size' => 12],
+                'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER]
+            ]);
+            $rowIdx++;
+        }
+
+        if ($title) {
+            $rowIdx++;
+            $sheet->mergeCells("A{$rowIdx}:{$lastCol}{$rowIdx}");
+            $sheet->setCellValue('A'.$rowIdx, strtoupper($title));
+            $sheet->getStyle('A'.$rowIdx)->applyFromArray([
+                'font' => ['bold' => true, 'size' => 16],
+                'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER]
+            ]);
+            $rowIdx += 2;
+        }
+
+        $this->writeTableToSheet($sheet, $headers, $rows, $rowIdx);
+
+        return response()->streamDownload(function () use ($spreadsheet) {
+            $writer = new Xlsx($spreadsheet);
+            $writer->save('php://output');
+        }, $this->safeFilename($filename, 'xlsx'), [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        ]);
+    }
+
+    public function downloadExcelMulti(array $sections, string $filename, ?Societe $societe = null, array $meta = []): StreamedResponse
     {
         $spreadsheet = new Spreadsheet();
         $sheet = $spreadsheet->getActiveSheet();
         $rowIdx = 1;
 
+        $maxCols = 1;
+        foreach($sections as $s) {
+            $maxCols = max($maxCols, count($s['headers']));
+        }
+        $lastCol = Coordinate::stringFromColumnIndex($maxCols);
+
         if ($societe) {
-            $sheet->setCellValue('A1', $societe->raison_sociale);
-            $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(14)->setColor(new \PhpOffice\PhpSpreadsheet\Style\Color('d32f2f'));
+            $sheet->mergeCells("A{$rowIdx}:{$lastCol}{$rowIdx}");
+            $sheet->setCellValue('A' . $rowIdx, strtoupper($societe->raison_sociale));
+            $sheet->getStyle('A' . $rowIdx)->applyFromArray([
+                'font' => ['bold' => true, 'size' => 26, 'color' => ['rgb' => '800000']],
+                'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER]
+            ]);
             $rowIdx++;
-            $sheet->setCellValue('A2', ($societe->sigle ? $societe->sigle . ' - ' : '') . $societe->adresse . ' ' . $societe->ville);
-            $sheet->getStyle('A2')->getFont()->setSize(10)->setItalic(true);
-            $rowIdx = 4;
+
+            $sheet->mergeCells("A{$rowIdx}:{$lastCol}{$rowIdx}");
+            $sheet->setCellValue('A' . $rowIdx, ($societe->sigle ? $societe->sigle . ' | ' : '') . $societe->adresse . ' ' . $societe->ville);
+            $sheet->getStyle('A' . $rowIdx)->applyFromArray([
+                'font' => ['size' => 12],
+                'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER]
+            ]);
+            $rowIdx++;
         }
 
-        if ($title) {
-            $sheet->setCellValue('A'.$rowIdx, strtoupper($title));
-            $sheet->getStyle('A'.$rowIdx)->getFont()->setBold(true)->setSize(16);
-            $rowIdx += 2;
+        foreach ($meta as $label => $value) {
+            $sheet->mergeCells("A{$rowIdx}:{$lastCol}{$rowIdx}");
+            $sheet->setCellValue('A' . $rowIdx, strtoupper($label) . " : " . $value);
+            $sheet->getStyle('A' . $rowIdx)->applyFromArray([
+                'font' => ['bold' => true, 'size' => 15],
+                'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER]
+            ]);
+            $rowIdx++;
+        }
+        $rowIdx += 4;
+
+        foreach ($sections as $section) {
+            $sheet->setCellValue('A' . $rowIdx, strtoupper($section['title']));
+            $sheet->getStyle('A' . $rowIdx)->getFont()->setBold(true)->setSize(14)->setColor(new \PhpOffice\PhpSpreadsheet\Style\Color('800000'));
+            $rowIdx += 1;
+
+            if (!empty($section['headers'])) {
+                $this->writeTableToSheet($sheet, $section['headers'], $section['rows'], $rowIdx);
+                $rowIdx += 3;
+            } else {
+                $rowIdx += 2;
+            }
         }
 
+        return response()->streamDownload(function () use ($spreadsheet) {
+            $writer = new Xlsx($spreadsheet);
+            $writer->save('php://output');
+        }, $this->safeFilename($filename, 'xlsx'), [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        ]);
+    }
+
+    protected function writeTableToSheet($sheet, array $headers, array $rows, int &$rowIdx)
+    {
         $startHeaderRow = $rowIdx;
+        $numCols = count($headers);
+        $lastCol = Coordinate::stringFromColumnIndex($numCols);
+
         $col = 'A';
         foreach ($headers as $h) {
-            $sheet->setCellValue($col.$rowIdx, $h);
+            $sheet->setCellValue($col . $rowIdx, $h);
             $col++;
         }
 
-        $lastCol = $sheet->getHighestColumn();
         $headerRange = 'A' . $startHeaderRow . ':' . $lastCol . $startHeaderRow;
         $sheet->getStyle($headerRange)->applyFromArray([
             'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
             'fill' => [
                 'fillType' => Fill::FILL_SOLID,
-                'startColor' => ['rgb' => 'd32f2f']
+                'startColor' => ['rgb' => '800000']
             ],
             'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER]
         ]);
@@ -58,7 +169,9 @@ class ComptableExportService
             $isTotalRow = false;
             $isSectionRow = false;
 
-            foreach ($row as $cell) {
+            $rowValues = array_slice($row, 0, $numCols);
+
+            foreach ($rowValues as $cell) {
                 $cleanValue = (string)$cell;
                 if (str_starts_with($cleanValue, '### ')) {
                     $isSectionRow = true;
@@ -69,27 +182,26 @@ class ComptableExportService
                     $cleanValue = substr($cleanValue, 4);
                 }
 
-                $sheet->setCellValue($col.$rowIdx, $cleanValue);
+                $sheet->setCellValue($col . $rowIdx, $cleanValue);
 
                 if (is_numeric(str_replace([' ', ','], ['', '.'], $cleanValue)) && strlen($cleanValue) > 0) {
-                    $sheet->getStyle($col.$rowIdx)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
+                    $sheet->getStyle($col . $rowIdx)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
                 }
                 $col++;
             }
 
+            $currentRowRange = 'A' . $rowIdx . ':' . $lastCol . $rowIdx;
             if ($isTotalRow) {
-                $rowRange = 'A' . $rowIdx . ':' . $lastCol . $rowIdx;
-                $sheet->getStyle($rowRange)->applyFromArray([
+                $sheet->getStyle($currentRowRange)->applyFromArray([
                     'font' => ['bold' => true],
                     'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => 'FDF2F2']],
                     'borders' => [
-                        'top' => ['borderStyle' => Border::BORDER_MEDIUM, 'color' => ['rgb' => 'd32f2f']],
-                        'bottom' => ['borderStyle' => Border::BORDER_MEDIUM, 'color' => ['rgb' => 'd32f2f']],
+                        'top' => ['borderStyle' => Border::BORDER_MEDIUM, 'color' => ['rgb' => '800000']],
+                        'bottom' => ['borderStyle' => Border::BORDER_MEDIUM, 'color' => ['rgb' => '800000']],
                     ]
                 ]);
             } elseif ($isSectionRow) {
-                $rowRange = 'A' . $rowIdx . ':' . $lastCol . $rowIdx;
-                $sheet->getStyle($rowRange)->applyFromArray([
+                $sheet->getStyle($currentRowRange)->applyFromArray([
                     'font' => ['bold' => true],
                     'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => 'F1F1F1']],
                 ]);
@@ -98,16 +210,9 @@ class ComptableExportService
             $rowIdx++;
         }
 
-        foreach (range('A', $lastCol) as $c) {
-            $sheet->getColumnDimension($c)->setAutoSize(true);
+        for ($i = 1; $i <= $numCols; $i++) {
+            $sheet->getColumnDimension(Coordinate::stringFromColumnIndex($i))->setAutoSize(true);
         }
-
-        return response()->streamDownload(function () use ($spreadsheet) {
-            $writer = new Xlsx($spreadsheet);
-            $writer->save('php://output');
-        }, $this->safeFilename($filename, 'xlsx'), [
-            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-        ]);
     }
 
     public function downloadPdf(array $headers, array $rows, string $filename, string $title, array $meta = [], ?Societe $societe = null): \Illuminate\Http\Response {
@@ -119,6 +224,18 @@ class ComptableExportService
             'meta' => $meta,
             'generated_at' => now()->format('d/m/Y H:i'),
         ])->setPaper('a4', 'landscape');
+
+        return $pdf->download($this->safeFilename($filename, 'pdf'));
+    }
+
+    public function downloadPdfMulti(array $sections, string $filename, string $title, array $meta = [], ?Societe $societe = null): \Illuminate\Http\Response {
+        $pdf = Pdf::loadView('pdf.etats-financiers-multi', [
+            'societe' => $societe,
+            'title' => $title,
+            'sections' => $sections,
+            'meta' => $meta,
+            'generated_at' => now()->format('d/m/Y H:i'),
+        ])->setPaper('a4', 'portrait');
 
         return $pdf->download($this->safeFilename($filename, 'pdf'));
     }
@@ -145,7 +262,7 @@ class ComptableExportService
 
     public function respond(string $format, array $headers, array $rows, string $filename, string $title, array $meta = [], ?Societe $societe = null): StreamedResponse|\Illuminate\Http\Response {
         return match ($format) {
-            'excel', 'xlsx' => $this->downloadExcel($headers, $rows, $filename, $title, $societe),
+            'excel', 'xlsx' => $this->downloadExcel($headers, $rows, $filename, $title, $societe, $meta),
             'pdf' => $this->downloadPdf($headers, $rows, $filename, $title, $meta, $societe),
             'csv' => $this->downloadCsv($headers, $rows, $filename),
             default => abort(422, 'Format d\'export non supporté.'),

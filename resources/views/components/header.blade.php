@@ -50,7 +50,6 @@
                     </button>
 
                     <div class="dropdown-menu p-0 dropdown-menu-end dropdown-menu-lg">
-
                         <div class="p-2 border-bottom">
                             <div class="row align-items-center">
                                 <div class="col">
@@ -61,12 +60,10 @@
                                 </div>
                             </div>
                         </div>
-
                         <!-- Notification Body -->
-                        <div class="notification-body position-relative z-2 rounded-0" data-simplebar style="max-height: 400px;">
-
-                            <template v-if="alertes.length">
-                                <div v-for="(alerte, i) in alertes" :key="i" class="dropdown-item notification-item py-3 text-wrap border-bottom">
+                        <div class="notification-body position-relative z-2 rounded-0" style="max-height: 400px; overflow-y: auto;">
+                            <template v-if="count > 0">
+                                <a v-for="(alerte, i) in alertes" :key="i" :href="alerte.url || '#'" class="dropdown-item notification-item py-3 text-wrap border-bottom">
                                     <div class="d-flex align-items-start">
                                         <div class="me-2 flex-shrink-0">
                                             <span class="avatar avatar-sm rounded-circle" :class="alerteBadgeClass(alerte.niveau)">
@@ -78,7 +75,7 @@
                                             <p class="mb-0 text-muted fs-13">@{{ alerte.detail }}</p>
                                         </div>
                                     </div>
-                                </div>
+                                </a>
                             </template>
                             <div v-else class="p-4 text-center">
                                 <i class="ti ti-circle-check text-success fs-32 mb-2"></i>
@@ -88,7 +85,7 @@
                         </div>
 
                         <!-- View All-->
-                        <div class="p-2 rounded-bottom border-top text-center" v-if="alertes.length">
+                        <div class="p-2 rounded-bottom border-top text-center" v-if="count > 0">
                             <a href="{{ route('dashboard') }}" class="text-center text-decoration-underline fs-14 mb-0">
                                 Voir le tableau de bord
                             </a>

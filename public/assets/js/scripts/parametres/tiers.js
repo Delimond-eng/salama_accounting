@@ -20,12 +20,8 @@ new Vue({
     methods: {
         queryParams() {
             const p = new URLSearchParams();
-            if (this.search) {
-                p.set("search", this.search);
-            }
-            if (this.filtreType) {
-                p.set("type", this.filtreType);
-            }
+            if (this.search) p.set("search", this.search);
+            if (this.filtreType) p.set("type", this.filtreType);
             return p.toString();
         },
 
@@ -56,22 +52,35 @@ new Vue({
             searchTimer = setTimeout(() => this.loadData(), 350);
         },
 
+        loadTiers() {
+            this.loadData();
+        },
+
         async loadData() {
             this.isLoading = true;
-            const params = new URLSearchParams();
-            if (this.search) params.set("search", this.search);
-            if (this.filtreType) params.set("type", this.filtreType);
             try {
-                const { data } = await get(`/accounting/parametres/tiers/all?${params}`);
+                const { data } = await get(`/accounting/parametres/tiers/all?${this.queryParams()}`);
                 if (data.status === "success") this.liste = data.tiers || [];
             } finally {
                 this.isLoading = false;
             }
         },
 
+        typeBadgeClass(type) {
+            const map = {
+                client: "bg-soft-success text-success",
+                fournisseur: "bg-soft-danger text-danger",
+                salarie: "bg-soft-warning text-warning",
+                banque: "bg-soft-primary text-primary",
+                autre: "bg-soft-info text-info"
+            };
+            return map[type] || "bg-soft-secondary text-secondary";
+        },
+
         openForm() {
             this.form = this.emptyForm();
-            new bootstrap.Modal(document.getElementById("modal_tiers")).show();
+            const modal = new bootstrap.Modal(document.getElementById("modal_tiers"));
+            modal.show();
         },
 
         async editTiers(t) {
@@ -79,7 +88,8 @@ new Vue({
             if (t.num_compte_collectif) {
                 await this.prefetchCompteLabel(t.num_compte_collectif);
             }
-            new bootstrap.Modal(document.getElementById("modal_tiers")).show();
+            const modal = new bootstrap.Modal(document.getElementById("modal_tiers"));
+            modal.show();
         },
 
         async saveTiers() {

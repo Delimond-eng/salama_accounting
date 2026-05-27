@@ -1,4 +1,4 @@
-import {get } from "../../modules/http.js";
+import {get, postJson } from "../../modules/http.js";
 import { vuePageMixin } from "../../modules/vue-page-mixin.js";
 import { exportMixin } from "../../modules/export-mixin.js";
 
@@ -26,6 +26,32 @@ export const etatsMixin = {
             isLoading: false,
             exportBase: `/accounting/export/etats/${window.__ETATS_PAGE__ || "bilan"}`,
         };
+    },
+
+    computed: {
+        pageTitle() {
+            const titles = {
+                bilan: "Bilan (Actif/Passif)",
+                "compte-resultat": "Compte de Résultat",
+                "flux-tresorerie": "Tableau des Flux de Trésorerie",
+                "variation-kp": "Variation des Capitaux Propres",
+                annexes: "Annexes SYSCOHADA",
+                comparatif: "Comparatif N / N-1",
+                exports: "Centre d'Exportation"
+            };
+            return titles[this.page] || "États Financiers";
+        },
+        pageSubtitle() {
+            let parts = [];
+            if (this.filtres.date_arrete) {
+                parts.push(`Arrêté au ${this.fmtDate(this.filtres.date_arrete)}`);
+            }
+            parts.push(`Devise: ${this.filtres.devise_affichage}`);
+            if (this.filtres.avec_n1 && this.exerciceN1) {
+                parts.push(`Comparatif N-1 actif`);
+            }
+            return parts.join(' • ');
+        }
     },
 
     async mounted() {
@@ -81,8 +107,25 @@ export const etatsMixin = {
             this.loadData();
         },
 
-        onFiltreChange() {
-            this.loadData();
+        async onFiltreChange() {
+            await this.loadData();
+        },
+
+        async saveTauxUsd() {
+            if (!this.filtres.taux || this.filtres.taux <= 0) return;
+            const date = new Date().toISOString().slice(0, 10);
+            const { data } = await postJson("/accounting/parametres/taux-change/save", {
+                devise_code: "USD",
+                date_taux: date,
+                taux: this.filtres.taux,
+            });
+            if (data.errors) {
+                this.error = data.errors;
+                return;
+            }
+            if (this.filtres.mode_conversion === "actuel") {
+                await this.loadData();
+            }
         },
 
         handleResponse(data) {
@@ -102,6 +145,13 @@ export const etatsMixin = {
                 minimumFractionDigits: 2,
                 maximumFractionDigits: 2,
             }).format(Number(v) || 0);
+        },
+
+        fmtDate(d) {
+            if (!d) return "";
+            const parts = d.split('-');
+            if (parts.length !== 3) return d;
+            return `${parts[2]}/${parts[1]}/${parts[0]}`;
         },
 
         fmtCompact(v) {
@@ -137,7 +187,11 @@ export const etatsMixin = {
         },
 
         exportUrl(format) {
-            return `${this.exportBase}/${format}?${this.queryParams()}`;
+            let type = this.page;
+            if (type === 'exports') {
+                type = 'globaux';
+            }
+            return `/accounting/export/etats/${type}/${format}?${this.queryParams()}`;
         },
     },
 };

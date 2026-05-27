@@ -212,7 +212,7 @@ class DashboardComptableService
             ];
         }
 
-        return ['items' => $items, 'count' => count($items)];
+        return ['items' => array_values($items), 'count' => count($items)];
     }
 
     protected function activiteRecente(int $societeId, int $exerciceId): array

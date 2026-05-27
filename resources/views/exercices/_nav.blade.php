@@ -1,8 +1,8 @@
 @php
     $navItems = [
-        'index' => ['route' => 'accounting.exercices.index', 'label' => 'Multi-exercices', 'icon' => 'ti-layers-linked'],
+        'index' => ['route' => 'accounting.exercices.index', 'label' => 'Gestion des exercices', 'icon' => 'ti-layers-linked'],
         'ouverture' => ['route' => 'accounting.exercices.ouverture', 'label' => 'Ouverture', 'icon' => 'ti-door-enter'],
-        'cloture' => ['route' => 'accounting.exercices.cloture', 'label' => 'Clôture', 'icon' => 'ti-lock'],
+        'cloture' => ['route' => 'accounting.exercices.cloture', 'label' => 'Clôture annuelle', 'icon' => 'ti-lock'],
         'report-a-nouveau' => ['route' => 'accounting.exercices.report-a-nouveau', 'label' => 'Report à nouveau', 'icon' => 'ti-arrow-forward-up'],
     ];
     $active = $active ?? $page ?? '';
@@ -20,7 +20,7 @@
         </nav>
     </div>
     <div class="gap-2 d-flex align-items-center flex-wrap">
-        <a href="{{ route('accounting.etats.comparatif') }}" class="btn btn-outline-primary shadow px-3">
+        <a href="{{ route('accounting.etats.comparatif') }}" class="btn btn-outline-primary shadow-sm px-3 border-2">
             <i class="ti ti-chart-dots-3 me-1"></i>Comparatif N / N-1
         </a>
         <a href="javascript:void(0);" class="btn btn-icon btn-outline-light shadow" id="collapse-header">
@@ -39,12 +39,13 @@
     @endforeach
 </ul>
 
-<div v-if="error" class="alert alert-danger alert-dismissible fade show">
+<div v-if="error" class="alert alert-danger alert-dismissible fade show border-0 shadow-sm">
     <ul class="mb-0" v-if="Array.isArray(error)"><li v-for="(e,i) in error" :key="i">@{{ e }}</li></ul>
     <span v-else>@{{ error }}</span>
     <button type="button" class="btn-close" @click="error=null"></button>
 </div>
-<div v-if="message" class="alert alert-success alert-dismissible fade show">
-    @{{ message }}
+
+<div v-if="message" class="alert alert-success alert-dismissible fade show border-0 shadow-sm">
+    <i class="ti ti-circle-check me-2"></i>@{{ message }}
     <button type="button" class="btn-close" @click="message=null"></button>
 </div>

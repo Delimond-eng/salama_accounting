@@ -135,5 +135,14 @@ new Vue({
             this.loadData();
             await this.loadContext();
         },
+
+        exerciceStatutClass(statut) {
+            return {
+                ouvert: "bg-soft-success text-success",
+                pre_cloture: "bg-soft-warning text-warning",
+                cloture: "bg-soft-danger text-danger",
+                archive: "bg-soft-secondary text-secondary",
+            }[statut] || "bg-light text-dark";
+        },
     },
 });

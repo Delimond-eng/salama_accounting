@@ -1,328 +1,165 @@
-@extends("layouts.app")
+@extends('layouts.app')
 
-@section("content")
-
+@section('content')
 <div class="content pb-0" id="App" v-cloak>
     <template v-if="!pageReady">
         @include('components.vue-page-loading')
     </template>
     <template v-else>
-        <div v-if="errorList.length" class="alert alert-danger alert-dismissible fade show" role="alert">
-            <ul class="mb-0 ps-3">
-                <li v-for="(err, i) in errorList" :key="i">@{{ err }}</li>
-            </ul>
-            <button type="button" class="btn-close" @click="error = null"></button>
-        </div>
-        <div v-if="message" class="alert alert-success alert-dismissible fade show" role="alert">
-            @{{ message }}
-            <button type="button" class="btn-close" @click="message = null"></button>
-        </div>
-        <!-- Page Header -->
+        <!-- Header Section -->
         <div class="d-flex align-items-center justify-content-between gap-2 mb-4 flex-wrap">
             <div>
-                <h4 class="mb-1">Utilisateurs <span class="badge badge-soft-primary ms-2">@{{ allUsers.length }}</span></h4>
+                <h4 class="mb-1 text-dark fw-bold">Gestion des Utilisateurs</h4>
                 <nav aria-label="breadcrumb">
                     <ol class="breadcrumb mb-0 p-0">
                         <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Accueil</a></li>
-                        <li class="breadcrumb-item active" aria-current="page">Administration</li>
-                        <li class="breadcrumb-item active" aria-current="page">Utilisateurs</li>
+                        <li class="breadcrumb-item active">Administration / Utilisateurs</li>
                     </ol>
                 </nav>
             </div>
-            <div class="gap-2 d-flex align-items-center flex-wrap">
-                @include('components.export-buttons')
-                <a href="javascript:void(0);" class="btn btn-icon btn-outline-light shadow"
-                    data-bs-toggle="tooltip" data-bs-placement="top" aria-label="Refresh"
-                    data-bs-original-title="Refresh"><i class="ti ti-refresh"></i></a>
-                <a href="javascript:void(0);" class="btn btn-icon btn-outline-light shadow"
-                    data-bs-toggle="tooltip" data-bs-placement="top" aria-label="Collapse"
-                    data-bs-original-title="Collapse" id="collapse-header"><i
-                        class="ti ti-transition-top"></i></a>
+            <div class="gap-2 d-flex align-items-center">
+                <button type="button" class="btn btn-primary px-4 shadow-sm" @click="openForm()">
+                    <i class="ti ti-user-plus me-1"></i>Nouvel Utilisateur
+                </button>
             </div>
         </div>
-        <!-- /Page Header -->
 
-        <!-- card start -->
-        <div class="card border-0 rounded-0">
-            <div class="card-header d-flex align-items-center justify-content-between gap-2 flex-wrap">
-                <div class="input-icon input-icon-start position-relative">
-                    <span class="input-icon-addon text-dark"><i class="ti ti-search"></i></span>
-                    <input type="text" class="form-control" placeholder="Rechercher un utilisateur...">
+        <!-- Users Table -->
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white border-bottom py-3">
+                <div class="row align-items-center">
+                    <div class="col">
+                        <h5 class="mb-0 fw-bold text-primary">Registre du Personnel</h5>
+                    </div>
+                    <div class="col-auto">
+                        <div class="input-group input-group-sm bg-light rounded-2 px-2">
+                            <span class="input-group-text bg-transparent border-0"><i class="ti ti-search text-muted"></i></span>
+                            <input type="text" class="form-control bg-transparent border-0" placeholder="Rechercher..." v-model="search">
+                        </div>
+                    </div>
                 </div>
-                @can('users.create')
-                <a href="javascript:void(0);" class="btn btn-primary" @click="openCreateUser">
-                    <i class="ti ti-square-rounded-plus-filled me-1"></i>Ajout Utilisateur
-                </a>
-                @endcan
             </div>
-            <div class="card-body">
-
-                <!-- table header filters -->
-                <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
-                    <div class="d-flex align-items-center gap-2 flex-wrap">
-                        <div class="dropdown">
-                            <a href="javascript:void(0);" class="dropdown-toggle btn btn-outline-light shadow"
-                                data-bs-toggle="dropdown"><i class="ti ti-sort-ascending-2 me-2"></i>Trier par</a>
-                            <div class="dropdown-menu">
-                                <ul>
-                                    <li><a href="javascript:void(0);" class="dropdown-item">Plus récent</a></li>
-                                    <li><a href="javascript:void(0);" class="dropdown-item">Plus ancien</a></li>
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="d-flex align-items-center gap-2 flex-wrap">
-                        <div class="dropdown">
-                            <a href="javascript:void(0);" class="btn btn-outline-light shadow px-2"
-                                data-bs-toggle="dropdown" data-bs-auto-close="outside"><i
-                                    class="ti ti-filter me-2"></i>Filtrer<i
-                                    class="ti ti-chevron-down ms-2"></i></a>
-                            <div class="filter-dropdown-menu dropdown-menu dropdown-menu-lg p-0">
-                                <div class="filter-header d-flex align-items-center justify-content-between border-bottom p-3">
-                                    <h4 class="mb-0 fs-16"><i class="ti ti-filter me-1"></i>Filtres</h4>
-                                </div>
-                                <div class="p-3">
-                                    <div class="mb-3">
-                                        <label class="form-label">Rôle</label>
-                                        <select class="form-select">
-                                            <option value="">Tous les rôles</option>
-                                            <option v-for="role in allRoles" :value="role.name">@{{ role.label || roleLabel(role.name) }}</option>
-                                        </select>
-                                    </div>
-                                    <div class="d-flex align-items-center gap-2">
-                                        <a href="javascript:void(0);" class="btn btn-outline-light w-100">Réinitialiser</a>
-                                        <a href="#" class="btn btn-primary w-100">Appliquer</a>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="dropdown">
-                            <a href="javascript:void(0);" class="btn bg-soft-indigo border-0"
-                                data-bs-toggle="dropdown" data-bs-auto-close="outside"><i
-                                    class="ti ti-columns-3 me-2"></i>Colonnes</a>
-                            <div class="dropdown-menu dropdown-menu-md dropdown-md p-3">
-                                <ul>
-                                    <li class="gap-1 d-flex align-items-center mb-2">
-                                        <div class="form-check form-switch w-100 ps-0">
-                                            <label class="form-check-label d-flex align-items-center gap-2 w-100">
-                                                <span>Email</span>
-                                                <input class="form-check-input switchCheckDefault ms-auto" type="checkbox" role="switch" checked>
-                                            </label>
-                                        </div>
-                                    </li>
-                                    <li class="gap-1 d-flex align-items-center mb-2">
-                                        <div class="form-check form-switch w-100 ps-0">
-                                            <label class="form-check-label d-flex align-items-center gap-2 w-100">
-                                                <span>Rôle</span>
-                                                <input class="form-check-input switchCheckDefault ms-auto" type="checkbox" role="switch" checked>
-                                            </label>
-                                        </div>
-                                    </li>
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <!-- /table header filters -->
-
-                <!-- User List -->
-                <div class="table-responsive custom-table table-nowrap">
-                    <table class="table table-nowrap datatable" v-cloak>
-                        <thead class="table-light">
-                        <tr>
-                            <th class="no-sort">
-                                <div class="form-check form-check-md">
-                                    <input class="form-check-input" type="checkbox" id="select-all">
-                                </div>
-                            </th>
-                            <th>Utilisateur</th>
-                            <th>Email</th>
-                            <th>Rôle</th>
-                            <th>Créé le</th>
-                            <th class="no-sort">Action</th>
-                        </tr>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover table-bordered table-custom mb-0">
+                        <thead>
+                            <tr>
+                                <th>Utilisateur</th>
+                                <th>Email & Contact</th>
+                                <th>Rôle système</th>
+                                <th class="text-center">Statut</th>
+                                <th class="text-center">Accès</th>
+                                <th class="text-end">Actions</th>
+                            </tr>
                         </thead>
                         <tbody>
-                        <tr v-for="(data, index) in allUsers">
-                            <td>
-                                <div class="form-check form-check-md">
-                                    <input class="form-check-input" type="checkbox">
-                                </div>
-                            </td>
-                            <td>
-                                <div class="d-flex align-items-center file-name-icon">
-                                    <a href="javascript:void(0);" class="avatar avatar-md avatar-rounded">
-                                        <img src="{{asset("assets/img/avatar.jpg")}}" class="img-fluid" alt="img">
-                                    </a>
-                                    <div class="ms-2">
-                                        <h6 class="fw-medium mb-0">@{{ data.name }}</h6>
+                            <tr v-if="isLoading"><td colspan="6" class="text-center py-5"><span class="spinner-border spinner-border-sm me-2"></span>Chargement…</td></tr>
+                            <tr v-for="u in filteredUsers" :key="u.id">
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="avatar avatar-md bg-label-primary rounded-circle me-3">
+                                            <span class="fw-bold">@{{ u.name.charAt(0) }}</span>
+                                        </div>
+                                        <div class="d-flex flex-column">
+                                            <span class="fw-bold text-dark">@{{ u.name }}</span>
+                                            <small class="text-muted">ID: #@{{ u.id }}</small>
+                                        </div>
                                     </div>
-                                </div>
-                            </td>
-                            <td>@{{ data.email }}</td>
-                            <td>
-                                <span class="badge badge-md p-2 fs-100 badge-soft-info"
-                                    >@{{ data.role_label }}</span>
-                            </td>
-                            <td>@{{ formatDateTime(data.created_at) }}</td>
-                            <td class="action-table-data">
-                                <div class="edit-delete-action">
-                                    @can('users.update')
-                                        <a href="javascript:void(0);" class="me-2 p-2" @click="getAccess(data)" title="Accès">
-                                            <i :class="{'text-gray-3': isProtectedRole(data.roles?.[0]?.name || data.role)}" class="ti ti-shield-lock text-warning"></i>
-                                        </a>
-                                        <a href="javascript:void(0);" class="me-2 p-2" @click="editUser(data)" title="Modifier">
-                                            <i class="ti ti-edit text-info"></i>
-                                        </a>
-                                    @endcan
-                                    @can('users.delete')
-                                        <a href="javascript:void(0);" class="p-2" data-bs-toggle="modal" data-bs-target="#delete_modal" title="Supprimer">
-                                            <i class="ti ti-trash text-danger"></i>
-                                        </a>
-                                    @endcan
-                                </div>
-                            </td>
-                        </tr>
+                                </td>
+                                <td>
+                                    <div class="text-dark">@{{ u.email }}</div>
+                                    <small class="text-muted" v-if="u.telephone">@{{ u.telephone }}</small>
+                                </td>
+                                <td>
+                                    <span v-for="role in u.roles" :key="role.id" class="badge bg-soft-primary text-primary text-uppercase fs-10 px-2 me-1">@{{ role.name }}</span>
+                                    <span v-if="!u.roles.length" class="text-light-soft small">Aucun rôle</span>
+                                </td>
+                                <td class="text-center">
+                                    <span class="badge rounded-pill" :class="u.actif ? 'bg-soft-success text-success' : 'bg-soft-secondary text-secondary'">
+                                        @{{ u.actif ? 'Actif' : 'Inactif' }}
+                                    </span>
+                                </td>
+                                <td class="text-center">
+                                    <button class="btn btn-sm btn-outline-info rounded-pill px-3" @click="manageAccess(u)">
+                                        <i class="ti ti-shield-lock me-1"></i>Droits
+                                    </button>
+                                </td>
+                                <td class="text-end">
+                                    <div class="d-flex gap-1 justify-content-end">
+                                        <button type="button" class="btn btn-icon btn-sm btn-label-primary" @click="editUser(u)">
+                                            <i class="ti ti-edit"></i>
+                                        </button>
+                                        <button v-if="u.id !== currentUserId" type="button" class="btn btn-icon btn-sm btn-label-danger" @click="deleteUser(u)">
+                                            <i class="ti ti-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>
-                <div class="row align-items-center mt-3">
-                    <div class="col-md-6">
-                        <div class="datatable-length"></div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="datatable-paginate"></div>
-                    </div>
-                </div>
-                <!-- /User List -->
-
             </div>
         </div>
-        <!-- card end -->
 
-        <!-- Modal create/edit User -->
-        @canany(['users.create','users.update'])
-        <div class="modal fade" id="add_users">
-            <div class="modal-dialog modal-dialog-centered modal-lg">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h4 class="modal-title">@{{ form.user_id ? 'Modifier l\'utilisateur' : 'Création compte utilisateur' }}</h4>
-                        <button type="button" class="btn-close custom-btn-close" data-bs-dismiss="modal"
-                                aria-label="Close">
-                            <i class="ti ti-x"></i>
-                        </button>
+        <!-- Modal User -->
+        <div class="modal fade" id="modal_user" tabindex="-1">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content border-0 shadow-lg">
+                    <div class="modal-header bg-primary py-3">
+                        <h5 class="modal-title text-white fw-bold">@{{ form.id ? 'Modifier l\'utilisateur' : 'Nouvel utilisateur' }}</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                     </div>
-                    <form @submit.prevent="createUser">
-                        <div class="modal-body pb-0">
-                            <div v-if="errorList.length" class="alert alert-danger py-2 mb-3">
-                                <ul class="mb-0 ps-3 small">
-                                    <li v-for="(err, i) in errorList" :key="i">@{{ err }}</li>
-                                </ul>
-                            </div>
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <div class="mb-3">
-                                        <label class="form-label">Nom d'utilisateur</label>
-                                        <input type="text" class="form-control" v-model="form.name" placeholder="ex: Gaston" required>
-                                    </div>
+                    <form @submit.prevent="saveUser">
+                        <div class="modal-body p-4">
+                            <div class="row g-3">
+                                <div class="col-12">
+                                    <label class="form-label fw-bold">Nom complet</label>
+                                    <input type="text" class="form-control border-2" v-model="form.name" required>
                                 </div>
-                                <div class="col-md-6">
-                                    <div class="mb-3">
-                                        <label class="form-label">Email</label>
-                                        <input type="email" v-model="form.email" class="form-control" placeholder="exemple@domain" required>
-                                    </div>
+                                <div class="col-12">
+                                    <label class="form-label fw-bold">Adresse Email</label>
+                                    <input type="email" class="form-control border-2" v-model="form.email" required>
                                 </div>
-                                <div class="col-md-6">
-                                    <div class="mb-3">
-                                        <label class="form-label">Mot de passe @{{ form.user_id ? '(laisser vide si inchangé)' : '' }}</label>
-                                        <div class="pass-group">
-                                            <input type="password" v-model="form.password" placeholder="***************" class="pass-input form-control" :required="!form.user_id">
-                                            <span class="ti toggle-password ti-eye-off"></span>
-                                        </div>
-                                    </div>
+                                <div class="col-12" v-if="!form.id">
+                                    <label class="form-label fw-bold">Mot de passe</label>
+                                    <input type="password" class="form-control border-2" v-model="form.password" required>
                                 </div>
-                                <div class="col-md-6">
-                                    <div class="mb-3">
-                                        <label class="form-label">Rôle</label>
-                                        <select class="form-select" v-model="form.role" required>
-                                            <option value="" hidden selected>--Sélectionner un rôle</option>
-                                            <option v-for="(data, i) in allRoles" :value="data.name">@{{ data.label || roleLabel(data.name) }}</option>
-                                        </select>
+                                <div class="col-12">
+                                    <label class="form-label fw-bold">Rôle principal</label>
+                                    <select class="form-select border-2" v-model="form.role_id" required>
+                                        <option v-for="r in roles" :key="r.id" :value="r.id">@{{ r.name }}</option>
+                                    </select>
+                                </div>
+                                <div class="col-12">
+                                    <div class="form-check form-switch mt-2">
+                                        <input class="form-check-input" type="checkbox" v-model="form.actif" id="user_active">
+                                        <label class="form-check-label" for="user_active">Utilisateur actif</label>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-white border me-2"
-                                    data-bs-dismiss="modal">Annuler</button>
-                            <button type="submit" class="btn btn-primary" :disabled="isLoading">
-                                @{{ isLoading ? "Enregistrement..." : "Enregistrer" }}
-                            </button>
+                        <div class="modal-footer bg-light border-0">
+                            <button type="button" class="btn btn-white border px-4" data-bs-dismiss="modal">Annuler</button>
+                            <button type="submit" class="btn btn-primary px-4" :disabled="isLoading">Enregistrer</button>
                         </div>
                     </form>
                 </div>
             </div>
         </div>
-        @endcanany
-
-        <!-- Modal access -->
-        @can('users.update')
-        <div class="modal fade" id="access_users">
-            <div class="modal-dialog modal-lg">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h4 class="modal-title">Attribution accès utilisateur</h4>
-                        <button type="button" class="btn-close custom-btn-close" data-bs-dismiss="modal"
-                                aria-label="Close">
-                            <i class="ti ti-x"></i>
-                        </button>
-                    </div>
-                    <form @submit.prevent="addAccess">
-                        <div class="modal-body pb-0">
-                            <div class="table-responsive custom-table">
-                                <table class="table">
-                                    <thead class="table-light">
-                                    <tr>
-                                        <th>Module Permissions</th>
-                                        <th v-for="col in permissionColumns" :key="col" class="text-center">@{{ columnLabels[col] || col }}</th>
-                                    </tr>
-                                    </thead>
-                                    <tbody>
-                                    <tr v-for="module in allActions" :key="module.entity">
-                                        <td>
-                                            <h6 class="fs-14 fw-normal text-gray-9 mb-0">@{{ module.label }}</h6>
-                                        </td>
-                                        <td v-for="col in permissionColumns" :key="col" class="text-center">
-                                            <div class="form-check form-check-md d-inline-block" v-if="moduleHasAction(module, col)">
-                                                <input
-                                                    class="form-check-input"
-                                                    type="checkbox"
-                                                    :value="`${module.entity}.${col}`"
-                                                    v-model="form.permissions"
-                                                >
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-white border me-2" data-bs-dismiss="modal">Annuler</button>
-                            <button type="submit" class="btn btn-info" :disabled="isLoading">
-                                @{{ isLoading ? "Mise à jour..." : "Mettre à jour" }}
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-        @endcan
     </template>
-    </div>
+</div>
 @endsection
 
-@push("scripts")
-    <script type="module" src="{{ asset("assets/js/scripts/user.js") }}"></script>
+@push('styles')
+<style>
+    .table-custom thead th { background-color: #f8f9fa; text-transform: uppercase; font-size: 11px; letter-spacing: 0.5px; font-weight: 700; padding: 12px 15px; border-bottom: 2px solid #dee2e6; color: #475569; }
+    .table-custom tbody td { padding: 12px 15px; vertical-align: middle; font-size: 13.5px; border-bottom: 1px solid #f1f5f9; }
+    .btn-label-primary { background: #e7e7ff; color: #696cff; border: none; }
+    .btn-label-danger { background: #ffe5e5; color: #ff3e1d; border: none; }
+    .bg-label-primary { background-color: #e7e7ff; color: #696cff; }
+</style>
+@endpush
+
+@push('scripts')
+<script type="module" src="{{ asset('assets/js/scripts/user.js') }}"></script>
 @endpush

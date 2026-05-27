@@ -19,12 +19,29 @@ export const fiscaliteMixin = {
                 exercice_id: null,
                 devise_affichage: "CDF",
                 mode_conversion: "origine",
+                taux: 1,
             },
             data: null,
             error: null,
             isLoading: false,
             exportBase: `/accounting/export/fiscalite/${window.__FISCALITE_PAGE__ || "tva-collectee"}`,
         };
+    },
+
+    computed: {
+        pageSubtitle() {
+            let parts = [];
+            if (this.filtres.date_debut && this.filtres.date_fin) {
+                parts.push(`Période du ${this.fmtDate(this.filtres.date_debut)} au ${this.fmtDate(this.filtres.date_fin)}`);
+            }
+            if (this.filtres.devise_affichage) {
+                parts.push(`Devise: ${this.filtres.devise_affichage}`);
+            }
+            if (this.filtres.mode_conversion === 'actuel') {
+                parts.push(`Taux: ${this.filtres.taux}`);
+            }
+            return parts.join(' • ') || "Toutes les périodes";
+        }
     },
 
     async mounted() {
@@ -52,6 +69,9 @@ export const fiscaliteMixin = {
             this.filtres.exercice_id = data.exercice?.id || null;
             this.filtres.devise_affichage = this.options.devise_affichage || "CDF";
             this.filtres.mode_conversion = this.options.mode_conversion || "origine";
+            if (data.taux_usd) {
+                this.filtres.taux = data.taux_usd;
+            }
         },
 
         queryParams() {
@@ -61,6 +81,7 @@ export const fiscaliteMixin = {
                 exercice_id: this.filtres.exercice_id || "",
                 devise_affichage: this.filtres.devise_affichage,
                 mode_conversion: this.filtres.mode_conversion,
+                taux: this.filtres.taux,
             }).toString();
         },
 
@@ -105,6 +126,13 @@ export const fiscaliteMixin = {
                 minimumFractionDigits: 2,
                 maximumFractionDigits: 2,
             }).format(Number(v) || 0);
+        },
+
+        fmtDate(d) {
+            if (!d) return "";
+            const parts = d.split('-');
+            if (parts.length !== 3) return d;
+            return `${parts[2]}/${parts[1]}/${parts[0]}`;
         },
 
         statutLabel(s) {

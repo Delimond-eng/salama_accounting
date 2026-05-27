@@ -50,6 +50,7 @@ class SaisieController extends Controller
 
         $meta = $this->saisie->pageMeta($page);
         $multiDevise = ! empty($meta['multi_devise']);
+        $today = now()->toDateString();
 
         return response()->json([
             'status' => 'success',
@@ -60,6 +61,7 @@ class SaisieController extends Controller
             'devise_principale' => $societe?->devise_principale ?? 'CDF',
             'multi_devise' => $multiDevise,
             'template' => $journal ? $this->saisie->suggestTemplate($journal) : [],
+            'taux_usd' => $this->saisie->tauxPourDevise($societeId, 'USD', $today),
         ]);
     }
 

@@ -10,6 +10,7 @@ use App\Models\User;
 use App\Models\PlanComptable;
 use App\Models\Societe;
 use App\Models\Tiers;
+use App\Models\DeclarationFiscale;
 use App\Services\ComptableExportService;
 use App\Services\EtatsFinanciersService;
 use App\Services\FiscaliteService;
@@ -63,6 +64,10 @@ class ComptableExportController extends Controller
         $ctx = $this->etatsCtx($request, $societeId);
         if (isset($ctx['error'])) abort(422, $ctx['error']);
 
+        if ($type === 'globaux') {
+            return $this->exportGlobaux($ctx, $format);
+        }
+
         $exN1 = $ctx['exerciceN1'] instanceof Exercice ? $ctx['exerciceN1'] : null;
         $data = match ($type) {
             'bilan' => $this->etats->bilan($societeId, $ctx['exercice'], $ctx['dateArrete'], $ctx['devise'], $ctx['mode'], $exN1),
@@ -73,6 +78,20 @@ class ComptableExportController extends Controller
             default => abort(404),
         };
 
+        [$headers, $rows] = $this->formatEtatsRows($type, $data);
+
+        $meta = ['Date arrêté' => $ctx['dateArrete'], 'Devise' => $ctx['devise']];
+        if ($type === 'bilan') {
+            $meta['Total Actif'] = $this->export->formatNum($data['total_actif']);
+            $meta['Total Passif'] = $this->export->formatNum($data['total_passif']);
+            $meta['Résultat Net'] = $this->export->formatNum($data['resultat_exercice']);
+        }
+
+        return $this->export->respond($format, $headers, $rows, 'etat_'.$type, 'État — '.$type, $meta, $ctx['societe']);
+    }
+
+    protected function formatEtatsRows(string $type, array $data): array
+    {
         if ($type === 'bilan' || ($type === 'comparatif' && isset($data['bilan']))) {
             $bilanData = ($type === 'comparatif') ? $data['bilan'] : $data;
             $headers = ['Bloc', 'Réf', 'Libellé', 'Compte', 'Montant N', 'Montant N-1'];
@@ -86,18 +105,99 @@ class ComptableExportController extends Controller
                     $rows[] = [$label, $l['ref'] ?? '', $lib, $l['num_compte'] ?? '', $this->export->formatNum($l['net_n'] ?? 0), $this->export->formatNum($l['net_n1'] ?? 0)];
                 }
             }
-        } else {
-            $headers = ['Réf', 'Libellé', 'Note', 'Montant N', 'Montant N-1'];
-            $rows = [];
-            foreach ($data['lignes'] ?? [] as $l) {
-                $lib = $l['libelle'] ?? '';
-                if (($l['type'] ?? '') === 'titre') $lib = '### ' . $lib;
-                if (($l['type'] ?? '') === 'total') $lib = '=== ' . $lib;
-                $rows[] = [$l['ref'] ?? '', $lib, $l['note'] ?? '', $this->export->formatNum($l['montant_n'] ?? $l['cloture'] ?? 0), $this->export->formatNum($l['montant_n1'] ?? $l['ouverture'] ?? 0)];
+            if (($type === 'bilan' || $type === 'comparatif') && isset($bilanData['resultat_exercice'])) {
+                $rows[] = ['=== RÉSULTAT NET DE L\'EXERCICE', '', '', '', $this->export->formatNum($bilanData['resultat_exercice']), $this->export->formatNum($bilanData['total_actif_n1'] ?? 0)];
             }
+            return [$headers, $rows];
         }
 
-        return $this->export->respond($format, $headers, $rows, 'etat_'.$type, 'État — '.$type, ['Date arrêté' => $ctx['dateArrete'], 'Devise' => $ctx['devise']], $ctx['societe']);
+        if ($type === 'variation-kp') {
+            $headers = ['Libellé', 'Ouverture', 'Variation', 'Clôture'];
+            $rows = [];
+            foreach ($data['lignes'] ?? [] as $l) {
+                $rows[] = [
+                    $l['libelle'],
+                    $this->export->formatNum($l['ouverture'] ?? 0),
+                    $this->export->formatNum($l['variation'] ?? 0),
+                    $this->export->formatNum($l['cloture'] ?? 0)
+                ];
+            }
+            return [$headers, $rows];
+        }
+
+        $headers = ['Réf', 'Libellé', 'Note', 'Montant N', 'Montant N-1'];
+        $rows = [];
+        foreach ($data['lignes'] ?? [] as $l) {
+            $lib = $l['libelle'] ?? '';
+            if (($l['type'] ?? '') === 'titre') $lib = '### ' . $lib;
+            if (($l['type'] ?? '') === 'total') $lib = '=== ' . $lib;
+            $rows[] = [
+                $l['ref'] ?? '',
+                $lib,
+                $l['note'] ?? '',
+                $this->export->formatNum($l['montant_n'] ?? $l['cloture'] ?? $l['ouverture'] ?? 0),
+                $this->export->formatNum($l['montant_n1'] ?? 0)
+            ];
+        }
+        return [$headers, $rows];
+    }
+
+    protected function exportGlobaux(array $ctx, string $format)
+    {
+        $societeId = $ctx['societe']->id;
+        $exN1 = $ctx['exerciceN1'];
+        $sections = [];
+
+        // 1. Bilan
+        $bilan = $this->etats->bilan($societeId, $ctx['exercice'], $ctx['dateArrete'], $ctx['devise'], $ctx['mode'], $exN1);
+        [$h, $r] = $this->formatEtatsRows('bilan', $bilan);
+        $sections[] = ['title' => 'BILAN ACTIF / PASSIF', 'headers' => $h, 'rows' => $r];
+
+        // 2. Compte de résultat
+        $cr = $this->etats->compteResultat($societeId, $ctx['exercice'], $ctx['dateArrete'], $ctx['devise'], $ctx['mode'], $exN1);
+        [$h, $r] = $this->formatEtatsRows('compte-resultat', $cr);
+        $sections[] = ['title' => 'COMPTE DE RÉSULTAT', 'headers' => $h, 'rows' => $r];
+
+        // 3. Flux de trésorerie
+        $tft = $this->etats->fluxTresorerie($societeId, $ctx['exercice'], $ctx['dateArrete'], $ctx['devise'], $ctx['mode'], $exN1);
+        [$h, $r] = $this->formatEtatsRows('flux-tresorerie', $tft);
+        $sections[] = ['title' => 'TABLEAU DES FLUX DE TRÉSORERIE (TFT)', 'headers' => $h, 'rows' => $r];
+
+        // 4. Variation KP
+        $vkp = $this->etats->variationCapitauxPropres($societeId, $ctx['exercice'], $ctx['dateArrete'], $ctx['devise'], $ctx['mode'], $exN1);
+        [$h, $r] = $this->formatEtatsRows('variation-kp', $vkp);
+        $sections[] = ['title' => 'TABLEAU DE VARIATION DES CAPITAUX PROPRES (TVCP)', 'headers' => $h, 'rows' => $r];
+
+        // 5. Comparatif (On réutilise Bilan & CR groupés)
+        $comp = $this->etats->comparatif($societeId, $ctx['exercice'], $ctx['dateArrete'], $ctx['devise'], $ctx['mode']);
+        [$hB, $rB] = $this->formatEtatsRows('bilan', $comp['bilan']);
+        [$hC, $rC] = $this->formatEtatsRows('compte-resultat', $comp['compte_resultat']);
+        $sections[] = ['title' => 'ÉTAT COMPARATIF N / N-1 (BILAN)', 'headers' => $hB, 'rows' => $rB];
+        $sections[] = ['title' => 'ÉTAT COMPARATIF N / N-1 (RÉSULTAT)', 'headers' => $hC, 'rows' => $rC];
+
+        // 6. Annexes
+        $annexes = $this->etats->annexes();
+        $annexRows = [];
+        $annexRows[] = ['### NOTES RELATIVES AUX ÉTATS FINANCIERS', '', ''];
+        foreach($annexes['sections'] as $s) {
+            $annexRows[] = ['### Note '.$s['num'], $s['titre'], ''];
+            $annexRows[] = ['', $s['contenu'], ''];
+        }
+        $sections[] = ['title' => 'ANNEXES SYSCOHADA', 'headers' => ['Réf Note', 'Libellé / Contenu', ''], 'rows' => $annexRows];
+
+        $meta = [
+            'Exercice' => $ctx['exercice']->libelle,
+            'Période' => 'Du ' . $ctx['exercice']->date_debut->format('d/m/Y') . ' au ' . date('d/m/Y', strtotime($ctx['dateArrete'])),
+            'Devise d\'affichage' => $ctx['devise']
+        ];
+
+        $filename = "etats_financiers_complets_" . $ctx['exercice']->libelle;
+
+        if ($format === 'pdf') {
+            return $this->export->downloadPdfMulti($sections, $filename, 'DOSSIER ÉTATS FINANCIERS ANNUELS', $meta, $ctx['societe']);
+        }
+
+        return $this->export->downloadExcelMulti($sections, $filename, $ctx['societe'], $meta);
     }
 
     public function fiscalite(Request $request, string $type, string $format)
@@ -119,6 +219,63 @@ class ComptableExportController extends Controller
             $headers = ['Libellé', 'Montant'];
             $data = $this->fiscalite->impotSocietes($societeId, $ctx['exercice'], $ctx['dateFin'], $ctx['devise']);
             $rows = [['Résultat comptable', $this->export->formatNum($data['resultat_comptable'] ?? 0)], ['Base imposable', $this->export->formatNum($data['base_imposable'] ?? 0)], ['Taux IS (%)', $data['taux_is'] ?? ''], ['=== MONTANT IS', $this->export->formatNum($data['montant_is'] ?? 0)]];
+        } elseif ($type === 'echeances') {
+            $headers = ['Échéance', 'Type', 'Période Début', 'Période Fin', 'Date limite', 'Statut'];
+            $data = $this->fiscalite->echeances($societeId, $ctx['exercice']);
+            $today = now()->toDateString();
+            $rows = [];
+            foreach ($data as $e) {
+                $statut = $e['statut'] ?? 'a_declarer';
+                $label = ($statut === 'deposee') ? 'Déposée' : 'À déclarer';
+                if ($statut !== 'deposee' && !empty($e['date_limite_depot']) && $e['date_limite_depot'] < $today) {
+                    $label = 'EN RETARD';
+                }
+                $rows[] = [
+                    $e['libelle'] ?? '',
+                    $e['type'] ?? '',
+                    $e['periode_debut'] ?? '',
+                    $e['periode_fin'] ?? '',
+                    $e['date_limite_depot'] ?? '',
+                    $label,
+                ];
+            }
+        } elseif ($type === 'declarations') {
+            $headers = ['Type', 'Période Début', 'Période Fin', 'TVA Coll.', 'TVA Déd.', 'Impôt', 'Statut'];
+            $query = DeclarationFiscale::where('societe_id', $societeId);
+            if ($ctx['exercice']) $query->where('exercice_id', $ctx['exercice']->id);
+            if ($ctx['dateDebut']) $query->where('periode_fin', '>=', $ctx['dateDebut']);
+            if ($ctx['dateFin']) $query->where('periode_debut', '<=', $ctx['dateFin']);
+
+            $data = $query->orderByDesc('periode_fin')->get();
+            $rows = [];
+            foreach ($data as $d) {
+                $rows[] = [
+                    $d->type,
+                    $d->periode_debut?->format('d/m/Y') ?? '',
+                    $d->periode_fin?->format('d/m/Y') ?? '',
+                    $this->export->formatNum($d->tva_collectee),
+                    $this->export->formatNum($d->tva_deductible),
+                    $this->export->formatNum($d->montant_impot),
+                    $d->statut,
+                ];
+            }
+        } elseif ($type === 'dsf') {
+            $headers = ['Rubrique', 'Valeur'];
+            $data = $this->fiscalite->dsf($societeId, $ctx['exercice'], $ctx['dateFin'], $ctx['devise']);
+            $rows = [
+                ['Exercice', $data['exercice']],
+                ['Date d\'arrêté', $data['date_arrete']],
+                ['Total Actif (TA)', $this->export->formatNum($data['bilan_total_actif'])],
+                ['Total Passif (TP)', $this->export->formatNum($data['bilan_total_passif'])],
+                ['Total Capitaux Propres (TPE)', $this->export->formatNum($data['bilan_total_capitaux_propres'])],
+                ['Passif + Equity', $this->export->formatNum($data['bilan_total_passif_et_equity'])],
+                ['Chiffre d\'affaires (XB)', $this->export->formatNum($data['chiffre_affaires'])],
+                ['Résultat Net (XI)', $this->export->formatNum($data['resultat_net'])],
+                ['### SYNTHESE TVA', ''],
+                ['TVA Collectée', $this->export->formatNum($data['tva']['tva_collectee'])],
+                ['TVA Déductible', $this->export->formatNum($data['tva']['tva_deductible'])],
+                ['TVA Nette', $this->export->formatNum($data['tva']['tva_nette'])],
+            ];
         } else {
             abort(404);
         }
@@ -130,7 +287,31 @@ class ComptableExportController extends Controller
     {
         $societeId = SocieteContext::requireId();
         $page = $request->get('page', 'nouvelle');
+        $societe = Societe::findOrFail($societeId);
+
+        $journal = $this->saisie->resolveJournal($societeId, $page);
+
         $query = Ecriture::with('journal:id,code')->parSociete($societeId)->orderByDesc('created_at');
+
+        if ($journal) {
+            $query->where('journal_id', $journal->id);
+        }
+
+        if ($page === 'devises') {
+            $query->where('devise', '!=', $societe->devise_principale ?? 'CDF');
+        }
+
+        if ($request->filled('statut')) {
+            $query->where('statut', $request->get('statut'));
+        }
+
+        if ($search = trim((string) $request->get('search', ''))) {
+            $query->where(fn ($q) => $q
+                ->where('num_piece', 'like', "%{$search}%")
+                ->orWhere('libelle', 'like', "%{$search}%")
+                ->orWhere('reference_externe', 'like', "%{$search}%"));
+        }
+
         if ($request->filled('date_debut')) $query->where('date_ecriture', '>=', $request->get('date_debut'));
         if ($request->filled('date_fin')) $query->where('date_ecriture', '<=', $request->get('date_fin'));
 
@@ -142,8 +323,15 @@ class ComptableExportController extends Controller
             $this->export->formatNum($e->total_debit), $this->export->formatNum($e->total_credit), $e->statut,
         ])->all();
 
-        $societe = Societe::find($societeId);
-        return $this->export->respond($format, $headers, $rows, 'ecritures_'.$page, 'Liste des écritures — '.$page, [], $societe);
+        $title = "Liste des écritures — " . ucfirst($page);
+
+        $meta = [
+            'Journal' => $journal ? "{$journal->code} - {$journal->libelle}" : ($page === 'devises' ? "Multi-devises" : "Tous"),
+            'Période' => ($request->get('date_debut') ?: 'Dép.') . " au " . ($request->get('date_fin') ?: 'Auj.'),
+            'Statut' => $request->get('statut') ?: 'Tous'
+        ];
+
+        return $this->export->respond($format, $headers, $rows, 'ecritures_'.$page, $title, $meta, $societe);
     }
 
     public function parametres(Request $request, string $type, string $format)
@@ -200,37 +388,6 @@ class ComptableExportController extends Controller
         $headers = ['Compte', 'Intitulé', 'Solde début D', 'Solde début C', 'Mvt débit', 'Mvt crédit', 'Solde fin D', 'Solde fin C'];
         $rows = collect($data['lignes'] ?? [])->map(fn ($r) => [$r['num_compte'] ?? '', $r['libelle'] ?? '', $this->export->formatNum($r['solde_debut_debiteur'] ?? 0), $this->export->formatNum($r['solde_debut_crediteur'] ?? 0), $this->export->formatNum($r['mouvement_debit'] ?? 0), $this->export->formatNum($r['mouvement_credit'] ?? 0), $this->export->formatNum($r['solde_fin_debiteur'] ?? 0), $this->export->formatNum($r['solde_fin_crediteur'] ?? 0)])->all();
         if (isset($data['totaux'])) $rows[] = ['=== TOTAL GÉNÉRAL', '', $this->export->formatNum($data['totaux']['solde_debut_debiteur']), $this->export->formatNum($data['totaux']['solde_debut_crediteur']), $this->export->formatNum($data['totaux']['mouvement_debit']), $this->export->formatNum($data['totaux']['mouvement_credit']), $this->export->formatNum($data['totaux']['solde_fin_debiteur']), $this->export->formatNum($data['totaux']['solde_fin_crediteur'])];
-        return [$headers, $rows];
-    }
-
-    protected function rowsJournal(int $societeId, array $f, Request $request): array
-    {
-        $lignes = $this->livres->journalGeneral($societeId, $f['exercice']->id, $f['dateDebut'], $f['dateFin'], $f['deviseAffichage'], $f['modeConversion'], $request->integer('journal_id') ?: null);
-        $headers = ['Date enreg.', 'Date écriture', 'Pièce', 'Journal', 'Compte', 'Libellé', 'Partenaire', 'Débit', 'Crédit', 'Devise'];
-        $rows = $lignes->map(fn ($l) => [$l['date_enregistrement'] ?? '', $l['date_ecriture'] ?? '', $l['num_piece'] ?? '', $l['journal_code'] ?? '', $l['num_compte'] ?? '', $l['libelle'] ?? '', $l['partenaire'] ?? '', $this->export->formatNum($l['debit'] ?? 0), $this->export->formatNum($l['credit'] ?? 0), $l['devise_saisie'] ?? ''])->all();
-        $rows[] = ['=== TOTAL GÉNÉRAL', '', '', '', '', '', '', $this->export->formatNum($lignes->sum('debit')), $this->export->formatNum($lignes->sum('credit')), ''];
-        return [$headers, $rows];
-    }
-
-    protected function rowsAuxiliaire(int $societeId, array $f, Request $request): array
-    {
-        $lignes = $this->livres->balanceAuxiliaire($societeId, $f['exercice']->id, $f['dateDebut'], $f['dateFin'], $f['deviseAffichage'], $f['modeConversion'], $request->get('type_tiers'));
-        $headers = ['Tiers', 'Compte', 'Solde début D', 'Solde début C', 'Mvt débit', 'Mvt crédit', 'Solde fin D', 'Solde fin C'];
-        $rows = $lignes->map(fn ($r) => [$r['nom'] ?? '', $r['num_compte'] ?? '', $this->export->formatNum($r['solde_debut_debiteur'] ?? 0), $this->export->formatNum($r['solde_debut_crediteur'] ?? 0), $this->export->formatNum($r['mouvement_debit'] ?? 0), $this->export->formatNum($r['mouvement_credit'] ?? 0), $this->export->formatNum($r['solde_fin_debiteur'] ?? 0), $this->export->formatNum($r['solde_fin_crediteur'] ?? 0)])->all();
-        $rows[] = ['=== TOTAL GÉNÉRAL', '', $this->export->formatNum($lignes->sum('solde_debut_debiteur')), $this->export->formatNum($lignes->sum('solde_debut_crediteur')), $this->export->formatNum($lignes->sum('mouvement_debit')), $this->export->formatNum($lignes->sum('mouvement_credit')), $this->export->formatNum($lignes->sum('solde_fin_debiteur')), $this->export->formatNum($lignes->sum('solde_fin_crediteur'))];
-        return [$headers, $rows];
-    }
-
-    protected function rowsComptesTiers(int $societeId, array $f): array
-    {
-        $tiers = $this->livres->comptesTiers($societeId);
-        $soldes = $this->livres->balanceAuxiliaire($societeId, $f['exercice']->id, $f['dateDebut'], $f['dateFin'], $f['deviseAffichage'], $f['modeConversion'], null)->keyBy('tiers_id');
-        $headers = ['Code', 'Nom', 'Type', 'Compte', 'Solde débiteur', 'Solde créditeur'];
-        $rows = $tiers->map(function ($t) use ($soldes) {
-            $s = $soldes->get($t->id);
-            return [$t->code ?? '', $t->nom ?? '', $t->type ?? '', $t->num_compte_collectif ?? '', $this->export->formatNum($s['solde_fin_debiteur'] ?? 0), $this->export->formatNum($s['solde_fin_crediteur'] ?? 0)];
-        })->all();
-        $rows[] = ['=== TOTAL GÉNÉRAL', '', '', '', $this->export->formatNum($soldes->sum('solde_fin_debiteur')), $this->export->formatNum($soldes->sum('solde_fin_crediteur'))];
         return [$headers, $rows];
     }
 

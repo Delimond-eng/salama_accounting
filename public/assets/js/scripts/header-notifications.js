@@ -11,16 +11,17 @@ new Vue({
     },
     mounted() {
         this.loadNotifications();
-        // Refresh every 5 minutes
         setInterval(() => this.loadNotifications(), 300000);
     },
     methods: {
         async loadNotifications() {
             try {
                 const { data } = await get("/accounting/notifications");
-                if (data.status === "success") {
-                    this.alertes = data.alertes.items || [];
-                    this.count = data.alertes.count || 0;
+                if (data.status === "success" && data.alertes) {
+                    const rawItems = data.alertes.items || [];
+                    // Force en tableau pour garantir la réactivité et le .length
+                    this.alertes = Array.isArray(rawItems) ? rawItems : Object.values(rawItems);
+                    this.count = this.alertes.length;
                 }
             } catch (e) {
                 console.error("Erreur notifications:", e);

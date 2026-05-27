@@ -18,13 +18,40 @@ export const livresMixin = {
                 devise_affichage: "CDF",
                 mode_conversion: "origine",
             },
-            tauxUsd: 2200,
+            tauxUsd: 1,
             dateTaux: null,
             error: null,
             isLoading: false,
             journalId: null,
             exportBase: `/accounting/export/livres/${window.__LIVRES_PAGE__ || "balance"}`,
         };
+    },
+
+    computed: {
+        pageTitle() {
+            const titles = {
+                journal: "Journal Général",
+                "grand-livre": "Grand Livre",
+                balance: "Balance de Vérification",
+                auxiliaire: "Balance Auxiliaire",
+                lettrage: "Lettrage des Comptes",
+                banque: "Livre de Banque",
+                caisse: "Livre de Caisse",
+                "comptes-tiers": "Situation des Tiers"
+            };
+            return titles[this.page] || "Livres Comptables";
+        },
+        pageSubtitle() {
+            let parts = [];
+            if (this.filtres.date_debut && this.filtres.date_fin) {
+                parts.push(`Période du ${this.fmtDate(this.filtres.date_debut)} au ${this.fmtDate(this.filtres.date_fin)}`);
+            }
+            parts.push(`Devise: ${this.filtres.devise_affichage}`);
+            if (this.filtres.mode_conversion === 'actuel') {
+                parts.push(`Taux: ${this.tauxUsd}`);
+            }
+            return parts.join(' • ');
+        }
     },
 
     async mounted() {
@@ -60,6 +87,7 @@ export const livresMixin = {
                 date_fin: this.filtres.date_fin,
                 devise_affichage: this.filtres.devise_affichage,
                 mode_conversion: this.filtres.mode_conversion,
+                taux: this.tauxUsd,
             });
             if (this.page === "journal" && this.journalId) {
                 p.set("journal_id", this.journalId);
@@ -81,11 +109,8 @@ export const livresMixin = {
             await this.loadData();
         },
 
-        /**
-         * Placeholder pour loadData. Doit être implémenté dans le composant.
-         */
         async loadData() {
-            console.warn("loadData non implémenté dans le script de la page.");
+            console.warn("loadData non implémenté");
         },
 
         async savePreferences() {
@@ -99,9 +124,7 @@ export const livresMixin = {
         },
 
         async saveTauxUsd() {
-            if (!this.tauxUsd || this.tauxUsd <= 0) {
-                return;
-            }
+            if (!this.tauxUsd || this.tauxUsd <= 0) return;
             const date = this.dateTaux || new Date().toISOString().slice(0, 10);
             const { data } = await postJson("/accounting/parametres/taux-change/save", {
                 devise_code: "USD",
@@ -127,10 +150,18 @@ export const livresMixin = {
         },
 
         fmt(v) {
+            if (v === null || v === undefined || v === "") return "—";
             return new Intl.NumberFormat("fr-FR", {
                 minimumFractionDigits: 2,
                 maximumFractionDigits: 2,
             }).format(v || 0);
+        },
+
+        fmtDate(d) {
+            if (!d) return "";
+            const parts = d.split('-');
+            if (parts.length !== 3) return d;
+            return `${parts[2]}/${parts[1]}/${parts[0]}`;
         },
 
         suffixDevise(code) {
@@ -142,9 +173,6 @@ export const livresMixin = {
 
         fmtMontantDevise(montant, devise) {
             const n = Number(montant) || 0;
-            if (n === 0 && montant !== 0) {
-                return `0,00 ${this.suffixDevise(devise)}`;
-            }
             return `${this.fmt(n)} ${this.suffixDevise(devise)}`;
         },
 
@@ -153,5 +181,14 @@ export const livresMixin = {
             const s = String(dt).replace("T", " ");
             return s.length >= 19 ? s.slice(0, 19) : s;
         },
+
+        journalBadgeClass(type, code) {
+            const c = (code || "").toUpperCase();
+            if (c === "BQ") return "bg-soft-primary text-primary";
+            if (c === "CA") return "bg-soft-warning text-warning";
+            if (c === "VT") return "bg-soft-success text-success";
+            if (c === "HA") return "bg-soft-danger text-danger";
+            return "bg-soft-secondary text-secondary";
+        }
     },
 };

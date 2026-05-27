@@ -24,7 +24,12 @@ export const saisieMixin = {
             filtres: {
                 date_debut: startOfYear,
                 date_fin: today,
+                devise_affichage: "CDF",
+                mode_conversion: "origine",
+                taux: 1,
             },
+            options: { devises: [] },
+            tauxUsd: 1,
             exportBase: "/accounting/export/saisie",
         };
     },
@@ -86,14 +91,26 @@ export const saisieMixin = {
                 this.multiDevise = !!data.multi_devise;
                 this.devisePrincipale = data.devise_principale;
                 this.template = data.template || [];
+                this.tauxUsd = data.taux_usd || 1;
+                this.filtres.taux = this.tauxUsd;
+                if (data.societe?.parametres) {
+                    const p = data.societe.parametres;
+                    this.filtres.devise_affichage = p.devise_affichage || this.filtres.devise_affichage;
+                    this.filtres.mode_conversion = p.mode_conversion || this.filtres.mode_conversion;
+                }
             }
             return data;
         },
 
         queryParams(extra = {}) {
-            const p = new URLSearchParams({ page: this.page });
-            if (this.filtres.date_debut) p.set("date_debut", this.filtres.date_debut);
-            if (this.filtres.date_fin) p.set("date_fin", this.filtres.date_fin);
+            const p = new URLSearchParams({
+                page: this.page,
+                date_debut: this.filtres.date_debut,
+                date_fin: this.filtres.date_fin,
+                devise_affichage: this.filtres.devise_affichage,
+                mode_conversion: this.filtres.mode_conversion,
+                taux: this.filtres.taux
+            });
             if (this.search) p.set("search", this.search);
             if (this.filtreStatut) p.set("statut", this.filtreStatut);
 

@@ -6,6 +6,7 @@ use App\Models\Exercice;
 use App\Models\Societe;
 use App\Services\EtatsFinanciersService;
 use App\Services\LivresComptablesService;
+use App\Services\DeviseConversionService;
 use App\Support\SocieteContext;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -17,7 +18,8 @@ class EtatsController extends Controller
 {
     public function __construct(
         protected EtatsFinanciersService $etats,
-        protected LivresComptablesService $livres
+        protected LivresComptablesService $livres,
+        protected DeviseConversionService $devises
     ) {}
 
     public function bilan(): View
@@ -63,6 +65,7 @@ class EtatsController extends Controller
         $options = $this->livres->optionsDefaut($societe);
         $exercices = Exercice::where('societe_id', $societeId)->orderByDesc('date_fin')->get(['id', 'libelle', 'date_debut', 'date_fin', 'est_courant']);
         $n1 = $exercice ? $this->etats->exercicePrecedent($societeId, $exercice) : null;
+        $today = now()->toDateString();
 
         return response()->json([
             'status' => 'success',
@@ -73,6 +76,8 @@ class EtatsController extends Controller
             'options' => $options,
             'date_arrete' => $exercice?->date_fin?->format('Y-m-d'),
             'date_debut' => $exercice?->date_debut?->format('Y-m-d'),
+            'taux_usd' => $this->devises->tauxJournalier($societeId, 'USD', $today),
+            'date_taux' => $today,
         ]);
     }
 

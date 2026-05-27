@@ -5,7 +5,7 @@
     <title>{{ $title }}</title>
     <style>
         @page {
-            margin: 0.8cm;
+            margin: 1cm;
             footer: html_footer;
         }
         body {
@@ -14,47 +14,44 @@
             color: #1a1a1a;
             line-height: 1.2;
         }
-        /* Header style Institutionnel */
-        .header-table {
-            width: 100%;
-            border-bottom: 3px solid #800000; /* Bordeaux Comptable */
-            padding-bottom: 8px;
-            margin-bottom: 15px;
+        .header-centered {
+            text-align: center;
+            border-bottom: 2px solid #800000;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
         }
         .company-name {
-            font-size: 15px;
+            font-size: 24px;
             font-weight: bold;
             color: #800000;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            margin-bottom: 5px;
         }
         .company-details {
-            font-size: 7.5px;
-            color: #444;
-            line-height: 1.3;
-        }
-        .doc-info {
-            text-align: right;
-            vertical-align: top;
+            font-size: 10px;
+            color: #555;
+            margin-bottom: 10px;
         }
         .doc-title {
-            font-size: 18px;
+            font-size: 20px;
             font-weight: bold;
             color: #2c3e50;
             text-transform: uppercase;
-            margin-bottom: 2px;
         }
         .meta-container {
-            font-size: 9px;
-            color: #333;
-            background: #fcfcfc;
+            margin: 15px auto;
+            text-align: center;
+            background: #fafafa;
             border: 1px solid #ddd;
-            padding: 4px 8px;
+            padding: 8px;
+            width: 90%;
+        }
+        .meta-item {
             display: inline-block;
-            text-align: left;
+            margin: 0 15px;
+            font-size: 11px;
         }
 
-        /* Data Table Style Pro */
         table.data-table {
             width: 100%;
             border-collapse: collapse;
@@ -79,7 +76,6 @@
             background-color: #fafafa;
         }
 
-        /* Lignes de Section (###) */
         .row-section {
             background-color: #efefef !important;
             font-weight: bold;
@@ -91,7 +87,6 @@
             color: #800000;
         }
 
-        /* Lignes de Total (===) */
         .row-total {
             background-color: #fff9f9 !important;
             font-weight: bold;
@@ -99,19 +94,13 @@
         }
         .row-total td {
             border-top: 2px solid #800000 !important;
-            border-bottom: 3px double #800000 !important; /* Double ligne de pied */
+            border-bottom: 3px double #800000 !important;
             font-size: 9px;
         }
 
-        .text-right {
-            text-align: right;
-            font-family: "Courier New", Courier, monospace;
-            font-weight: bold;
-            white-space: nowrap;
-        }
+        .text-right { text-align: right; }
         .text-center { text-align: center; }
 
-        /* Signature block */
         .signature-table {
             width: 100%;
             margin-top: 40px;
@@ -134,44 +123,27 @@
             border-top: 1px solid #eee;
             padding-top: 4px;
         }
-        .watermark {
-            margin-top: 15px;
-            text-align: right;
-            font-style: italic;
-            font-size: 7px;
-            color: #bbb;
-        }
     </style>
 </head>
 <body>
 
-    <table class="header-table">
-        <tr>
-            <td style="width: 55%;">
-                @if(isset($societe))
-                    <div class="company-name">{{ $societe->raison_sociale }}</div>
-                    <div class="company-details">
-                        <strong>{{ $societe->sigle ?? $societe->forme_juridique }}</strong> | {{ $societe->regime_fiscal }}<br>
-                        {{ $societe->adresse }} {{ $societe->ville }}<br>
-                        @if($societe->rccm) RCCM: {{ $societe->rccm }} @endif
-                        @if($societe->num_contribuable) | NUI: {{ $societe->num_contribuable }} @endif<br>
-                        @if($societe->telephone) Tél: {{ $societe->telephone }} @endif
-                        @if($societe->email) | Email: {{ $societe->email }} @endif
-                    </div>
-                @else
-                    <div class="company-name">SALAMA ACCOUNTING</div>
-                @endif
-            </td>
-            <td class="doc-info">
-                <div class="doc-title">{{ $title }}</div>
-                <div class="meta-container">
-                    @foreach ($meta as $k => $v)
-                        <div><strong>{{ $k }}:</strong> {{ $v }}</div>
-                    @endforeach
-                </div>
-            </td>
-        </tr>
-    </table>
+    <div class="header-centered">
+        @if(isset($societe))
+            <div class="company-name">{{ $societe->raison_sociale }}</div>
+            <div class="company-details">
+                <strong>{{ $societe->sigle ?? $societe->forme_juridique }}</strong> | {{ $societe->regime_fiscal }}<br>
+                {{ $societe->adresse }} {{ $societe->ville }}<br>
+                RCCM: {{ $societe->rccm }} | ID Nat: {{ $societe->num_contribuable }}
+            </div>
+        @endif
+        <div class="doc-title">{{ $title }}</div>
+    </div>
+
+    <div class="meta-container">
+        @foreach ($meta as $k => $v)
+            <div class="meta-item"><strong>{{ $k }}:</strong> {{ $v }}</div>
+        @endforeach
+    </div>
 
     <table class="data-table">
         <thead>
@@ -199,7 +171,6 @@
                             $cleanCell = (string)$cell;
                             if (str_starts_with($cleanCell, '### ')) $cleanCell = substr($cleanCell, 4);
                             if (str_starts_with($cleanCell, '=== ')) $cleanCell = substr($cleanCell, 4);
-
                             $isNumeric = is_numeric(str_replace([' ', ','], ['', '.'], $cleanCell)) && strlen($cleanCell) > 0;
                         @endphp
                         <td class="{{ $isNumeric ? 'text-right' : '' }}">
@@ -218,11 +189,9 @@
         </tr>
     </table>
 
-    <div class="watermark">Document généré électroniquement par SALAMA Accounting le {{ $generated_at }}</div>
-
     <htmlpagefooter name="html_footer">
         <div class="footer">
-            SALAMA ACCOUNTING — Page {PAGENO} / {TOTALPAGES} — Document à caractère confidentiel
+            SALAMA ACCOUNTING — Page {PAGENO} / {TOTALPAGES} — Document confidentiel généré le {{ $generated_at }}
         </div>
     </htmlpagefooter>
 

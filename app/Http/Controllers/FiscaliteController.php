@@ -6,6 +6,7 @@ use App\Models\Exercice;
 use App\Models\Societe;
 use App\Services\FiscaliteService;
 use App\Services\LivresComptablesService;
+use App\Services\DeviseConversionService;
 use App\Support\SocieteContext;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -15,7 +16,8 @@ class FiscaliteController extends Controller
 {
     public function __construct(
         protected FiscaliteService $fiscalite,
-        protected LivresComptablesService $livres
+        protected LivresComptablesService $livres,
+        protected DeviseConversionService $devises
     ) {}
 
     public function tvaCollectee(): View
@@ -54,6 +56,7 @@ class FiscaliteController extends Controller
         $societe = Societe::findOrFail($societeId);
         $exercice = $this->fiscalite->exerciceCourant($societeId);
         $options = $this->livres->optionsDefaut($societe);
+        $today = now()->toDateString();
 
         return response()->json([
             'status' => 'success',
@@ -67,6 +70,7 @@ class FiscaliteController extends Controller
             ],
             'date_debut' => $exercice?->date_debut?->format('Y-m-d'),
             'date_fin' => $exercice?->date_fin?->format('Y-m-d'),
+            'taux_usd' => $this->devises->tauxJournalier($societeId, 'USD', $today),
         ]);
     }
 

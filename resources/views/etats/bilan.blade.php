@@ -40,6 +40,10 @@
                     <small>Total Passif</small>
                     <strong>@{{ fmt(data.total_passif) }}</strong>
                 </div>
+                <div class="stats-badge bg-soft-success text-success">
+                    <small>Résultat Net</small>
+                    <strong>@{{ fmt(data.resultat_exercice) }}</strong>
+                </div>
             </div>
         </div>
         <div class="card-body p-0">
