@@ -47,7 +47,6 @@
     </li>
     @endforeach
 </ul>
-<<<<<<< HEAD
 
 <div v-if="error" class="alert alert-danger alert-dismissible fade show border-0 shadow-sm">
     <ul class="mb-0" v-if="Array.isArray(error)"><li v-for="(e,i) in error" :key="i">@{{ e }}</li></ul>
@@ -59,5 +58,3 @@
     <i class="ti ti-circle-check me-2"></i>@{{ message }}
     <button type="button" class="btn-close" @click="message=null"></button>
 </div>
-=======
->>>>>>> 356d4919f7208489f8fadf9a5b1244abeb82c9b0

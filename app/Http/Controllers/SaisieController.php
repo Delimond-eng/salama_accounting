@@ -51,10 +51,6 @@ class SaisieController extends Controller
             ->orderBy('ordre_affichage')->orderBy('code')->get();
 
         $meta = $this->saisie->pageMeta($page);
-<<<<<<< HEAD
-        $multiDevise = ! empty($meta['multi_devise']);
-        $today = now()->toDateString();
-=======
         $devisePrincipale = strtoupper($societe?->devise_principale ?? 'CDF');
         $deviseJournal = $journal?->devise_defaut ? strtoupper($journal->devise_defaut) : $devisePrincipale;
         $journalEnDeviseEtrangere = $journal && $deviseJournal !== $devisePrincipale;
@@ -67,7 +63,7 @@ class SaisieController extends Controller
                 return $d !== $devisePrincipale;
             })->values();
         }
->>>>>>> 356d4919f7208489f8fadf9a5b1244abeb82c9b0
+        $today = now()->toDateString();
 
         return response()->json([
             'status' => 'success',
@@ -80,12 +76,9 @@ class SaisieController extends Controller
             'journal_devise_etrangere' => $journalEnDeviseEtrangere,
             'multi_devise' => $multiDevise,
             'template' => $journal ? $this->saisie->suggestTemplate($journal) : [],
-<<<<<<< HEAD
             'taux_usd' => $this->saisie->tauxPourDevise($societeId, 'USD', $today),
-=======
             'analytique_obligatoire' => (bool) ($journal?->analytique_obligatoire ?? false),
             'axes_analytiques' => $this->analytique->axesActifs($societeId),
->>>>>>> 356d4919f7208489f8fadf9a5b1244abeb82c9b0
         ]);
     }
 

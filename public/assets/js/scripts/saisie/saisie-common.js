@@ -93,20 +93,20 @@ export const saisieMixin = {
                 this.deviseDefaut = data.devise_defaut || this.devisePrincipale;
                 this.journalDeviseEtrangere = !!data.journal_devise_etrangere;
                 this.template = data.template || [];
-<<<<<<< HEAD
+
                 this.tauxUsd = data.taux_usd || 1;
                 this.filtres.taux = this.tauxUsd;
                 if (data.societe?.parametres) {
                     const p = data.societe.parametres;
                     this.filtres.devise_affichage = p.devise_affichage || this.filtres.devise_affichage;
                     this.filtres.mode_conversion = p.mode_conversion || this.filtres.mode_conversion;
-=======
+                }
+
                 if (typeof this.analytiqueObligatoireJournal !== "undefined") {
                     this.analytiqueObligatoireJournal = !!data.analytique_obligatoire;
                 }
                 if (typeof this.axesAnalytiques !== "undefined") {
                     this.axesAnalytiques = data.axes_analytiques || [];
->>>>>>> 356d4919f7208489f8fadf9a5b1244abeb82c9b0
                 }
             }
             return data;

@@ -19,11 +19,8 @@ export const fiscaliteMixin = {
                 exercice_id: null,
                 devise_affichage: "CDF",
                 mode_conversion: "origine",
-<<<<<<< HEAD
                 taux: 1,
-=======
                 scope_devise: "consolide",
->>>>>>> 356d4919f7208489f8fadf9a5b1244abeb82c9b0
             },
             data: null,
             error: null,
@@ -73,13 +70,10 @@ export const fiscaliteMixin = {
             this.filtres.exercice_id = data.exercice?.id || null;
             this.filtres.devise_affichage = this.options.devise_affichage || "CDF";
             this.filtres.mode_conversion = this.options.mode_conversion || "origine";
-<<<<<<< HEAD
             if (data.taux_usd) {
                 this.filtres.taux = data.taux_usd;
             }
-=======
             this.filtres.scope_devise = this.options.scope_devise || "consolide";
->>>>>>> 356d4919f7208489f8fadf9a5b1244abeb82c9b0
         },
 
         queryParams() {
@@ -89,11 +83,8 @@ export const fiscaliteMixin = {
                 exercice_id: this.filtres.exercice_id || "",
                 devise_affichage: this.filtres.devise_affichage,
                 mode_conversion: this.filtres.mode_conversion,
-<<<<<<< HEAD
                 taux: this.filtres.taux,
-=======
                 scope_devise: this.filtres.scope_devise,
->>>>>>> 356d4919f7208489f8fadf9a5b1244abeb82c9b0
             }).toString();
         },
 

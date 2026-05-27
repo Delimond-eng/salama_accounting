@@ -71,11 +71,7 @@ new Vue({
         async loadData() {
             this.isLoading = true;
             try {
-<<<<<<< HEAD
                 const { data } = await get(`/accounting/parametres/tiers/all?${this.queryParams()}`);
-                if (data.status === "success") this.liste = data.tiers || [];
-=======
-                const { data } = await get(`/accounting/parametres/tiers/all?${params}`);
                 if (data.status === "success") {
                     this.liste = data.tiers || [];
                 } else if (data.errors) {
@@ -85,7 +81,6 @@ new Vue({
                 console.error(e);
                 this.error = ["Impossible de charger les tiers. Vérifiez qu'une société est active (Paramètres > Société)."];
                 this.liste = [];
->>>>>>> 356d4919f7208489f8fadf9a5b1244abeb82c9b0
             } finally {
                 this.isLoading = false;
             }
