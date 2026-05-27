@@ -53,7 +53,10 @@
                                 <td class="text-end">@{{ fmt(p.stock_minimum) }}</td>
                                 <td class="text-end">@{{ fmt(p.prix_unitaire_cdf) }}</td>
                                 <td class="text-end">@{{ fmt(p.prix_unitaire_usd) }}</td>
-                                <td><span v-if="!p.gestion_stock" class="badge badge-soft-secondary">Sans stock</span></td>
+                                <td>
+                                    <a v-if="p.gestion_stock" :href="'/accounting/facturation/stock/fiche/'+p.id" class="btn btn-sm btn-outline-primary me-1" title="Fiche de stock"><i class="ti ti-file-description"></i></a>
+                                    <span v-if="!p.gestion_stock" class="badge badge-soft-secondary">Sans stock</span>
+                                </td>
                             </tr>
                         </tbody>
                     </table>

@@ -9,6 +9,7 @@ new Vue({
             lignes: [],
             totaux: null,
             classe: "",
+            exportBase: "/accounting/export/livres/balance",
         };
     },
     methods: {
@@ -26,11 +27,7 @@ new Vue({
         async loadData() {
             this.isLoading = true;
             try {
-                const extra = {};
-                if (this.classe) {
-                    extra.classe = this.classe;
-                }
-                const { data } = await get(`/accounting/livres/balance/data?${this.queryParams(extra)}`);
+                const { data } = await get(`/accounting/livres/balance/data?${this.queryParams()}`);
                 if (!this.handleResponse(data)) {
                     return;
                 }

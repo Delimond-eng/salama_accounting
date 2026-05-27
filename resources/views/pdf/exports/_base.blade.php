@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>{{ $title ?? config('brand.name', 'Millenium ERP') . ' - Rapport' }}</title>
+    <title>{{ $title ?? config('brand.name') . ' - Rapport' }}</title>
     <style>
         @page {
             margin: 1.5cm;
@@ -102,7 +102,7 @@
     <table class="header-table">
         <tr>
             <td style="border: none; padding: 0;">
-                <div class="logo-text">{{ config('brand.name', 'Millenium ERP') }}</div>
+                <div class="logo-text">{{ config('brand.name') }}</div>
                 <div class="company-sub">{{ config('brand.tagline', 'Comptabilité & gestion intégrée') }}</div>
             </td>
             <td style="border: none; padding: 0; text-align: right;">
@@ -122,7 +122,7 @@
     @yield('body')
 
     <footer>
-        {{ config('brand.name', 'Millenium ERP') }} — Page <span class="pagenum"></span>
+        {{ config('brand.name') }} — Page <span class="pagenum"></span>
     </footer>
 </body>
 </html>

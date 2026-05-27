@@ -15,10 +15,10 @@
                 <div class="card-body p-0">
                     <div class="list-group list-group-flush">
                         <a href="javascript:void(0);" class="list-group-item list-group-item-action"
-                           :class="{ active: !filtreClasse }" @click="filtreClasse = null; loadComptes()">Toutes</a>
+                           :class="{ active: !filtreClasse }" @click="filtreClasse = null; loadData()">Toutes</a>
                         <a v-for="(total, cls) in classes" :key="cls" href="javascript:void(0);"
                            class="list-group-item list-group-item-action d-flex justify-content-between"
-                           :class="{ active: filtreClasse == cls }" @click="filtreClasse = cls; loadComptes()">
+                           :class="{ active: filtreClasse == cls }" @click="filtreClasse = cls; loadData()">
                             <span>Classe @{{ cls }}</span>
                             <span class="badge bg-light text-dark">@{{ total }}</span>
                         </a>
@@ -55,7 +55,7 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr v-if="isLoading"><td colspan="7" class="text-center py-4">Chargementâ€¦</td></tr>
+                                <tr v-if="isLoading"><td colspan="7" class="text-center py-4">Chargement…</td></tr>
                                 <tr v-else-if="!comptes.length"><td colspan="7" class="text-center py-4 text-muted">Aucun compte</td></tr>
                                 <tr v-for="c in comptes" :key="c.id">
                                     <td><span class="fw-medium">@{{ c.num_compte }}</span></td>
@@ -89,7 +89,7 @@
                     <div class="modal-body">
                         <div class="row g-3">
                             <div class="col-md-6">
-                                <label class="form-label">NÂ° compte</label>
+                                <label class="form-label">N° compte</label>
                                 <input type="text" class="form-control" v-model="form.num_compte" required>
                             </div>
                             <div class="col-md-6">
@@ -99,11 +99,11 @@
                                 </select>
                             </div>
                             <div class="col-12">
-                                <label class="form-label">LibellÃ©</label>
+                                <label class="form-label">Libellé</label>
                                 <input type="text" class="form-control" v-model="form.libelle" required>
                             </div>
                             <div class="col-12">
-                                <label class="form-label">Type dÃ©taillÃ©</label>
+                                <label class="form-label">Type détaillé</label>
                                 <input type="text" class="form-control" v-model="form.type_compte_detail">
                             </div>
                             <div class="col-6">
@@ -122,7 +122,7 @@
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-white border" data-bs-dismiss="modal">Annuler</button>
-                        <button type="submit" class="btn btn-primary" :disabled="isLoading">@{{ isLoading ? 'Enregistrementâ€¦' : 'Enregistrer' }}</button>
+                        <button type="submit" class="btn btn-primary" :disabled="isLoading">@{{ isLoading ? 'Enregistrement…' : 'Enregistrer' }}</button>
                     </div>
                 </form>
             </div>
@@ -135,4 +135,3 @@
 @push('scripts')
 <script type="module" src="{{ asset('assets/js/scripts/parametres/plan-comptable.js') }}"></script>
 @endpush
-

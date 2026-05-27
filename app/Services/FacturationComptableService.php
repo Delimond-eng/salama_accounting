@@ -38,6 +38,11 @@ class FacturationComptableService
         return $journal;
     }
 
+    public function verifierTauxFacture(int $societeId, string $devise, string $date): void
+    {
+        $this->saisie->tauxPourDevise($societeId, $devise, $date, true);
+    }
+
     public function compteTiers(Facture $facture): string
     {
         $tiers = $facture->tiers;
@@ -84,6 +89,9 @@ class FacturationComptableService
 
         $journal = $this->resolveJournal($facture->societe_id, $codeJournal);
 
+        $devise = strtoupper($facture->devise ?? 'CDF');
+        $taux = $this->saisie->tauxPourDevise($facture->societe_id, $devise, $date, true);
+
         $result = $this->saisie->enregistrer(
             $facture->societe_id,
             [
@@ -94,7 +102,8 @@ class FacturationComptableService
                 'libelle' => $libelle,
                 'reference_externe' => $facture->numero,
                 'reference_facture' => $facture->numero,
-                'devise' => $facture->devise,
+                'devise' => $devise,
+                'taux_change' => $taux,
                 'type_ecriture' => 'normale',
             ],
             $lignes,
@@ -235,7 +244,10 @@ class FacturationComptableService
             $lignes[] = ['num_compte' => $this->compte('tva_collectee'), 'libelle' => $libelle, 'debit' => 0, 'credit' => $tva, 'tiers_id' => null];
         }
 
-        $lignes[] = ['num_compte' => $this->compteVenteLigne($facture), 'libelle' => $libelle, 'debit' => 0, 'credit' => $ht, 'tiers_id' => null];
+        $lignes[] = $this->avecAnalytique(
+            ['num_compte' => $this->compteVenteLigne($facture), 'libelle' => $libelle, 'debit' => 0, 'credit' => $ht, 'tiers_id' => null],
+            $facture
+        );
 
         return $lignes;
     }
@@ -250,7 +262,10 @@ class FacturationComptableService
         string $libelle
     ): array {
         $lignes = [
-            ['num_compte' => $this->compteAchatLigne($facture), 'libelle' => $libelle, 'debit' => $ht, 'credit' => 0, 'tiers_id' => null],
+            $this->avecAnalytique(
+                ['num_compte' => $this->compteAchatLigne($facture), 'libelle' => $libelle, 'debit' => $ht, 'credit' => 0, 'tiers_id' => null],
+                $facture
+            ),
         ];
 
         if ($tva > 0) {
@@ -272,7 +287,10 @@ class FacturationComptableService
         string $libelle
     ): array {
         $lignes = [
-            ['num_compte' => $this->compteVenteLigne($facture), 'libelle' => $libelle, 'debit' => $ht, 'credit' => 0, 'tiers_id' => null],
+            $this->avecAnalytique(
+                ['num_compte' => $this->compteVenteLigne($facture), 'libelle' => $libelle, 'debit' => $ht, 'credit' => 0, 'tiers_id' => null],
+                $facture
+            ),
         ];
 
         if ($tva > 0) {
@@ -301,21 +319,49 @@ class FacturationComptableService
             $lignes[] = ['num_compte' => $this->compte('tva_deductible'), 'libelle' => $libelle, 'debit' => 0, 'credit' => $tva, 'tiers_id' => null];
         }
 
-        $lignes[] = ['num_compte' => $this->compteAchatLigne($facture), 'libelle' => $libelle, 'debit' => 0, 'credit' => $ht, 'tiers_id' => null];
+        $lignes[] = $this->avecAnalytique(
+            ['num_compte' => $this->compteAchatLigne($facture), 'libelle' => $libelle, 'debit' => 0, 'credit' => $ht, 'tiers_id' => null],
+            $facture
+        );
 
         return $lignes;
     }
 
+    /**
+     * @param  array<string, mixed>  $ligne
+     * @return array<string, mixed>
+     */
+    protected function avecAnalytique(array $ligne, Facture $facture): array
+    {
+        $sectionId = $this->sectionAnalytiqueFacture($facture);
+        if ($sectionId) {
+            $ligne['section_analytique_id'] = $sectionId;
+        }
+
+        return $ligne;
+    }
+
+    protected function sectionAnalytiqueFacture(Facture $facture): ?int
+    {
+        if ($facture->section_analytique_id) {
+            return (int) $facture->section_analytique_id;
+        }
+
+        $ligne = $facture->lignes->firstWhere('section_analytique_id');
+
+        return $ligne?->section_analytique_id ? (int) $ligne->section_analytique_id : null;
+    }
+
     protected function compteVenteLigne(Facture $facture): string
     {
-        $ligne = $facture->lignes->first();
+        $ligne = $facture->lignes->firstWhere('est_rubrique', false);
 
         return $ligne?->compte_comptable ?: $this->compte('vente');
     }
 
     protected function compteAchatLigne(Facture $facture): string
     {
-        $ligne = $facture->lignes->first();
+        $ligne = $facture->lignes->firstWhere('est_rubrique', false);
 
         return $ligne?->compte_comptable ?: $this->compte('achat');
     }

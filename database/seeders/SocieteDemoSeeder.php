@@ -15,14 +15,14 @@ class SocieteDemoSeeder extends Seeder
         $societe = Societe::updateOrCreate(
             ['code' => 'DEMO'],
             [
-                'raison_sociale' => 'Millenium Demo SARL',
+                'raison_sociale' => 'Salama Demo SARL',
                 'forme_juridique' => 'SARL',
-                'sigle' => 'MILLENIUM',
+                'sigle' => 'SALAMA',
                 'adresse' => '12, Avenue de la Paix',
                 'ville' => 'Kinshasa',
                 'pays' => 'République Démocratique du Congo',
                 'telephone' => '+243 000 000 000',
-                'email' => 'demo@millenium-erp.local',
+                'email' => 'demo@salama-compta.local',
                 'regime_fiscal' => 'Réel normal',
                 'devise_principale' => 'CDF',
                 'statut' => 'active',

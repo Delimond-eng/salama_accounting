@@ -26,7 +26,7 @@ class DemandeFonds extends Model
     protected $fillable = [
         'societe_id', 'workflow_definition_id', 'workflow_etape_courante_id',
         'numero', 'demandeur_id', 'montant', 'devise', 'motif', 'journal_id',
-        'statut', 'compte_debit', 'compte_credit', 'ecriture_id', 'motif_rejet',
+        'statut', 'compte_debit', 'compte_credit', 'ecriture_id', 'motif_rejet', 'section_analytique_id',
     ];
 
     protected $casts = [

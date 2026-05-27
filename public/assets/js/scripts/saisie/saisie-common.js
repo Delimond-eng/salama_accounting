@@ -6,6 +6,11 @@ export const saisieMixin = {
     mixins: [vuePageMixin, exportMixin],
 
     data() {
+        const now = new Date();
+        const year = now.getFullYear();
+        const today = now.toLocaleDateString('en-CA'); // YYYY-MM-DD format local
+        const startOfYear = `${year}-01-01`;
+
         return {
             page: window.__SAISIE_PAGE__ || "nouvelle",
             exercice: null,
@@ -15,12 +20,43 @@ export const saisieMixin = {
             message: null,
             warnings: [],
             isLoading: false,
+            total_count: 0,
             filtres: {
-                date_debut: "",
-                date_fin: "",
+                date_debut: startOfYear,
+                date_fin: today,
             },
             exportBase: "/accounting/export/saisie",
         };
+    },
+
+    computed: {
+        pageTitle() {
+            const titles = {
+                nouvelle: "Toutes les écritures",
+                achats: "Journal des Achats",
+                ventes: "Journal des Ventes",
+                banque: "Journal de Banque",
+                caisse: "Journal de Caisse",
+                od: "Opérations Diverses",
+                devises: "Écritures en Devises",
+                import: "Import de Relevés"
+            };
+            return titles[this.page] || "Écritures comptables";
+        },
+        pageSubtitle() {
+            let parts = [];
+            if (this.filtres.date_debut && this.filtres.date_fin) {
+                parts.push(`Période du ${this.fmtDate(this.filtres.date_debut)} au ${this.fmtDate(this.filtres.date_fin)}`);
+            }
+            if (this.filtreStatut) {
+                const label = this.filtreStatut === 'brouillon' ? 'Brouillons' : 'Validées';
+                parts.push(label);
+            }
+            if (this.search) {
+                parts.push(`Recherche: "${this.search}"`);
+            }
+            return parts.join(' • ') || "Toutes les périodes";
+        }
     },
 
     async mounted() {
@@ -33,6 +69,12 @@ export const saisieMixin = {
     },
 
     methods: {
+        async loadData() {
+            if (typeof this.loadList === "function") {
+                return await this.loadList();
+            }
+        },
+
         async loadMetadata(journalId = null) {
             const params = new URLSearchParams({ page: this.page });
             if (journalId) params.set("journal_id", journalId);
@@ -42,11 +84,15 @@ export const saisieMixin = {
                 this.journal = data.journal;
                 this.journaux = data.journaux || [];
                 this.multiDevise = !!data.multi_devise;
-                this.devisePrincipale = data.devise_principale;
+                this.devisePrincipale = data.devise_principale || "CDF";
+                this.deviseDefaut = data.devise_defaut || this.devisePrincipale;
+                this.journalDeviseEtrangere = !!data.journal_devise_etrangere;
                 this.template = data.template || [];
-                if (data.exercice) {
-                    this.filtres.date_debut = this.filtres.date_debut || data.exercice.date_debut?.slice?.(0, 10) || data.exercice.date_debut;
-                    this.filtres.date_fin = this.filtres.date_fin || data.exercice.date_fin?.slice?.(0, 10) || data.exercice.date_fin;
+                if (typeof this.analytiqueObligatoireJournal !== "undefined") {
+                    this.analytiqueObligatoireJournal = !!data.analytique_obligatoire;
+                }
+                if (typeof this.axesAnalytiques !== "undefined") {
+                    this.axesAnalytiques = data.axes_analytiques || [];
                 }
             }
             return data;
@@ -54,22 +100,13 @@ export const saisieMixin = {
 
         queryParams(extra = {}) {
             const p = new URLSearchParams({ page: this.page });
-            if (this.filtres.date_debut) {
-                p.set("date_debut", this.filtres.date_debut);
-            }
-            if (this.filtres.date_fin) {
-                p.set("date_fin", this.filtres.date_fin);
-            }
-            if (this.search) {
-                p.set("search", this.search);
-            }
-            if (this.filtreStatut) {
-                p.set("statut", this.filtreStatut);
-            }
+            if (this.filtres.date_debut) p.set("date_debut", this.filtres.date_debut);
+            if (this.filtres.date_fin) p.set("date_fin", this.filtres.date_fin);
+            if (this.search) p.set("search", this.search);
+            if (this.filtreStatut) p.set("statut", this.filtreStatut);
+
             Object.entries(extra).forEach(([k, v]) => {
-                if (v !== null && v !== undefined && v !== "") {
-                    p.set(k, v);
-                }
+                if (v !== null && v !== undefined && v !== "") p.set(k, v);
             });
             return p.toString();
         },
@@ -107,6 +144,38 @@ export const saisieMixin = {
             if (!dt) return "—";
             const s = String(dt).replace("T", " ");
             return s.length >= 19 ? s.slice(0, 19) : s;
+        },
+
+        fmtDate(d) {
+            if (!d) return "";
+            const parts = d.split('-');
+            if (parts.length !== 3) return d;
+            return `${parts[2]}/${parts[1]}/${parts[0]}`;
+        },
+
+        journalSelectionne() {
+            const id = this.entete?.journal_id;
+            if (!id) return this.journal || null;
+            return (this.journaux || []).find((j) => j.id === id) || this.journal;
+        },
+
+        devisePourJournal(journal) {
+            const principale = (this.devisePrincipale || "CDF").toUpperCase();
+            const d = journal?.devise_defaut ? String(journal.devise_defaut).toUpperCase() : principale;
+            return d || principale;
+        },
+
+        appliquerDeviseJournal() {
+            if (!this.entete) return;
+            const j = this.journalSelectionne();
+            const principale = (this.devisePrincipale || "CDF").toUpperCase();
+            const devise = this.devisePourJournal(j);
+            this.entete.devise = devise;
+            this.journalDeviseEtrangere = devise !== principale;
+            this.multiDevise = this.multiDevise || this.journalDeviseEtrangere;
+            if (typeof this.fetchTaux === "function") {
+                this.fetchTaux();
+            }
         },
 
         badgeStatut(s) {

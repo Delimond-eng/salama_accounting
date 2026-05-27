@@ -159,6 +159,52 @@ return [
                 ],
             ],
         ],
+        'analytique' => [
+            'permission' => 'analytique.view',
+            'number' => '③b',
+            'title' => 'Comptabilité analytique',
+            'subtitle' => 'Axes, centres de coûts et rentabilité',
+            'icon' => 'ti-chart-dots-3',
+            'color' => 'purple',
+            'items' => [
+                [
+                    'title' => 'Axes & comptes analytiques',
+                    'description' => 'Projets, départements, sites, centres de coût.',
+                    'icon' => 'ti-sitemap',
+                    'route' => 'accounting.analytique.axes',
+                ],
+                [
+                    'title' => 'Tableau de bord analytique',
+                    'description' => 'Charges, produits et rentabilité par projet.',
+                    'icon' => 'ti-chart-pie',
+                    'route' => 'accounting.analytique.dashboard',
+                ],
+                [
+                    'title' => 'Balance analytique',
+                    'description' => 'Soldes débit/crédit par compte analytique.',
+                    'icon' => 'ti-scale',
+                    'route' => 'accounting.analytique.balance',
+                ],
+                [
+                    'title' => 'Grand livre analytique',
+                    'description' => 'Historique des mouvements analytiques.',
+                    'icon' => 'ti-book-2',
+                    'route' => 'accounting.analytique.grand-livre',
+                ],
+                [
+                    'title' => 'Rentabilité projets',
+                    'description' => 'Produits, charges et résultat par projet.',
+                    'icon' => 'ti-trending-up',
+                    'route' => 'accounting.analytique.rentabilite',
+                ],
+                [
+                    'title' => 'Centres de coût',
+                    'description' => 'Dépenses par département, site ou véhicule.',
+                    'icon' => 'ti-building',
+                    'route' => 'accounting.analytique.centres-cout',
+                ],
+            ],
+        ],
         'etats' => [
             'permission' => 'etats.view',
             'number' => '④',
@@ -274,6 +320,12 @@ return [
                     'route' => 'accounting.facturation.stock',
                 ],
                 [
+                    'title' => 'Fiches de stock',
+                    'description' => 'Historique détaillé par article (depuis l\'inventaire).',
+                    'icon' => 'ti-file-description',
+                    'route' => 'accounting.facturation.stock',
+                ],
+                [
                     'title' => 'Bons de commande',
                     'description' => 'Commandes fournisseurs en CDF ou USD.',
                     'icon' => 'ti-shopping-cart',
@@ -373,7 +425,7 @@ return [
             'title' => 'Paramètres',
             'subtitle' => 'Configuration du référentiel et de l\'organisation',
             'icon' => 'ti-settings',
-            'color' => 'dark',
+            'color' => 'info',
             'items' => [
                 [
                     'title' => 'Plan comptable SYSCOHADA',
@@ -425,6 +477,22 @@ return [
                     'icon' => 'ti-database-export',
                     'route' => 'accounting.placeholder',
                     'params' => ['slug' => 'sauvegardes'],
+                ],
+            ],
+        ],
+        'taches' => [
+            'permission' => 'taches.view',
+            'number' => '⑨',
+            'title' => 'Gestion des tâches',
+            'subtitle' => 'Assignation, suivi des étapes et rapports',
+            'icon' => 'ti-checklist',
+            'color' => 'warning',
+            'items' => [
+                [
+                    'title' => 'Liste des tâches',
+                    'description' => 'Créer des tâches, assigner des étapes aux collaborateurs, suivre la progression.',
+                    'icon' => 'ti-list-check',
+                    'route' => 'accounting.taches.index',
                 ],
             ],
         ],

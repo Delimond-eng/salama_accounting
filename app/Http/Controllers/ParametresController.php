@@ -10,6 +10,7 @@ use App\Models\Societe;
 use App\Models\SocieteBanque;
 use App\Models\TauxChange;
 use App\Models\Tiers;
+use App\Support\DeviseAffichage;
 use App\Support\SocieteContext;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -54,6 +55,17 @@ class ParametresController extends Controller
             'societe' => $societe,
             'exercice_courant' => $societe?->exercices()->where('est_courant', true)->first(),
             'societes' => Societe::orderBy('raison_sociale')->get(['id', 'code', 'raison_sociale', 'devise_principale']),
+            'options_devise' => DeviseAffichage::options($societe),
+        ]);
+    }
+
+    public function deviseOptions(): JsonResponse
+    {
+        $societe = SocieteContext::societe();
+
+        return response()->json([
+            'status' => 'success',
+            'options' => DeviseAffichage::options($societe),
         ]);
     }
 
@@ -166,10 +178,13 @@ class ParametresController extends Controller
                 'format_numerotation' => 'required|in:annuel,mensuel,continu',
                 'padding_numero' => 'integer|min:1|max:8',
                 'saisie_tiers_obligatoire' => 'boolean',
+                'analytique_obligatoire' => 'boolean',
                 'actif' => 'boolean',
                 'ordre_affichage' => 'integer',
+                'devise_defaut' => 'nullable|string|in:CDF,USD',
             ]);
             $payload = array_merge($data, ['societe_id' => $societeId]);
+            $payload['devise_defaut'] = strtoupper($data['devise_defaut'] ?? Societe::find($societeId)?->devise_principale ?? 'CDF');
             unset($payload['id']);
 
             if (! empty($data['id'])) {
@@ -188,9 +203,12 @@ class ParametresController extends Controller
     public function devisesAll(): JsonResponse
     {
         $societeId = SocieteContext::id();
+        $societe = SocieteContext::societe();
+        $devisePrincipale = strtoupper($societe?->devise_principale ?? 'CDF');
 
         return response()->json([
             'status' => 'success',
+            'devise_principale' => $devisePrincipale,
             'devises' => Devise::actif()->orderBy('code_iso')->get(),
             'taux' => $societeId ? TauxChange::where('societe_id', $societeId)->orderByDesc('date_taux')->limit(100)->get() : [],
         ]);

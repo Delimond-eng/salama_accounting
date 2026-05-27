@@ -16,7 +16,7 @@ use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
-| Web Routes - Millenium ERP
+| Web Routes - Salama compta
 |--------------------------------------------------------------------------
 */
 
@@ -26,9 +26,12 @@ Route::middleware(['auth', 'accounting.permission'])->group(function () {
     // Dashboard
     Route::get('/', [HomeController::class, 'index'])->name('dashboard');
     Route::get('/dashboard/data', [HomeController::class, 'data'])->name('dashboard.data');
+    Route::get('/accounting/notifications', [HomeController::class, 'notifications'])->name('accounting.notifications');
 
     // Accounting Routes
     Route::prefix('accounting')->name('accounting.')->group(function () {
+        Route::get('/devise-options', [ParametresController::class, 'deviseOptions'])->name('devise-options');
+
         Route::get('/modules/{module}', [AccountingModuleController::class, 'show'])
             ->name('modules.show');
         Route::get('/a-venir/{slug}', [AccountingModuleController::class, 'placeholder'])
@@ -56,6 +59,7 @@ Route::middleware(['auth', 'accounting.permission'])->group(function () {
             Route::post('/ecritures/{id}/validate', [SaisieController::class, 'validateEcriture'])->whereNumber('id')->name('ecritures.validate');
             Route::post('/ecritures/{id}/delete', [SaisieController::class, 'destroy'])->whereNumber('id')->name('ecritures.delete');
             Route::get('/comptes/search', [SaisieController::class, 'comptesSearch'])->name('comptes.search');
+            Route::get('/sections/search', [SaisieController::class, 'sectionsSearch'])->name('sections.search');
             Route::get('/tiers/search', [SaisieController::class, 'tiersSearch'])->name('tiers.search');
             Route::get('/taux', [SaisieController::class, 'tauxDevise'])->name('taux');
             Route::post('/import-releve', [SaisieController::class, 'importReleveStore'])->name('import-releve.store');
@@ -132,8 +136,12 @@ Route::middleware(['auth', 'accounting.permission'])->group(function () {
             Route::get('/fournisseurs', [FacturationController::class, 'facturesFournisseurs'])->name('fournisseurs');
             Route::get('/clients/nouvelle', [FacturationController::class, 'factureForm'])->defaults('type', 'clients')->name('clients.create');
             Route::get('/fournisseurs/nouvelle', [FacturationController::class, 'factureForm'])->defaults('type', 'fournisseurs')->name('fournisseurs.create');
+            Route::get('/avoirs-clients/nouvelle', [FacturationController::class, 'factureForm'])->defaults('type', 'avoirs-clients')->name('avoirs-clients.create');
+            Route::get('/avoirs-fournisseurs/nouvelle', [FacturationController::class, 'factureForm'])->defaults('type', 'avoirs-fournisseurs')->name('avoirs-fournisseurs.create');
             Route::get('/clients/{id}', [FacturationController::class, 'factureForm'])->whereNumber('id')->defaults('type', 'clients')->name('clients.edit');
             Route::get('/fournisseurs/{id}', [FacturationController::class, 'factureForm'])->whereNumber('id')->defaults('type', 'fournisseurs')->name('fournisseurs.edit');
+            Route::get('/avoirs-clients/{id}', [FacturationController::class, 'factureForm'])->whereNumber('id')->defaults('type', 'avoirs-clients')->name('avoirs-clients.edit');
+            Route::get('/avoirs-fournisseurs/{id}', [FacturationController::class, 'factureForm'])->whereNumber('id')->defaults('type', 'avoirs-fournisseurs')->name('avoirs-fournisseurs.edit');
             Route::get('/avoirs-clients', [FacturationController::class, 'avoirsClients'])->name('avoirs-clients');
             Route::get('/avoirs-fournisseurs', [FacturationController::class, 'avoirsFournisseurs'])->name('avoirs-fournisseurs');
             Route::get('/produits', [FacturationController::class, 'produits'])->name('produits');
@@ -147,6 +155,7 @@ Route::middleware(['auth', 'accounting.permission'])->group(function () {
             Route::get('/stock', [\App\Http\Controllers\StockController::class, 'inventaire'])->name('stock');
             Route::get('/stock/bons-commande', [\App\Http\Controllers\StockController::class, 'bonsCommande'])->name('stock.bons-commande');
             Route::get('/stock/mouvements', [\App\Http\Controllers\StockController::class, 'mouvements'])->name('stock.mouvements');
+            Route::get('/stock/fiche/{produit}', [\App\Http\Controllers\StockController::class, 'fiche'])->whereNumber('produit')->name('stock.fiche');
 
             Route::get('/metadata', [FacturationController::class, 'metadata'])->name('metadata');
             Route::get('/comptes-tresorerie', [FacturationController::class, 'apiComptesTresorerie'])->name('comptes-tresorerie');
@@ -172,11 +181,46 @@ Route::middleware(['auth', 'accounting.permission'])->group(function () {
 
             Route::get('/stock/metadata', [\App\Http\Controllers\StockController::class, 'apiMetadata'])->name('stock.metadata');
             Route::get('/stock/inventaire', [\App\Http\Controllers\StockController::class, 'apiInventaire'])->name('stock.inventaire');
+            Route::get('/stock/fiche/{produit}/data', [\App\Http\Controllers\StockController::class, 'apiFiche'])->whereNumber('produit')->name('stock.fiche.data');
             Route::get('/stock/mouvements/list', [\App\Http\Controllers\StockController::class, 'apiMouvements'])->name('stock.mouvements.list');
             Route::post('/stock/mouvement', [\App\Http\Controllers\StockController::class, 'apiMouvementManuel'])->name('stock.mouvement');
             Route::get('/stock/mouvements/{id}/pdf', [\App\Http\Controllers\StockController::class, 'pdfMouvement'])->whereNumber('id')->name('stock.mouvement.pdf');
             Route::get('/stock/bons-commande/list', [\App\Http\Controllers\StockController::class, 'apiBonsCommande'])->name('stock.bons-commande.list');
             Route::post('/stock/bons-commande/save', [\App\Http\Controllers\StockController::class, 'apiBonCommandeSave'])->name('stock.bons-commande.save');
+        });
+
+        Route::prefix('taches')->name('taches.')->group(function () {
+            Route::get('/', [\App\Http\Controllers\TacheController::class, 'index'])->name('index');
+            Route::get('/metadata', [\App\Http\Controllers\TacheController::class, 'metadata'])->name('metadata');
+            Route::get('/list', [\App\Http\Controllers\TacheController::class, 'liste'])->name('list');
+            Route::get('/{id}', [\App\Http\Controllers\TacheController::class, 'show'])->whereNumber('id')->name('show');
+            Route::post('/save', [\App\Http\Controllers\TacheController::class, 'save'])->name('save');
+            Route::post('/etapes/{etape}/toggle', [\App\Http\Controllers\TacheController::class, 'toggleEtape'])->whereNumber('etape')->name('etapes.toggle');
+            Route::post('/{id}/rapport', [\App\Http\Controllers\TacheController::class, 'rapport'])->whereNumber('id')->name('rapport');
+            Route::post('/{id}/fichier', [\App\Http\Controllers\TacheController::class, 'fichier'])->whereNumber('id')->name('fichier');
+            Route::get('/fichiers/{id}/download', [\App\Http\Controllers\TacheController::class, 'downloadFichier'])->whereNumber('id')->name('fichier.download');
+        });
+
+        Route::prefix('analytique')->name('analytique.')->group(function () {
+            Route::get('/axes', [\App\Http\Controllers\AnalytiqueController::class, 'axes'])->name('axes');
+            Route::get('/balance', [\App\Http\Controllers\AnalytiqueController::class, 'balance'])->name('balance');
+            Route::get('/grand-livre', [\App\Http\Controllers\AnalytiqueController::class, 'grandLivre'])->name('grand-livre');
+            Route::get('/rentabilite', [\App\Http\Controllers\AnalytiqueController::class, 'rentabilite'])->name('rentabilite');
+            Route::get('/centres-cout', [\App\Http\Controllers\AnalytiqueController::class, 'centresCout'])->name('centres-cout');
+            Route::get('/dashboard', [\App\Http\Controllers\AnalytiqueController::class, 'dashboard'])->name('dashboard');
+
+            Route::get('/metadata', [\App\Http\Controllers\AnalytiqueController::class, 'metadata'])->name('metadata');
+            Route::get('/axes/all', [\App\Http\Controllers\AnalytiqueController::class, 'axesAll'])->name('axes.all');
+            Route::post('/axes/save', [\App\Http\Controllers\AnalytiqueController::class, 'axeSave'])->name('axes.save');
+            Route::post('/sections/save', [\App\Http\Controllers\AnalytiqueController::class, 'sectionSave'])->name('sections.save');
+            Route::post('/config/save', [\App\Http\Controllers\AnalytiqueController::class, 'configSave'])->name('config.save');
+            Route::post('/compte-axes/save', [\App\Http\Controllers\AnalytiqueController::class, 'compteAxesSave'])->name('compte-axes.save');
+            Route::get('/sections/search', [\App\Http\Controllers\AnalytiqueController::class, 'sectionsSearch'])->name('sections.search');
+            Route::get('/balance/data', [\App\Http\Controllers\AnalytiqueController::class, 'balanceData'])->name('balance.data');
+            Route::get('/grand-livre/data', [\App\Http\Controllers\AnalytiqueController::class, 'grandLivreData'])->name('grand-livre.data');
+            Route::get('/rentabilite/data', [\App\Http\Controllers\AnalytiqueController::class, 'rentabiliteData'])->name('rentabilite.data');
+            Route::get('/centres-cout/data', [\App\Http\Controllers\AnalytiqueController::class, 'centresCoutData'])->name('centres-cout.data');
+            Route::get('/dashboard/data', [\App\Http\Controllers\AnalytiqueController::class, 'dashboardData'])->name('dashboard.data');
         });
 
         Route::prefix('fiscalite')->name('fiscalite.')->group(function () {

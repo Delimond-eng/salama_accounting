@@ -85,7 +85,7 @@
             </div>
             <div class="card-body p-0">
                 <div class="table-responsive">
-                    <table class="table table-nowrap table-hover mb-0">
+                    <table class="table table-nowrap table-hover table-bordered mb-0">
                         <thead class="table-light">
                             <tr>
                                 <th>Date</th>
@@ -121,7 +121,7 @@
                                 <td colspan="9" class="text-center text-muted py-4">Aucun mouvement sur la période sélectionnée.</td>
                             </tr>
                         </tbody>
-                        <tfoot class="table-light fw-bold" v-if="data.lignes.length">
+                        <tfoot class="table-light text-dark fw-bold" v-if="data.lignes.length">
                             <tr>
                                 <td colspan="6">Totaux période</td>
                                 <td class="text-end">@{{ fmtMontantDevise(totaux.debit, data.devise_affichage) }}</td>

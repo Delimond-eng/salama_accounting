@@ -1,5 +1,5 @@
 <!-- Topbar Start -->
-<header class="navbar-header">
+<header class="navbar-header" id="HeaderNotifications" v-cloak>
     <div class="page-container topbar-menu">
         <div class="d-flex align-items-center gap-2">
 
@@ -32,24 +32,86 @@
         </div>
 
         <div class="d-flex align-items-center">
+            @include('components.devise-bar')
             <div class="header-item">
                 <div class="dropdown me-2">
                     <a href="javascript:void(0);" class="btn topbar-link btnFullscreen"><i class="ti ti-maximize"></i></a>
                 </div>
             </div>
+            {{--  Section de Alertes et Notifications  --}}
+            <div class="header-item">
+                <div class="dropdown me-2">
+
+                    <button class="topbar-link btn topbar-link dropdown-toggle drop-arrow-none"
+                        data-bs-toggle="dropdown" data-bs-offset="0,24" type="button" aria-haspopup="false"
+                        aria-expanded="false">
+                        <i class="ti ti-bell-check fs-18" :class="{'animate-ring': count > 0}"></i>
+                        <span v-if="count > 0" class="badge rounded-pill bg-danger">@{{ count }}</span>
+                        <span v-else class="badge rounded-pill">&nbsp;</span>
+                    </button>
+
+                    <div class="dropdown-menu p-0 dropdown-menu-end dropdown-menu-lg">
+
+                        <div class="p-2 border-bottom">
+                            <div class="row align-items-center">
+                                <div class="col">
+                                    <h6 class="m-0 fs-16 fw-semibold"> Alertes comptables</h6>
+                                </div>
+                                <div class="col-auto">
+                                    <span class="badge bg-soft-danger text-danger">@{{ count }} Alertes</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Notification Body -->
+                        <div class="notification-body position-relative z-2 rounded-0" data-simplebar style="max-height: 400px;">
+
+                            <template v-if="alertes.length">
+                                <div v-for="(alerte, i) in alertes" :key="i" class="dropdown-item notification-item py-3 text-wrap border-bottom">
+                                    <div class="d-flex align-items-start">
+                                        <div class="me-2 flex-shrink-0">
+                                            <span class="avatar avatar-sm rounded-circle" :class="alerteBadgeClass(alerte.niveau)">
+                                                <i class="ti fs-16" :class="alerte.niveau === 'danger' ? 'ti-alert-triangle' : 'ti-info-circle'"></i>
+                                            </span>
+                                        </div>
+                                        <div class="flex-grow-1">
+                                            <p class="mb-0 fw-medium text-dark">@{{ alerte.titre }}</p>
+                                            <p class="mb-0 text-muted fs-13">@{{ alerte.detail }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </template>
+                            <div v-else class="p-4 text-center">
+                                <i class="ti ti-circle-check text-success fs-32 mb-2"></i>
+                                <p class="text-muted mb-0">Aucune alerte comptable active.</p>
+                            </div>
+
+                        </div>
+
+                        <!-- View All-->
+                        <div class="p-2 rounded-bottom border-top text-center" v-if="alertes.length">
+                            <a href="{{ route('dashboard') }}" class="text-center text-decoration-underline fs-14 mb-0">
+                                Voir le tableau de bord
+                            </a>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+            {{--  Fin Section de Alertes et Notifications  --}}
 
             <div class="dropdown profile-dropdown d-flex align-items-center justify-content-center">
                 <a href="javascript:void(0);"
                     class="topbar-link dropdown-toggle drop-arrow-none position-relative"
                     data-bs-toggle="dropdown" data-bs-offset="0,22" aria-haspopup="false" aria-expanded="false">
-                    <img src="{{ asset('assets/img/users/user-40.jpg') }}" width="38" class="rounded-1 d-flex"
+                    <img src="{{ asset('assets/img/users/user.avif') }}" width="38" class="rounded-1 d-flex"
                         alt="user-image">
                     <span class="online text-success"><i
                             class="ti ti-circle-filled d-flex bg-white rounded-circle border border-1 border-white"></i></span>
                 </a>
                 <div class="dropdown-menu dropdown-menu-end dropdown-menu-md p-2">
                     <div class="d-flex align-items-center bg-light rounded-3 p-2 mb-2">
-                        <img src="{{ asset('assets/img/users/user-40.jpg') }}" class="rounded-circle" width="42" height="42"
+                        <img src="{{ asset('assets/img/users/user.avif') }}" class="rounded-circle" width="42" height="42"
                             alt="Img">
                         <div class="ms-2">
                             <p class="fw-medium text-dark mb-0">{{ Auth::user()->name }}</p>
@@ -132,3 +194,4 @@
         }
     });
 </script>
+<script type="module" src="{{ asset('assets/js/scripts/header-notifications.js') }}"></script>

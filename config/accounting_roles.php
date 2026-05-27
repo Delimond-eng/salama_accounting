@@ -32,7 +32,7 @@ return [
     'full_access' => ['super_admin'],
 
     'default_admin' => [
-        'email' => env('ADMIN_EMAIL', 'admin@millenium-erp.local'),
+        'email' => env('ADMIN_EMAIL', 'admin@salama-compta.local'),
         'password' => env('ADMIN_PASSWORD', 'Admin@2025'),
         'name' => 'Super Administrateur',
         'role' => 'super_admin',

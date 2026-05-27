@@ -7,6 +7,7 @@ use App\Models\Journal;
 use App\Models\PlanComptable;
 use App\Models\TauxChange;
 use App\Models\Tiers;
+use App\Services\AnalytiqueComptableService;
 use App\Services\SaisieComptableService;
 use App\Support\SocieteContext;
 use Illuminate\Http\JsonResponse;
@@ -16,7 +17,8 @@ use Illuminate\View\View;
 class SaisieController extends Controller
 {
     public function __construct(
-        protected SaisieComptableService $saisie
+        protected SaisieComptableService $saisie,
+        protected AnalytiqueComptableService $analytique
     ) {}
 
     public function liste(string $page = 'nouvelle'): View
@@ -34,7 +36,7 @@ class SaisieController extends Controller
 
     public function importReleve(): View
     {
-        return view('saisie.import-releve', $this->saisie->pageMeta('banque'));
+        return view('saisie.import-releve', $this->saisie->pageMeta('import'));
     }
 
     public function metadata(Request $request): JsonResponse
@@ -49,7 +51,18 @@ class SaisieController extends Controller
             ->orderBy('ordre_affichage')->orderBy('code')->get();
 
         $meta = $this->saisie->pageMeta($page);
-        $multiDevise = ! empty($meta['multi_devise']);
+        $devisePrincipale = strtoupper($societe?->devise_principale ?? 'CDF');
+        $deviseJournal = $journal?->devise_defaut ? strtoupper($journal->devise_defaut) : $devisePrincipale;
+        $journalEnDeviseEtrangere = $journal && $deviseJournal !== $devisePrincipale;
+        $multiDevise = ! empty($meta['multi_devise']) || $journalEnDeviseEtrangere;
+
+        if ($page === 'devises') {
+            $journaux = $journaux->filter(function ($j) use ($devisePrincipale) {
+                $d = $j->devise_defaut ? strtoupper($j->devise_defaut) : $devisePrincipale;
+
+                return $d !== $devisePrincipale;
+            })->values();
+        }
 
         return response()->json([
             'status' => 'success',
@@ -57,10 +70,27 @@ class SaisieController extends Controller
             'exercice' => $exercice,
             'journal' => $journal,
             'journaux' => $journaux,
-            'devise_principale' => $societe?->devise_principale ?? 'CDF',
+            'devise_principale' => $devisePrincipale,
+            'devise_defaut' => $deviseJournal,
+            'journal_devise_etrangere' => $journalEnDeviseEtrangere,
             'multi_devise' => $multiDevise,
             'template' => $journal ? $this->saisie->suggestTemplate($journal) : [],
+            'analytique_obligatoire' => (bool) ($journal?->analytique_obligatoire ?? false),
+            'axes_analytiques' => $this->analytique->axesActifs($societeId),
         ]);
+    }
+
+    public function sectionsSearch(Request $request): JsonResponse
+    {
+        $societeId = SocieteContext::requireId();
+        $sections = $this->analytique->rechercherSections(
+            $societeId,
+            trim((string) $request->get('q', '')),
+            $request->integer('axe_id') ?: null,
+            $request->get('num_compte')
+        );
+
+        return response()->json(['status' => 'success', 'sections' => $sections]);
     }
 
     public function ecrituresList(Request $request): JsonResponse
@@ -69,7 +99,7 @@ class SaisieController extends Controller
         $page = $request->get('page', 'nouvelle');
         $journal = $this->saisie->resolveJournal($societeId, $page, $request->integer('journal_id') ?: null);
 
-        $query = Ecriture::with(['journal:id,code,libelle,type', 'lignes'])
+        $query = Ecriture::with(['journal:id,code,libelle,type,devise_defaut', 'lignes'])
             ->parSociete($societeId)
             ->orderByDesc('created_at')
             ->orderByDesc('id');
@@ -93,6 +123,14 @@ class SaisieController extends Controller
             $query->where('date_ecriture', '<=', $dateFin);
         }
 
+        if ($page === 'devises') {
+            $principale = strtoupper(SocieteContext::societe()?->devise_principale ?? 'CDF');
+            $query->where(function ($q) use ($principale): void {
+                $q->where('devise', '!=', $principale)
+                    ->orWhereHas('journal', fn ($j) => $j->where('devise_defaut', '!=', $principale)->whereNotNull('devise_defaut'));
+            });
+        }
+
         $ecritures = $query->limit(200)->get();
 
         return response()->json(['status' => 'success', 'ecritures' => $ecritures, 'total' => $ecritures->count()]);
@@ -101,7 +139,14 @@ class SaisieController extends Controller
     public function ecritureShow(int $id): JsonResponse
     {
         $societeId = SocieteContext::requireId();
-        $ecriture = Ecriture::with(['lignes.tiers', 'lignes.compte', 'journal', 'exercice'])
+        $ecriture = Ecriture::with([
+            'lignes.tiers',
+            'lignes.compte',
+            'lignes.sectionAnalytique.axe',
+            'lignes.analytiques.section.axe',
+            'journal',
+            'exercice',
+        ])
             ->parSociete($societeId)->findOrFail($id);
 
         return response()->json(['status' => 'success', 'ecriture' => $ecriture]);
@@ -120,7 +165,7 @@ class SaisieController extends Controller
                 ->orWhere('libelle', 'like', "%{$search}%")))
             ->orderBy('num_compte')
             ->limit(30)
-            ->get(['id', 'num_compte', 'libelle', 'est_compte_tiers', 'classe']);
+            ->get(['id', 'num_compte', 'libelle', 'est_compte_tiers', 'classe', 'exige_analytique']);
 
         return response()->json(['status' => 'success', 'comptes' => $comptes]);
     }
@@ -257,6 +302,7 @@ class SaisieController extends Controller
             'lignes.*.devise' => 'nullable|string|size:3',
             'lignes.*.montant_devise' => 'nullable|numeric',
             'lignes.*.taux_change' => 'nullable|numeric|min:0',
+            'lignes.*.section_analytique_id' => 'nullable|integer|exists:sections_analytiques,id',
         ]);
 
         return $validated;

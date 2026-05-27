@@ -1,10 +1,11 @@
 import { get, postJson } from "../../modules/http.js";
 import { compteSelectMixin } from "../../modules/compte-select-mixin.js";
+import { analytiqueSelectMixin } from "../../modules/analytique-select-mixin.js";
 import { saisieMixin } from "./saisie-common.js";
 
 new Vue({
     el: "#App",
-    mixins: [saisieMixin, compteSelectMixin],
+    mixins: [saisieMixin, compteSelectMixin, analytiqueSelectMixin],
     data() {
         return {
             ecritureId: window.__ECRITURE_ID__ || null,
@@ -26,12 +27,34 @@ new Vue({
                 type_ecriture: "normale",
             },
             lignes: [],
+            analytiqueObligatoireJournal: false,
+            axesAnalytiques: [],
+            comptesCache: {},
         };
     },
 
+    watch: {
+        "entete.journal_id"() {
+            this.appliquerDeviseJournal();
+            const j = (this.journaux || []).find((x) => x.id === this.entete.journal_id);
+            this.analytiqueObligatoireJournal = !!j?.analytique_obligatoire;
+        },
+    },
+
     computed: {
+        showColonneAnalytique() {
+            return this.analytiqueObligatoireJournal || (this.axesAnalytiques || []).length > 0;
+        },
+        sectionsListe() {
+            return (this.axesAnalytiques || []).flatMap((axe) =>
+                (axe.sections || []).map((s) => ({ ...s, axe }))
+            );
+        },
         listeUrl() {
             return `/accounting/saisie/${this.page}`;
+        },
+        deviseVerrouillee() {
+            return this.journalDeviseEtrangere;
         },
         totalDebit() {
             return this.lignes.reduce((s, l) => s + (parseFloat(l.debit) || 0), 0);
@@ -65,7 +88,7 @@ new Vue({
                 this.entete.journal_id = this.journal.id;
                 this.journalVerrouille = !!this.journal.id && this.page !== "nouvelle";
             }
-            this.entete.devise = this.devisePrincipale || "CDF";
+            this.appliquerDeviseJournal();
         },
 
         async loadEcriture(id) {
@@ -85,15 +108,25 @@ new Vue({
                 taux_change: e.taux_change,
                 type_ecriture: e.type_ecriture,
             };
-            this.lignes = (e.lignes || []).map((l) => ({
-                num_compte: l.num_compte,
-                libelle: l.libelle,
-                debit: l.debit,
-                credit: l.credit,
-                tiers_id: l.tiers_id,
-                montant_devise: l.montant_devise,
-                taux_change: l.taux_change,
-            }));
+            this.lignes = (e.lignes || []).map((l) => {
+                const sec = l.section_analytique || l.sectionAnalytique;
+                const row = {
+                    num_compte: l.num_compte,
+                    libelle: l.libelle,
+                    debit: l.debit,
+                    credit: l.credit,
+                    tiers_id: l.tiers_id,
+                    montant_devise: l.montant_devise,
+                    taux_change: l.taux_change,
+                    section_analytique_id: l.section_analytique_id,
+                    _section: sec,
+                };
+                if (sec) {
+                    row._section_label = `${sec.axe?.code || ""} / ${sec.code} — ${sec.libelle}`;
+                }
+                return row;
+            });
+            this.lignes.forEach((_, i) => this.onSectionSelectChange(i));
         },
 
         async loadTiers() {
@@ -102,12 +135,13 @@ new Vue({
         },
 
         appliquerTemplate() {
+            const base = { section_analytique_id: null, _section: null, _section_label: "" };
             if (this.template?.length) {
-                this.lignes = this.template.map((l) => ({ ...l, debit: 0, credit: 0 }));
+                this.lignes = this.template.map((l) => ({ ...l, ...base, debit: 0, credit: 0 }));
             } else {
                 this.lignes = [
-                    { num_compte: "", libelle: "", debit: 0, credit: 0, tiers_id: null },
-                    { num_compte: "", libelle: "", debit: 0, credit: 0, tiers_id: null },
+                    { num_compte: "", libelle: "", debit: 0, credit: 0, tiers_id: null, ...base },
+                    { num_compte: "", libelle: "", debit: 0, credit: 0, tiers_id: null, ...base },
                 ];
             }
             if (this.entete.libelle === "" && this.journal) {
@@ -116,7 +150,27 @@ new Vue({
         },
 
         ajouterLigne() {
-            this.lignes.push({ num_compte: "", libelle: this.entete.libelle, debit: 0, credit: 0, tiers_id: null });
+            this.lignes.push({
+                num_compte: "",
+                libelle: this.entete.libelle,
+                debit: 0,
+                credit: 0,
+                tiers_id: null,
+                section_analytique_id: null,
+            });
+        },
+
+        onSectionSelectChange(idx) {
+            const l = this.lignes[idx];
+            if (!l) return;
+            const section = this.sectionsListe.find((s) => s.id === l.section_analytique_id);
+            if (section) {
+                l._section = section;
+                l._section_label = `${section.axe?.code || ""} / ${section.code} — ${section.libelle}`;
+            } else {
+                l._section = null;
+                l._section_label = "";
+            }
         },
 
         supprimerLigne(idx) {
@@ -135,6 +189,26 @@ new Vue({
             if (data.status === "success") this.entete.taux_change = data.taux;
         },
 
+        lignesPayload() {
+            return this.lignes.map((l) => {
+                const rawId = l.section_analytique_id;
+                let sectionId = null;
+                if (rawId !== null && rawId !== undefined && rawId !== "" && !Number.isNaN(Number(rawId))) {
+                    sectionId = parseInt(rawId, 10);
+                }
+                return {
+                    num_compte: (l.num_compte || "").trim(),
+                    libelle: l.libelle,
+                    debit: parseFloat(l.debit) || 0,
+                    credit: parseFloat(l.credit) || 0,
+                    tiers_id: l.tiers_id || null,
+                    montant_devise: l.montant_devise,
+                    taux_change: l.taux_change,
+                    section_analytique_id: sectionId,
+                };
+            });
+        },
+
         async save(valider) {
             if (!this.equilibre) {
                 this.error = ["L'écriture doit être équilibrée (débit = crédit)."];
@@ -143,7 +217,7 @@ new Vue({
             this.isLoading = true;
             const { data } = await postJson("/accounting/saisie/ecritures/store", {
                 entete: this.entete,
-                lignes: this.lignes,
+                lignes: this.lignesPayload(),
                 valider,
             });
             this.isLoading = false;

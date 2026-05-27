@@ -45,8 +45,20 @@ export const parametresMixin = {
                 return;
             }
             await this.loadContext();
+            window.dispatchEvent(new CustomEvent("societe-changed"));
             if (typeof this.onSocieteChanged === "function") {
                 await this.onSocieteChanged();
+            } else {
+                await this.loadData();
+            }
+        },
+
+        /**
+         * Rétabli pour supporter le bouton @click="loadData" dans _nav.blade.php
+         */
+        async loadData() {
+            if (typeof this.initPage === "function") {
+                await this.initPage();
             }
         },
 

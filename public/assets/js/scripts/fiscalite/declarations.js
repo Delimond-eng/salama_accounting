@@ -13,12 +13,23 @@ new Vue({
     },
     methods: {
         async initPage() {
+            await this.loadData();
+        },
+        /**
+         * Rétabli pour compatibilité avec les filtres communs
+         */
+        async loadData() {
             await this.loadList();
         },
         async loadList() {
-            const { data } = await get("/accounting/fiscalite/declarations/list");
-            if (data.status === "success") {
-                this.declarations = data.declarations || [];
+            this.isLoading = true;
+            try {
+                const { data } = await get("/accounting/fiscalite/declarations/list");
+                if (data.status === "success") {
+                    this.declarations = data.declarations || [];
+                }
+            } finally {
+                this.isLoading = false;
             }
         },
         async generer() {

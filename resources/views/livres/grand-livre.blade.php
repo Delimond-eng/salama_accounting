@@ -62,7 +62,7 @@
                             <td class="text-end">@{{ fmtMontantDevise(r.credit, r.devise_saisie) }}</td>
                             <td class="text-end">@{{ fmtMontantDevise(r.solde, r.devise_saisie) }}</td>
                         </tr>
-                        <tr class="table-indigo fw-bold" v-if="dataGeneral.totaux">
+                        <tr class="table-light text-dark fw-bold" v-if="dataGeneral.totaux">
                             <td colspan="3">Total grand livre</td>
                             <td class="text-end">@{{ fmtMontantDevise(dataGeneral.totaux.debit, dataGeneral.devise_affichage) }}</td>
                             <td class="text-end">@{{ fmtMontantDevise(dataGeneral.totaux.credit, dataGeneral.devise_affichage) }}</td>
@@ -81,7 +81,7 @@
         </div>
         <div class="card-body p-0">
             <div class="table-responsive">
-                <table class="table table-nowrap mb-0">
+                <table class="table table-nowrap table-bordered mb-0">
                     <thead class="table-light">
                         <tr>
                             <th>Date</th><th>Partenaire</th><th>Devise</th>
@@ -89,6 +89,11 @@
                         </tr>
                     </thead>
                     <tbody>
+                        <tr class="table-secondary fw-medium">
+                            <td colspan="3">Solde d'ouverture</td>
+                            <td class="text-end">—</td><td class="text-end">—</td>
+                            <td class="text-end">@{{ fmtMontantDevise(dataCompte.solde_ouverture, dataCompte.devise_affichage) }}</td>
+                        </tr>
                         <tr v-for="(l, i) in dataCompte.lignes" :key="i">
                             <td class="text-nowrap">@{{ fmtDateTime(l.date_enregistrement) }}</td>
                             <td>@{{ l.partenaire || '—' }}</td>
@@ -98,6 +103,13 @@
                             <td class="text-end fw-medium">@{{ fmtMontantDevise(l.solde, dataCompte.devise_affichage) }}</td>
                         </tr>
                     </tbody>
+                    <tfoot class="table-light text-dark fw-bold" v-if="dataCompte.lignes.length">
+                         <tr>
+                            <td colspan="3">SOLDE DE CLÔTURE</td>
+                            <td class="text-end">—</td><td class="text-end">—</td>
+                            <td class="text-end">@{{ fmtMontantDevise(dataCompte.solde_cloture, dataCompte.devise_affichage) }}</td>
+                        </tr>
+                    </tfoot>
                 </table>
             </div>
         </div>

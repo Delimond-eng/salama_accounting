@@ -23,8 +23,15 @@
                     </select>
                 </div>
                 <div class="col-md-2">
-                    <label class="form-label">Conversion</label>
-                    <select class="form-select" v-model="filtres.mode_conversion" @change="loadData">
+                    <label class="form-label">Présentation</label>
+                    <select class="form-select" v-model="filtres.scope_devise" @change="onFiltreChange">
+                        <option value="natif">Native</option>
+                        <option value="consolide">Consolidée</option>
+                    </select>
+                </div>
+                <div class="col-md-2" v-if="filtres.scope_devise === 'consolide'">
+                    <label class="form-label">Taux</label>
+                    <select class="form-select" v-model="filtres.mode_conversion" @change="onFiltreChange">
                         <option value="origine">Taux d'origine</option>
                         <option value="actuel">Taux actuel</option>
                     </select>
@@ -40,7 +47,7 @@
             </div>
             <div class="mt-2" v-if="exercice">
                 <span class="badge badge-soft-info">@{{ exercice.libelle }}</span>
-                <span class="text-muted fs-12 ms-2">Montants en @{{ filtres.devise_affichage }}</span>
+                <span class="badge badge-soft-primary ms-1">@{{ filtres.scope_devise === 'natif' ? 'Natif ' + filtres.devise_affichage : 'Consolidé ' + filtres.devise_affichage }}</span>
             </div>
         </div>
     </div>

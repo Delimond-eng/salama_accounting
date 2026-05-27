@@ -26,25 +26,39 @@ class FiscaliteService
         string $dateDebut,
         string $dateFin,
         string $devise = 'CDF',
-        string $mode = 'origine'
+        string $mode = 'origine',
+        string $scope = 'consolide'
     ): Collection {
         $societe = \App\Models\Societe::findOrFail($societeId);
         $this->livres->optionsDefaut($societe);
 
-        $rows = DB::table('lignes_ecritures as l')
+        $query = DB::table('lignes_ecritures as l')
             ->join('ecritures as e', 'e.id', '=', 'l.ecriture_id')
             ->where('l.societe_id', $societeId)
             ->where('l.exercice_id', $exerciceId)
             ->where('e.statut', 'validee')
             ->whereNull('e.deleted_at')
-            ->whereBetween('e.date_ecriture', [$dateDebut, $dateFin])
+            ->whereBetween('e.date_ecriture', [$dateDebut, $dateFin]);
+
+        if ($scope === 'natif') {
+            $query->where('e.devise', strtoupper($devise));
+        }
+
+        $rows = $query
             ->select(['l.num_compte', 'l.debit', 'l.credit', 'e.devise', 'e.taux_change', 'e.date_ecriture'])
             ->get();
 
         $conv = app(DeviseConversionService::class);
         $conv->setDevisePrincipale($societe->devise_principale ?? 'CDF');
 
-        return $rows->map(function ($r) use ($conv, $devise, $societeId, $mode) {
+        return $rows->map(function ($r) use ($conv, $devise, $societeId, $mode, $scope) {
+            if ($scope === 'natif') {
+                return [
+                    'num_compte' => $r->num_compte,
+                    'debit' => round((float) $r->debit, 2),
+                    'credit' => round((float) $r->credit, 2),
+                ];
+            }
             $debit = $conv->convertir(
                 (float) $r->debit,
                 strtoupper($r->devise ?? 'CDF'),
@@ -92,10 +106,10 @@ class FiscaliteService
         return round(max(0, $total), 2);
     }
 
-    public function tvaCollectee(int $societeId, Exercice $exercice, string $dateDebut, string $dateFin, string $devise = 'CDF', string $mode = 'origine'): array
+    public function tvaCollectee(int $societeId, Exercice $exercice, string $dateDebut, string $dateFin, string $devise = 'CDF', string $mode = 'origine', string $scope = 'consolide'): array
     {
         $prefixes = config('fiscalite.prefixes_tva_collectee', ['443']);
-        $lignes = $this->mouvementsPeriode($societeId, $exercice->id, $dateDebut, $dateFin, $devise, $mode);
+        $lignes = $this->mouvementsPeriode($societeId, $exercice->id, $dateDebut, $dateFin, $devise, $mode, $scope);
         $total = $this->sommePrefixesMouvements($lignes, $prefixes, 'credit');
 
         $detail = [];
@@ -121,10 +135,10 @@ class FiscaliteService
         ];
     }
 
-    public function tvaDeductible(int $societeId, Exercice $exercice, string $dateDebut, string $dateFin, string $devise = 'CDF', string $mode = 'origine'): array
+    public function tvaDeductible(int $societeId, Exercice $exercice, string $dateDebut, string $dateFin, string $devise = 'CDF', string $mode = 'origine', string $scope = 'consolide'): array
     {
         $prefixes = config('fiscalite.prefixes_tva_deductible', ['445']);
-        $lignes = $this->mouvementsPeriode($societeId, $exercice->id, $dateDebut, $dateFin, $devise, $mode);
+        $lignes = $this->mouvementsPeriode($societeId, $exercice->id, $dateDebut, $dateFin, $devise, $mode, $scope);
         $total = $this->sommePrefixesMouvements($lignes, $prefixes, 'debit');
 
         $detail = [];

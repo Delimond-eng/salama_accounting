@@ -8,6 +8,7 @@ new Vue({
         return {
             lignes: [],
             journalId: "",
+            exportBase: "/accounting/export/livres/journal",
         };
     },
     methods: {
@@ -17,11 +18,7 @@ new Vue({
         async loadData() {
             this.isLoading = true;
             try {
-                const extra = {};
-                if (this.journalId) {
-                    extra.journal_id = this.journalId;
-                }
-                const { data } = await get(`/accounting/livres/journal/data?${this.queryParams(extra)}`);
+                const { data } = await get(`/accounting/livres/journal/data?${this.queryParams()}`);
                 if (!this.handleResponse(data)) {
                     return;
                 }

@@ -1,10 +1,10 @@
 ================================================================================
-  MILLENIUM ERP — PRÉSENTATION & MANUEL D'UTILISATION COMPLET
+  SALAMA COMPTA — PRÉSENTATION & MANUEL D'UTILISATION COMPLET
   Référentiel comptable SYSCOHADA (OHADA) — Version application
 ================================================================================
 
 Date du document : mai 2026
-Éditeur : Millenium ERP
+Éditeur : Salama compta
 Périmètre : Tous les modules SAUF « Facturation & trésorerie » (module ⑤)
 
 ================================================================================
@@ -33,9 +33,9 @@ TABLE DES MATIÈRES
 1. PRÉSENTATION GÉNÉRALE DE L'APPLICATION
 ================================================================================
 
-1.1 Qu'est-ce que Millenium ERP ?
+1.1 Qu'est-ce que Salama compta ?
 -------------------------------
-Millenium ERP est une application web de comptabilité générale conçue pour
+Salama compta est une application web de comptabilité générale conçue pour
 les entreprises soumises au référentiel SYSCOHADA (Système Comptable OHADA).
 Elle permet de :
 
@@ -898,15 +898,15 @@ Administration > Journal d'audit — réservé aux profils autorisés (audit.vie
 17.4 Support et évolution
 -------------------------
 Pour toute demande d'évolution fonctionnelle ou formation complémentaire,
-contacter l'administrateur système ou l'équipe Millenium ERP.
+contacter l'administrateur système ou l'équipe Salama compta.
 
 ================================================================================
 FIN DU DOCUMENT
 ================================================================================
 
-Document généré pour : Millenium ERP
+Document généré pour : Salama compta
 Périmètre exclu volontairement : Module ⑤ Facturation & trésorerie
 Pour une documentation incluant la facturation, demander le manuel complémentaire
 « Facturation & trésorerie ».
 
-© Millenium ERP — Usage interne et formation utilisateurs.
+© Salama compta — Usage interne et formation utilisateurs.

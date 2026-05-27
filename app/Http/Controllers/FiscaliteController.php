@@ -85,8 +85,9 @@ class FiscaliteController extends Controller
         $dateFin = $request->get('date_fin', $exercice->date_fin->format('Y-m-d'));
         $devise = strtoupper($request->get('devise_affichage', $options['devise_affichage']));
         $mode = $request->get('mode_conversion', $options['mode_conversion']);
+        $scope = $request->get('scope_devise', $options['scope_devise'] ?? 'consolide');
 
-        return compact('societe', 'exercice', 'dateDebut', 'dateFin', 'devise', 'mode');
+        return compact('societe', 'exercice', 'dateDebut', 'dateFin', 'devise', 'mode', 'scope');
     }
 
     public function apiTvaCollectee(Request $request): JsonResponse
@@ -97,7 +98,7 @@ class FiscaliteController extends Controller
             return response()->json(['errors' => [$ctx['error']]], 422);
         }
 
-        $data = $this->fiscalite->tvaCollectee($societeId, $ctx['exercice'], $ctx['dateDebut'], $ctx['dateFin'], $ctx['devise'], $ctx['mode']);
+        $data = $this->fiscalite->tvaCollectee($societeId, $ctx['exercice'], $ctx['dateDebut'], $ctx['dateFin'], $ctx['devise'], $ctx['mode'], $ctx['scope']);
 
         return response()->json(['status' => 'success', 'data' => $data]);
     }
@@ -110,7 +111,7 @@ class FiscaliteController extends Controller
             return response()->json(['errors' => [$ctx['error']]], 422);
         }
 
-        $data = $this->fiscalite->tvaDeductible($societeId, $ctx['exercice'], $ctx['dateDebut'], $ctx['dateFin'], $ctx['devise'], $ctx['mode']);
+        $data = $this->fiscalite->tvaDeductible($societeId, $ctx['exercice'], $ctx['dateDebut'], $ctx['dateFin'], $ctx['devise'], $ctx['mode'], $ctx['scope']);
 
         return response()->json(['status' => 'success', 'data' => $data]);
     }

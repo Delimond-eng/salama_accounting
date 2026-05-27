@@ -8,6 +8,7 @@ new Vue({
         return {
             lignes: [],
             typeTiers: "",
+            exportBase: "/accounting/export/livres/auxiliaire",
         };
     },
     methods: {
@@ -25,11 +26,7 @@ new Vue({
         async loadData() {
             this.isLoading = true;
             try {
-                const extra = {};
-                if (this.typeTiers) {
-                    extra.type_tiers = this.typeTiers;
-                }
-                const { data } = await get(`/accounting/livres/auxiliaire/data?${this.queryParams(extra)}`);
+                const { data } = await get(`/accounting/livres/auxiliaire/data?${this.queryParams()}`);
                 if (!this.handleResponse(data)) {
                     return;
                 }

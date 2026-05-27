@@ -19,17 +19,19 @@ use InvalidArgumentException;
 class SaisieComptableService
 {
     public function __construct(
-        protected AuditLogService $auditLog
+        protected AuditLogService $auditLog,
+        protected AnalytiqueComptableService $analytique
     ) {
     }
     public const PAGES = [
-        'nouvelle' => ['code' => null, 'type' => null, 'title' => 'Nouvelle écriture', 'icon' => 'ti-file-plus'],
+        'nouvelle' => ['code' => null, 'type' => null, 'title' => 'Toutes les écritures', 'icon' => 'ti-file-plus'],
         'achats' => ['code' => 'HA', 'type' => 'achats', 'title' => 'Journal des achats', 'icon' => 'ti-shopping-cart'],
         'ventes' => ['code' => 'VT', 'type' => 'ventes', 'title' => 'Journal des ventes', 'icon' => 'ti-receipt'],
         'banque' => ['code' => 'BQ', 'type' => 'banque', 'title' => 'Journal de banque', 'icon' => 'ti-building-bank'],
         'caisse' => ['code' => 'CA', 'type' => 'caisse', 'title' => 'Journal de caisse', 'icon' => 'ti-cash'],
         'od' => ['code' => 'OD', 'type' => 'operations_diverses', 'title' => 'Opérations diverses', 'icon' => 'ti-adjustments'],
         'devises' => ['code' => null, 'type' => null, 'title' => 'Écritures en devises', 'icon' => 'ti-currency-dollar', 'multi_devise' => true],
+        'import' => ['code' => null, 'type' => null, 'title' => 'Import de relevés', 'icon' => 'ti-file-upload'],
     ];
 
     public function pageMeta(string $page): array
@@ -81,19 +83,61 @@ class SaisieComptableService
         return $piece;
     }
 
-    public function tauxPourDevise(int $societeId, string $devise, string $date): float
+    public function tauxPourDevise(int $societeId, string $devise, string $date, bool $strict = false): float
     {
+        $devise = strtoupper(trim($devise));
         if (strlen($devise) !== 3) {
             return 1.0;
         }
 
+        $societe = Societe::find($societeId);
+        $principale = strtoupper($societe?->devise_principale ?? 'CDF');
+        if ($devise === $principale) {
+            return 1.0;
+        }
+
         $taux = TauxChange::where('societe_id', $societeId)
-            ->where('devise_code', strtoupper($devise))
+            ->where('devise_code', $devise)
             ->where('date_taux', '<=', $date)
             ->orderByDesc('date_taux')
             ->value('taux');
 
-        return $taux ? (float) $taux : 1.0;
+        if (! $taux) {
+            if ($strict) {
+                throw new InvalidArgumentException(
+                    "Taux de change manquant pour {$devise} à la date {$date}. Enregistrez-le dans Paramètres > Devises."
+                );
+            }
+
+            return 1.0;
+        }
+
+        return (float) $taux;
+    }
+
+    /**
+     * Devise d'enregistrement : priorité au journal en devise étrangère, sinon en-tête ou devise principale.
+     */
+    public function deviseEffectiveEcriture(Journal $journal, Societe $societe, ?string $enteteDevise = null): string
+    {
+        $principale = strtoupper($societe->devise_principale ?? 'CDF');
+        $journalDevise = $journal->devise_defaut ? strtoupper(trim($journal->devise_defaut)) : null;
+
+        if ($journalDevise && $journalDevise !== $principale) {
+            return $journalDevise;
+        }
+
+        $entete = $enteteDevise ? strtoupper(trim($enteteDevise)) : null;
+
+        return $entete && strlen($entete) === 3 ? $entete : $principale;
+    }
+
+    public function journalEnDeviseEtrangere(Journal $journal, Societe $societe): bool
+    {
+        $principale = strtoupper($societe->devise_principale ?? 'CDF');
+        $journalDevise = $journal->devise_defaut ? strtoupper(trim($journal->devise_defaut)) : $principale;
+
+        return $journalDevise !== $principale;
     }
 
     public function resolveCompte(int $societeId, string $numCompte): PlanComptable
@@ -189,9 +233,10 @@ class SaisieComptableService
 
             $this->verifierEquilibre($lignes);
             $this->validerLignesMetier($societeId, $journal, $lignes);
+            $this->analytique->validerLignesAnalytiques($societeId, $journal, $lignes, $societe);
 
             $totaux = $this->calculerTotaux($lignes);
-            $devise = strtoupper($entete['devise'] ?? $societe->devise_principale ?? 'CDF');
+            $devise = $this->deviseEffectiveEcriture($journal, $societe, $entete['devise'] ?? null);
             $taux = (float) ($entete['taux_change'] ?? $this->tauxPourDevise($societeId, $devise, $date->toDateString()));
 
             if ($ecritureId) {
@@ -243,11 +288,14 @@ class SaisieComptableService
             }
 
             $ecriture->lignes()->delete();
+            $this->analytique->supprimerParEcriture($ecriture->id);
+
+            $lignesCreees = [];
             foreach ($lignes as $i => $ligneData) {
                 $compte = $this->resolveCompte($societeId, $ligneData['num_compte']);
                 $montantDevise = isset($ligneData['montant_devise']) ? (float) $ligneData['montant_devise'] : null;
 
-                LigneEcriture::create([
+                $lignesCreees[] = LigneEcriture::create([
                     'ecriture_id' => $ecriture->id,
                     'societe_id' => $societeId,
                     'exercice_id' => $exercice->id,
@@ -267,8 +315,10 @@ class SaisieComptableService
                 ]);
             }
 
+            $this->analytique->synchroniserEcriture($ecriture, $lignesCreees, $lignes);
+
             return [
-                'ecriture' => $ecriture->fresh(['lignes', 'journal']),
+                'ecriture' => $ecriture->fresh(['lignes.analytiques.section.axe', 'lignes', 'journal']),
                 'warnings' => $warnings,
             ];
         });

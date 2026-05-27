@@ -30,11 +30,23 @@ new Vue({
         },
 
         async initPage() {
-            await this.loadTiers();
+            await this.loadData();
         },
 
         async onSocieteChanged() {
-            await this.loadTiers();
+            await this.loadData();
+        },
+
+        labelType(type) {
+            const map = {
+                client: "Client",
+                fournisseur: "Fournisseur",
+                client_fournisseur: "Client / Fournisseur",
+                salarie: "Salarié",
+                banque: "Banque",
+                autre: "Autre",
+            };
+            return map[type] || type;
         },
 
         emptyForm() {
@@ -53,17 +65,25 @@ new Vue({
 
         debounceSearch() {
             clearTimeout(searchTimer);
-            searchTimer = setTimeout(() => this.loadTiers(), 350);
+            searchTimer = setTimeout(() => this.loadData(), 350);
         },
 
-        async loadTiers() {
+        async loadData() {
             this.isLoading = true;
             const params = new URLSearchParams();
             if (this.search) params.set("search", this.search);
             if (this.filtreType) params.set("type", this.filtreType);
             try {
                 const { data } = await get(`/accounting/parametres/tiers/all?${params}`);
-                if (data.status === "success") this.liste = data.tiers || [];
+                if (data.status === "success") {
+                    this.liste = data.tiers || [];
+                } else if (data.errors) {
+                    this.error = data.errors;
+                }
+            } catch (e) {
+                console.error(e);
+                this.error = ["Impossible de charger les tiers. Vérifiez qu'une société est active (Paramètres > Société)."];
+                this.liste = [];
             } finally {
                 this.isLoading = false;
             }
@@ -88,7 +108,7 @@ new Vue({
             this.isLoading = false;
             if (!this.handleResponse(data)) return;
             bootstrap.Modal.getInstance(document.getElementById("modal_tiers"))?.hide();
-            this.loadTiers();
+            this.loadData();
         },
     },
 });

@@ -35,6 +35,11 @@ class Societe extends Model
         return $this->hasMany(Tiers::class);
     }
 
+    public function banques(): HasMany
+    {
+        return $this->hasMany(SocieteBanque::class)->orderBy('ordre');
+    }
+
     public function scopeActif($query)
     {
         return $query->where('statut', 'active');

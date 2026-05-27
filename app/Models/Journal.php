@@ -16,12 +16,12 @@ class Journal extends Model
     protected $fillable = [
         'societe_id', 'code', 'libelle', 'type', 'compte_contrepartie', 'prefixe_piece',
         'prochain_numero', 'format_numerotation', 'padding_numero', 'saisie_tiers_obligatoire',
-        'saisie_lettrage_auto', 'mode_brouillard', 'devise_defaut', 'actif', 'ordre_affichage',
+        'saisie_lettrage_auto', 'mode_brouillard', 'devise_defaut', 'analytique_obligatoire', 'actif', 'ordre_affichage',
     ];
 
     protected $casts = [
         'prochain_numero' => 'integer', 'padding_numero' => 'integer', 'ordre_affichage' => 'integer',
-        'saisie_tiers_obligatoire' => 'boolean', 'saisie_lettrage_auto' => 'boolean',
+        'saisie_tiers_obligatoire' => 'boolean', 'analytique_obligatoire' => 'boolean', 'saisie_lettrage_auto' => 'boolean',
         'mode_brouillard' => 'boolean', 'actif' => 'boolean',
     ];
 

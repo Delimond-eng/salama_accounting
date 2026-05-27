@@ -5,12 +5,14 @@ new Vue({
     el: "#App",
     mixins: [livresMixin],
     data() {
+        const type = window.__LIVRES_TRESORERIE_TYPE__ || "banque";
         return {
-            type: window.__LIVRES_TRESORERIE_TYPE__ || "banque",
+            type: type,
             numCompte: "",
             comptesListe: [],
             synthese: [],
             data: null,
+            exportBase: `/accounting/export/livres/${type}`,
         };
     },
 

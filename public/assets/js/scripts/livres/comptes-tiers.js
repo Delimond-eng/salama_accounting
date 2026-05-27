@@ -7,6 +7,7 @@ new Vue({
     data() {
         return {
             tiers: [],
+            exportBase: "/accounting/export/livres/comptes-tiers",
         };
     },
     methods: {

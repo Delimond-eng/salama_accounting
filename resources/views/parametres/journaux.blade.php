@@ -26,6 +26,7 @@
                             <th>Code</th>
                             <th>Libellé</th>
                             <th>Type</th>
+                            <th>Devise</th>
                             <th>Contrepartie</th>
                             <th>Numérotation</th>
                             <th>Actif</th>
@@ -33,12 +34,13 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr v-if="isLoading"><td colspan="7" class="text-center py-4">Chargement…</td></tr>
-                        <tr v-else-if="!journaux.length"><td colspan="7" class="text-center py-4 text-muted">Aucun journal</td></tr>
+                        <tr v-if="isLoading"><td colspan="8" class="text-center py-4">Chargement…</td></tr>
+                        <tr v-else-if="!journaux.length"><td colspan="8" class="text-center py-4 text-muted">Aucun journal</td></tr>
                         <tr v-for="j in journaux" :key="j.id">
                             <td><span class="badge badge-soft-primary">@{{ j.code }}</span></td>
                             <td>@{{ j.libelle }}</td>
                             <td>@{{ j.type }}</td>
+                            <td><span class="badge badge-soft-info">@{{ j.devise_defaut || 'CDF' }}</span></td>
                             <td>@{{ j.compte_contrepartie || '—' }}</td>
                             <td>@{{ j.format_numerotation }}</td>
                             <td>
@@ -91,6 +93,13 @@
                                     <option value="simulation">Simulation</option>
                                 </select>
                             </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Devise par défaut</label>
+                                <select class="form-select" v-model="form.devise_defaut" required>
+                                    <option value="CDF">CDF — Franc congolais</option>
+                                    <option value="USD">USD — Dollar américain</option>
+                                </select>
+                            </div>
                             <div class="col-md-6">
                                 <label class="form-label">Compte contrepartie</label>
                                 @include('components.compte-select', ['compteKey' => 'journal_cp', 'inputClass' => 'form-control'])
@@ -119,6 +128,12 @@
                                 <div class="form-check mt-4">
                                     <input class="form-check-input" type="checkbox" v-model="form.saisie_tiers_obligatoire" id="chk_st">
                                     <label class="form-check-label" for="chk_st">Tiers obligatoire</label>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-check mt-4">
+                                    <input class="form-check-input" type="checkbox" v-model="form.analytique_obligatoire" id="chk_an">
+                                    <label class="form-check-label" for="chk_an">Analytique obligatoire</label>
                                 </div>
                             </div>
                             <div class="col-md-4">

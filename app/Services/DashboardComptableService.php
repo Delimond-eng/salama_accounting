@@ -20,13 +20,17 @@ class DashboardComptableService
         protected DeviseConversionService $devises
     ) {}
 
-    public function assembler(int $societeId): array
+    /**
+     * @param  array{devise_affichage?: string, scope_devise?: string, mode_conversion?: string}|null  $filtresDevise
+     */
+    public function assembler(int $societeId, ?array $filtresDevise = null): array
     {
         $societe = Societe::findOrFail($societeId);
         $exercice = $this->livres->exerciceCourant($societeId);
-        $options = $this->livres->optionsDefaut($societe);
+        $options = $this->livres->resoudreFiltresDevise($societe, $filtresDevise);
         $devise = $options['devise_affichage'];
         $mode = $options['mode_conversion'];
+        $scope = $options['scope_devise'] ?? 'consolide';
         $today = now()->toDateString();
 
         if (! $exercice) {
@@ -34,6 +38,7 @@ class DashboardComptableService
                 'societe' => $societe,
                 'exercice' => null,
                 'devise' => $devise,
+                'options_devise' => $options,
                 'message' => 'Aucun exercice courant. Configurez une société et un exercice dans Paramètres.',
             ];
         }
@@ -42,8 +47,8 @@ class DashboardComptableService
         $debutMois = Carbon::parse($dateFin)->startOfMonth()->toDateString();
         $debutExercice = $exercice->date_debut->format('Y-m-d');
 
-        $kpis = $this->kpis($societeId, $exercice, $dateFin, $debutMois, $debutExercice, $devise, $mode);
-        $controles = $this->controles($societeId, $exercice, $dateFin, $devise, $mode);
+        $kpis = $this->kpis($societeId, $exercice, $dateFin, $debutMois, $debutExercice, $devise, $mode, $scope);
+        $controles = $this->controles($societeId, $exercice, $dateFin, $devise, $mode, $scope);
         $devises = $this->blocDevises($societeId, $exercice->id, $today);
         $alertes = $this->alertes($kpis, $controles, $devises);
 
@@ -51,15 +56,18 @@ class DashboardComptableService
             'societe' => $societe,
             'exercice' => $exercice,
             'devise' => $devise,
+            'scope_devise' => $scope,
+            'mode_conversion' => $mode,
+            'options_devise' => $options,
             'date_reference' => $dateFin,
             'kpis' => $kpis,
             'controles' => $controles,
             'alertes' => $alertes,
             'activite_recente' => $this->activiteRecente($societeId, $exercice->id),
-            'graphiques' => $this->graphiques($societeId, $exercice, $dateFin, $devise, $mode),
+            'graphiques' => $this->graphiques($societeId, $exercice, $dateFin, $devise, $mode, $scope),
             'exercices' => $this->listeExercices($societeId),
             'devises' => $devises,
-            'ventes' => $this->blocVentes($societeId, $exercice, $dateFin, $debutMois, $today),
+            'ventes' => $this->blocVentes($societeId, $exercice, $dateFin, $debutMois, $today, $devise, $mode, $scope),
             'liens_rapides' => $this->liensRapides(),
         ];
     }
@@ -71,11 +79,12 @@ class DashboardComptableService
         string $debutMois,
         string $debutExercice,
         string $devise,
-        string $mode
+        string $mode,
+        string $scope
     ): array {
-        $banque = $this->soldePrefixe($societeId, $exercice->id, '52', $dateFin, $devise, $mode);
-        $caisse = $this->soldePrefixe($societeId, $exercice->id, '57', $dateFin, $devise, $mode);
-        $resultat = $this->bilan->resultatNetExercice($societeId, $exercice, $dateFin, $devise, $mode);
+        $banque = $this->soldePrefixe($societeId, $exercice->id, '52', $dateFin, $devise, $mode, $scope);
+        $caisse = $this->soldePrefixe($societeId, $exercice->id, '57', $dateFin, $devise, $mode, $scope);
+        $resultat = $this->bilan->resultatNetExercice($societeId, $exercice, $dateFin, $devise, $mode, $scope);
 
         return [
             'tresorerie' => [
@@ -85,8 +94,8 @@ class DashboardComptableService
             ],
             'resultat_exercice' => round($resultat, 2),
             'resultat_positif' => $resultat >= 0,
-            'creances_clients' => $this->soldeClassePrefixe($societeId, $exercice->id, '411', $dateFin, $devise, $mode, 'debit'),
-            'dettes_fournisseurs' => $this->soldeClassePrefixe($societeId, $exercice->id, '401', $dateFin, $devise, $mode, 'credit'),
+            'creances_clients' => $this->soldeClassePrefixe($societeId, $exercice->id, '411', $dateFin, $devise, $mode, $scope, 'debit'),
+            'dettes_fournisseurs' => $this->soldeClassePrefixe($societeId, $exercice->id, '401', $dateFin, $devise, $mode, $scope, 'credit'),
             'ecritures' => [
                 'aujourdhui' => $this->compterEcritures($societeId, $exercice->id, $dateFin, $dateFin),
                 'mois' => $this->compterEcritures($societeId, $exercice->id, $debutMois, $dateFin),
@@ -101,12 +110,13 @@ class DashboardComptableService
         Exercice $exercice,
         string $dateFin,
         string $devise,
-        string $mode
+        string $mode,
+        string $scope
     ): array {
         $balance = $this->controleBalance($societeId, $exercice->id, $exercice->date_debut->format('Y-m-d'), $dateFin);
-        $bilan = $this->controleBilan($societeId, $exercice, $dateFin, $devise, $mode);
-        $tft = $this->controleTft($societeId, $exercice, $dateFin, $devise, $mode);
-        $anomalies = $this->comptesAnormaux($societeId, $exercice->id, $dateFin, $devise, $mode);
+        $bilan = $this->controleBilan($societeId, $exercice, $dateFin, $devise, $mode, $scope);
+        $tft = $this->controleTft($societeId, $exercice, $dateFin, $devise, $mode, $scope);
+        $anomalies = $this->comptesAnormaux($societeId, $exercice->id, $dateFin, $devise, $mode, $scope);
         $journal = $this->controleJournaux($societeId, $exercice->id);
 
         return [
@@ -124,13 +134,19 @@ class DashboardComptableService
         $items = [];
 
         foreach ($kpis['journaux']['desequilibrees'] ?? [] as $e) {
-            $items[] = ['niveau' => 'danger', 'titre' => 'Écriture déséquilibrée', 'detail' => $e['libelle']];
+            $items[] = [
+                'niveau' => 'danger',
+                'titre' => 'Écriture déséquilibrée',
+                'detail' => $e['libelle'],
+                'url' => route('accounting.saisie.nouvelle')
+            ];
         }
         if (($kpis['journaux']['brouillons_od'] ?? 0) > 0) {
             $items[] = [
                 'niveau' => 'warning',
                 'titre' => 'OD non validées',
                 'detail' => $kpis['journaux']['brouillons_od'].' écriture(s) en brouillon (journal OD).',
+                'url' => route('accounting.saisie.od', ['statut' => 'brouillon'])
             ];
         }
         if (($kpis['journaux']['brouillons_total'] ?? 0) > 0) {
@@ -138,31 +154,72 @@ class DashboardComptableService
                 'niveau' => 'info',
                 'titre' => 'Brouillons en attente',
                 'detail' => $kpis['journaux']['brouillons_total'].' écriture(s) à valider.',
+                'url' => route('accounting.saisie.nouvelle', ['statut' => 'brouillon'])
             ];
         }
         foreach ($controles['comptes_anormaux']['items'] ?? [] as $a) {
-            $items[] = ['niveau' => 'warning', 'titre' => 'Compte anormal', 'detail' => $a];
+            $items[] = [
+                'niveau' => 'warning',
+                'titre' => 'Compte anormal',
+                'detail' => $a,
+                'url' => route('accounting.livres.balance')
+            ];
         }
         foreach ($controles['journal']['items'] ?? [] as $j) {
-            $items[] = ['niveau' => 'warning', 'titre' => 'Contrôle journal', 'detail' => $j];
+            $items[] = [
+                'niveau' => 'warning',
+                'titre' => 'Contrôle journal',
+                'detail' => $j,
+                'url' => route('accounting.livres.journal')
+            ];
         }
         if (! ($controles['balance']['ok'] ?? true)) {
-            $items[] = ['niveau' => 'danger', 'titre' => 'Balance déséquilibrée', 'detail' => $controles['balance']['message']];
+            $items[] = [
+                'niveau' => 'danger',
+                'titre' => 'Balance déséquilibrée',
+                'detail' => $controles['balance']['message'],
+                'url' => route('accounting.livres.balance')
+            ];
         }
         if (! ($controles['bilan']['ok'] ?? true)) {
-            $items[] = ['niveau' => 'danger', 'titre' => 'Bilan déséquilibré', 'detail' => $controles['bilan']['message']];
+            $items[] = [
+                'niveau' => 'danger',
+                'titre' => 'Bilan déséquilibré',
+                'detail' => $controles['bilan']['message'],
+                'url' => route('accounting.etats.bilan')
+            ];
         }
         if (! ($controles['tft']['ok'] ?? true)) {
-            $items[] = ['niveau' => 'warning', 'titre' => 'Contrôle TFT', 'detail' => $controles['tft']['message']];
+            $items[] = [
+                'niveau' => 'warning',
+                'titre' => 'Contrôle TFT',
+                'detail' => $controles['tft']['message'],
+                'url' => route('accounting.etats.flux-tresorerie')
+            ];
         }
         if (($kpis['tresorerie']['caisse'] ?? 0) < 0) {
-            $items[] = ['niveau' => 'danger', 'titre' => 'Caisse négative', 'detail' => 'Le solde caisse (571) est débiteur en trésorerie.'];
+            $items[] = [
+                'niveau' => 'danger',
+                'titre' => 'Caisse négative',
+                'detail' => 'Le solde caisse (571) est débiteur en trésorerie.',
+                'url' => route('accounting.livres.caisse')
+            ];
         }
         if (($kpis['tresorerie']['banque'] ?? 0) < 0) {
-            $items[] = ['niveau' => 'danger', 'titre' => 'Banque négative', 'detail' => 'Découvert bancaire détecté sur les comptes 52x.'];
+            $items[] = [
+                'niveau' => 'danger',
+                'titre' => 'Banque négative',
+                'detail' => 'Découvert bancaire détecté sur les comptes 52x.',
+                'url' => route('accounting.livres.banque')
+            ];
         }
         if (($devises['taux_manquant'] ?? false)) {
-            $items[] = ['niveau' => 'info', 'titre' => 'Taux de change', 'detail' => 'Taux USD/CDF du jour non renseigné.'];
+            $items[] = [
+                'niveau' => 'info',
+                'titre' => 'Taux de change',
+                'detail' => 'Taux USD/CDF du jour non renseigné.',
+                'url' => route('accounting.parametres.devises')
+            ];
         }
 
         return ['items' => $items, 'count' => count($items)];
@@ -177,7 +234,7 @@ class DashboardComptableService
             ->where('statut', 'validee')
             ->orderByDesc('date_ecriture')
             ->orderByDesc('created_at')
-            ->limit(12)
+            ->limit(10)
             ->get(['id', 'journal_id', 'num_piece', 'date_ecriture', 'libelle', 'total_debit', 'total_credit', 'devise'])
             ->map(fn ($e) => [
                 'date' => $e->date_ecriture->format('d/m/Y'),
@@ -196,13 +253,14 @@ class DashboardComptableService
         Exercice $exercice,
         string $dateFin,
         string $devise,
-        string $mode
+        string $mode,
+        string $scope
     ): array {
         return [
-            'tresorerie_mensuelle' => $this->evolutionTresorerieMensuelle($societeId, $exercice, $dateFin, $devise, $mode),
-            'charges' => $this->repartitionClasse($societeId, $exercice, $dateFin, '6', 6),
-            'produits' => $this->repartitionClasse($societeId, $exercice, $dateFin, '7', 6),
-            'resultat_mensuel' => $this->resultatMensuel($societeId, $exercice, $dateFin),
+            'tresorerie_mensuelle' => $this->evolutionTresorerieMensuelle($societeId, $exercice, $dateFin, $devise, $mode, $scope),
+            'charges' => $this->repartitionClasse($societeId, $exercice, $dateFin, '6', 6, $devise, $mode, $scope),
+            'produits' => $this->repartitionClasse($societeId, $exercice, $dateFin, '7', 6, $devise, $mode, $scope),
+            'resultat_mensuel' => $this->resultatMensuel($societeId, $exercice, $dateFin, $devise, $mode, $scope),
         ];
     }
 
@@ -220,7 +278,6 @@ class DashboardComptableService
                 'est_courant' => $e->est_courant,
                 'date_debut' => $e->date_debut->format('d/m/Y'),
                 'date_fin' => $e->date_fin->format('d/m/Y'),
-                'date_cloture' => $e->date_cloture?->format('d/m/Y'),
             ])
             ->all();
     }
@@ -254,17 +311,24 @@ class DashboardComptableService
         Exercice $exercice,
         string $dateFin,
         string $debutMois,
-        string $today
+        string $today,
+        string $devise,
+        string $mode,
+        string $scope
     ): array {
-        $caMois = $this->sommePrefixe($societeId, $exercice->id, '70', $debutMois, $dateFin);
-        $caJour = $this->sommePrefixe($societeId, $exercice->id, '70', $today, $today);
+        $caMois = $this->livres->sommeFluxPeriode($societeId, $exercice->id, '70', $debutMois, $dateFin, $devise, $mode, $scope, 'produit');
+        $caJour = $this->livres->sommeFluxPeriode($societeId, $exercice->id, '70', $today, $today, $devise, $mode, $scope, 'produit');
         $moisPrec = Carbon::parse($debutMois)->subMonth();
-        $caMoisPrec = $this->sommePrefixe(
+        $caMoisPrec = $this->livres->sommeFluxPeriode(
             $societeId,
             $exercice->id,
             '70',
             $moisPrec->startOfMonth()->toDateString(),
-            $moisPrec->endOfMonth()->toDateString()
+            $moisPrec->endOfMonth()->toDateString(),
+            $devise,
+            $mode,
+            $scope,
+            'produit'
         );
         $evolution = $caMoisPrec != 0 ? round((($caMois - $caMoisPrec) / abs($caMoisPrec)) * 100, 1) : null;
 
@@ -279,14 +343,24 @@ class DashboardComptableService
     protected function liensRapides(): array
     {
         return [
-            ['label' => 'Journal général', 'route' => 'accounting.livres.journal', 'icon' => 'ti-notebook', 'color' => 'primary'],
-            ['label' => 'Grand livre', 'route' => 'accounting.livres.grand-livre', 'icon' => 'ti-book-2', 'color' => 'info'],
-            ['label' => 'Balance', 'route' => 'accounting.livres.balance', 'icon' => 'ti-scale', 'color' => 'secondary'],
-            ['label' => 'Balance auxiliaire', 'route' => 'accounting.livres.auxiliaire', 'icon' => 'ti-scale-outline', 'color' => 'secondary'],
-            ['label' => 'Bilan', 'route' => 'accounting.etats.bilan', 'icon' => 'ti-report-money', 'color' => 'success'],
-            ['label' => 'Compte de résultat', 'route' => 'accounting.etats.compte-resultat', 'icon' => 'ti-chart-bar', 'color' => 'success'],
-            ['label' => 'TFT', 'route' => 'accounting.etats.flux-tresorerie', 'icon' => 'ti-arrows-shuffle', 'color' => 'warning'],
-            ['label' => 'Exports', 'route' => 'accounting.etats.exports', 'icon' => 'ti-download', 'color' => 'dark'],
+            'Saisie & Opérations' => [
+                ['label' => 'Nouvelle écriture', 'route' => 'accounting.saisie.nouvelle', 'icon' => 'ti-plus', 'color' => 'primary'],
+                ['label' => 'Saisie Ventes', 'route' => 'accounting.saisie.ventes', 'icon' => 'ti-shopping-cart', 'color' => 'success'],
+                ['label' => 'Saisie Caisse', 'route' => 'accounting.saisie.caisse', 'icon' => 'ti-wallet', 'color' => 'info'],
+                ['label' => 'Import Relevé', 'route' => 'accounting.saisie.import-releve', 'icon' => 'ti-file-import', 'color' => 'secondary'],
+            ],
+            'Consultation & Livres' => [
+                ['label' => 'Journal général', 'route' => 'accounting.livres.journal', 'icon' => 'ti-notebook', 'color' => 'primary'],
+                ['label' => 'Grand livre', 'route' => 'accounting.livres.grand-livre', 'icon' => 'ti-book-2', 'color' => 'info'],
+                ['label' => 'Balance générale', 'route' => 'accounting.livres.balance', 'icon' => 'ti-scale', 'color' => 'secondary'],
+                ['label' => 'Lettrage', 'route' => 'accounting.livres.lettrage', 'icon' => 'ti-checkup-list', 'color' => 'warning'],
+            ],
+            'États & Rapports' => [
+                ['label' => 'Bilan', 'route' => 'accounting.etats.bilan', 'icon' => 'ti-report-money', 'color' => 'success'],
+                ['label' => 'Compte de résultat', 'route' => 'accounting.etats.compte-resultat', 'icon' => 'ti-chart-bar', 'color' => 'success'],
+                ['label' => 'Tableau de flux', 'route' => 'accounting.etats.flux-tresorerie', 'icon' => 'ti-arrows-shuffle', 'color' => 'warning'],
+                ['label' => 'Exports fiscaux', 'route' => 'accounting.etats.exports', 'icon' => 'ti-download', 'color' => 'dark'],
+            ]
         ];
     }
 
@@ -296,11 +370,12 @@ class DashboardComptableService
         string $prefix,
         string $date,
         string $devise,
-        string $mode
+        string $mode,
+        string $scope
     ): float {
         $total = 0.0;
         foreach ($this->livres->comptesTresorerie($societeId, $prefix === '52' ? 'banque' : 'caisse') as $compte) {
-            $total += $this->livres->soldeCompteAuDate($societeId, $exerciceId, $compte->num_compte, $date, $devise, $mode);
+            $total += $this->livres->soldeCompteAuDate($societeId, $exerciceId, $compte->num_compte, $date, $devise, $mode, $scope);
         }
 
         return $total;
@@ -313,6 +388,7 @@ class DashboardComptableService
         string $dateFin,
         string $devise,
         string $mode,
+        string $scope,
         string $sensAttendu
     ): float {
         $balance = $this->livres->balanceGenerale(
@@ -321,7 +397,9 @@ class DashboardComptableService
             Exercice::find($exerciceId)->date_debut->format('Y-m-d'),
             $dateFin,
             $devise,
-            $mode
+            $mode,
+            null,
+            $scope
         );
 
         $total = 0.0;
@@ -351,7 +429,7 @@ class DashboardComptableService
             ->where('exercice_id', $exerciceId)
             ->whereIn('statut', ['validee', 'brouillon'])
             ->whereRaw('ABS(total_debit - total_credit) >= 0.01')
-            ->limit(10)
+            ->limit(5)
             ->get(['num_piece', 'libelle', 'total_debit', 'total_credit'])
             ->map(fn ($e) => [
                 'libelle' => $e->num_piece.' — '.$e->libelle.' (Δ '.number_format(abs($e->total_debit - $e->total_credit), 2).')',
@@ -397,32 +475,30 @@ class DashboardComptableService
             'total_debit' => $d,
             'total_credit' => $c,
             'ecart' => round($d - $c, 2),
-            'message' => $ok ? 'Total débit = total crédit.' : 'Écart de '.number_format(abs($d - $c), 2).' sur la période.',
+            'message' => $ok ? 'Équilibrée.' : 'Écart de '.number_format(abs($d - $c), 2),
         ];
     }
 
-    protected function controleBilan(int $societeId, Exercice $exercice, string $dateFin, string $devise, string $mode): array
+    protected function controleBilan(int $societeId, Exercice $exercice, string $dateFin, string $devise, string $mode, string $scope = 'consolide'): array
     {
         try {
-            $this->bilan->generer($societeId, $exercice, $dateFin, $devise, $mode);
+            $this->bilan->generer($societeId, $exercice, $dateFin, $devise, $mode, $scope);
 
-            return ['ok' => true, 'message' => 'Actif = Passif (bilan équilibré).'];
+            return ['ok' => true, 'message' => 'Actif = Passif.'];
         } catch (BilanDesequilibreException $e) {
             return ['ok' => false, 'message' => $e->getMessage()];
         }
     }
 
-    protected function controleTft(int $societeId, Exercice $exercice, string $dateFin, string $devise, string $mode): array
+    protected function controleTft(int $societeId, Exercice $exercice, string $dateFin, string $devise, string $mode, string $scope = 'consolide'): array
     {
         try {
-            $tft = $this->tft->generer($societeId, $exercice, $dateFin, $devise, $mode);
+            $tft = $this->tft->generer($societeId, $exercice, $dateFin, $devise, $mode, null, $scope);
             $ok = ($tft['controle']['ok'] ?? false) === true;
 
             return [
                 'ok' => $ok,
-                'message' => $ok
-                    ? 'ZH ≈ variation trésorerie (521+571).'
-                    : 'Écart TFT : '.number_format(abs($tft['controle']['ecart_controle'] ?? 0), 2),
+                'message' => $ok ? 'TFT valide.' : 'Écart TFT détecté.',
                 'detail' => $tft['controle'] ?? null,
             ];
         } catch (\Throwable $e) {
@@ -430,7 +506,7 @@ class DashboardComptableService
         }
     }
 
-    protected function comptesAnormaux(int $societeId, int $exerciceId, string $dateFin, string $devise, string $mode): array
+    protected function comptesAnormaux(int $societeId, int $exerciceId, string $dateFin, string $devise, string $mode, string $scope = 'consolide'): array
     {
         $items = [];
         $exercice = Exercice::find($exerciceId);
@@ -440,7 +516,9 @@ class DashboardComptableService
             $exercice->date_debut->format('Y-m-d'),
             $dateFin,
             $devise,
-            $mode
+            $mode,
+            null,
+            $scope
         );
 
         foreach ($balance['lignes'] as $row) {
@@ -450,17 +528,17 @@ class DashboardComptableService
                 continue;
             }
             if (str_starts_with($num, '401') && $net > 0) {
-                $items[] = "Compte {$num} débiteur (".number_format($net, 2).') — fournisseur anormal.';
+                $items[] = "{$num} débiteur (".number_format($net, 0).')';
             }
             if (str_starts_with($num, '411') && $net < 0) {
-                $items[] = "Compte {$num} créditeur (".number_format(abs($net), 2).') — client anormal.';
+                $items[] = "{$num} créditeur (".number_format(abs($net), 0).')';
             }
             if ((str_starts_with($num, '521') || str_starts_with($num, '571')) && $net < 0) {
-                $items[] = "Trésorerie {$num} négative (".number_format(abs($net), 2).').';
+                $items[] = "{$num} négative (".number_format(abs($net), 0).')';
             }
         }
 
-        return ['items' => array_slice($items, 0, 8), 'count' => count($items)];
+        return ['items' => array_slice($items, 0, 5), 'count' => count($items)];
     }
 
     protected function controleJournaux(int $societeId, int $exerciceId): array
@@ -475,11 +553,11 @@ class DashboardComptableService
             ->select('num_piece', DB::raw('COUNT(*) as n'))
             ->groupBy('num_piece')
             ->having('n', '>', 1)
-            ->limit(5)
+            ->limit(3)
             ->get();
 
         foreach ($doublons as $d) {
-            $items[] = "Pièce dupliquée : {$d->num_piece} ({$d->n} fois).";
+            $items[] = "Doublon : {$d->num_piece}";
         }
 
         $ex = Exercice::find($exerciceId);
@@ -495,7 +573,7 @@ class DashboardComptableService
             : 0;
 
         if ($horsExercice > 0) {
-            $items[] = "{$horsExercice} écriture(s) avec date hors période d'exercice.";
+            $items[] = "{$horsExercice} hors période.";
         }
 
         return ['items' => $items, 'count' => count($items)];
@@ -506,7 +584,8 @@ class DashboardComptableService
         Exercice $exercice,
         string $dateFin,
         string $devise,
-        string $mode
+        string $mode,
+        string $scope
     ): array {
         $labels = [];
         $banque = [];
@@ -521,8 +600,8 @@ class DashboardComptableService
             }
             $dernier = min($m->copy()->endOfMonth()->toDateString(), $dateFin);
             $labels[] = $m->translatedFormat('M Y');
-            $b = $this->soldePrefixe($societeId, $exercice->id, '52', $dernier, $devise, $mode);
-            $c = $this->soldePrefixe($societeId, $exercice->id, '57', $dernier, $devise, $mode);
+            $b = $this->soldePrefixe($societeId, $exercice->id, '52', $dernier, $devise, $mode, $scope);
+            $c = $this->soldePrefixe($societeId, $exercice->id, '57', $dernier, $devise, $mode, $scope);
             $banque[] = round($b, 2);
             $caisse[] = round($c, 2);
             $total[] = round($b + $c, 2);
@@ -530,8 +609,8 @@ class DashboardComptableService
 
         if ($labels === []) {
             $labels[] = Carbon::parse($dateFin)->translatedFormat('M Y');
-            $b = $this->soldePrefixe($societeId, $exercice->id, '52', $dateFin, $devise, $mode);
-            $c = $this->soldePrefixe($societeId, $exercice->id, '57', $dateFin, $devise, $mode);
+            $b = $this->soldePrefixe($societeId, $exercice->id, '52', $dateFin, $devise, $mode, $scope);
+            $c = $this->soldePrefixe($societeId, $exercice->id, '57', $dateFin, $devise, $mode, $scope);
             $banque[] = round($b, 2);
             $caisse[] = round($c, 2);
             $total[] = round($b + $c, 2);
@@ -545,30 +624,32 @@ class DashboardComptableService
         Exercice $exercice,
         string $dateFin,
         string $classe,
-        int $top
+        int $top,
+        string $devise,
+        string $mode,
+        string $scope
     ): array {
-        $rows = DB::table('lignes_ecritures as l')
-            ->join('ecritures as e', 'e.id', '=', 'l.ecriture_id')
-            ->leftJoin('plan_comptable as pc', 'pc.id', '=', 'l.compte_id')
-            ->where('l.societe_id', $societeId)
-            ->where('l.exercice_id', $exercice->id)
-            ->where('e.statut', 'validee')
-            ->whereNull('e.deleted_at')
-            ->where('l.num_compte', 'like', $classe.'%')
-            ->whereBetween('e.date_ecriture', [$exercice->date_debut->format('Y-m-d'), $dateFin])
-            ->groupBy('l.num_compte', 'pc.libelle')
-            ->selectRaw('l.num_compte, MAX(pc.libelle) as libelle, SUM(l.debit) as d, SUM(l.credit) as c')
-            ->get()
-            ->map(function ($r) use ($classe) {
-                $montant = $classe === '6'
-                    ? (float) $r->d - (float) $r->c
-                    : (float) $r->c - (float) $r->d;
+        $balance = $this->livres->balanceGenerale(
+            $societeId,
+            $exercice->id,
+            $exercice->date_debut->format('Y-m-d'),
+            $dateFin,
+            $devise,
+            $mode,
+            (int) $classe,
+            $scope
+        );
 
-                return [
-                    'libelle' => trim($r->num_compte.' '.($r->libelle ?? '')),
-                    'montant' => round(max(0, $montant), 2),
-                ];
-            })
+        $rows = collect($balance['lignes'])->map(function ($row) use ($classe) {
+            $debit = (float) ($row['mouvement_debit'] ?? 0);
+            $credit = (float) ($row['mouvement_credit'] ?? 0);
+            $montant = $classe === '6' ? $debit - $credit : $credit - $debit;
+
+            return [
+                'libelle' => trim($row['num_compte'].' '.($row['libelle'] ?? '')),
+                'montant' => round(max(0, $montant), 2),
+            ];
+        })
             ->filter(fn ($x) => $x['montant'] > 0)
             ->sortByDesc('montant')
             ->values();
@@ -585,8 +666,14 @@ class DashboardComptableService
         return ['labels' => $labels, 'series' => $series];
     }
 
-    protected function resultatMensuel(int $societeId, Exercice $exercice, string $dateFin): array
-    {
+    protected function resultatMensuel(
+        int $societeId,
+        Exercice $exercice,
+        string $dateFin,
+        string $devise,
+        string $mode,
+        string $scope
+    ): array {
         $labels = [];
         $series = [];
         $fin = Carbon::parse($dateFin);
@@ -599,44 +686,18 @@ class DashboardComptableService
             $debut = max($m->copy()->startOfMonth()->toDateString(), $exercice->date_debut->format('Y-m-d'));
             $finM = min($m->copy()->endOfMonth()->toDateString(), $dateFin);
 
-            $row = DB::table('lignes_ecritures as l')
-                ->join('ecritures as e', 'e.id', '=', 'l.ecriture_id')
-                ->where('l.societe_id', $societeId)
-                ->where('l.exercice_id', $exercice->id)
-                ->where('e.statut', 'validee')
-                ->whereNull('e.deleted_at')
-                ->whereBetween('e.date_ecriture', [$debut, $finM])
-                ->where(function ($q): void {
-                    $q->where('l.num_compte', 'like', '6%')->orWhere('l.num_compte', 'like', '7%');
-                })
-                ->selectRaw('COALESCE(SUM(l.credit),0)-COALESCE(SUM(l.debit),0) as res')
-                ->value('res');
+            $produits = $this->livres->sommeFluxPeriode($societeId, $exercice->id, '7', $debut, $finM, $devise, $mode, $scope, 'produit');
+            $charges = $this->livres->sommeFluxPeriode($societeId, $exercice->id, '6', $debut, $finM, $devise, $mode, $scope, 'charge');
 
             $labels[] = $m->translatedFormat('M');
-            $series[] = round((float) $row, 2);
+            $series[] = round($produits - $charges, 2);
         }
 
         if ($labels === []) {
             $labels[] = Carbon::parse($dateFin)->translatedFormat('M');
-            $series[] = round($this->bilan->resultatNetExercice($societeId, $exercice, $dateFin), 2);
+            $series[] = round($this->bilan->resultatNetExercice($societeId, $exercice, $dateFin, $devise, $mode, $scope), 2);
         }
 
         return ['labels' => $labels, 'series' => $series];
-    }
-
-    protected function sommePrefixe(int $societeId, int $exerciceId, string $prefix, string $debut, string $fin): float
-    {
-        $row = DB::table('lignes_ecritures as l')
-            ->join('ecritures as e', 'e.id', '=', 'l.ecriture_id')
-            ->where('l.societe_id', $societeId)
-            ->where('l.exercice_id', $exerciceId)
-            ->where('e.statut', 'validee')
-            ->whereNull('e.deleted_at')
-            ->where('l.num_compte', 'like', $prefix.'%')
-            ->whereBetween('e.date_ecriture', [$debut, $fin])
-            ->selectRaw('COALESCE(SUM(l.credit),0)-COALESCE(SUM(l.debit),0) as m')
-            ->first();
-
-        return (float) ($row->m ?? 0);
     }
 }

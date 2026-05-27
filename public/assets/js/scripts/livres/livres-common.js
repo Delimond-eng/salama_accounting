@@ -76,16 +76,19 @@ export const livresMixin = {
         },
 
         async onDatesChange() {
-            if (typeof this.loadData === "function") {
-                await this.loadData();
-            }
+            await this.loadData();
         },
 
         async onFiltreChange() {
             await this.savePreferences();
-            if (typeof this.loadData === "function") {
-                await this.loadData();
-            }
+            await this.loadData();
+        },
+
+        /**
+         * Placeholder pour loadData. Doit être implémenté dans le composant.
+         */
+        async loadData() {
+            console.warn("loadData non implémenté dans le script de la page.");
         },
 
         async savePreferences() {
@@ -112,7 +115,7 @@ export const livresMixin = {
                 this.error = data.errors;
                 return;
             }
-            if (this.filtres.mode_conversion === "actuel" && typeof this.loadData === "function") {
+            if (this.filtres.mode_conversion === "actuel") {
                 await this.loadData();
             }
         },

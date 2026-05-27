@@ -32,17 +32,17 @@
 
     <table class="info">
         <tr><td>Date paiement</td><td><strong>{{ $paiement->date_paiement->format('d/m/Y') }}</strong></td></tr>
-        <tr><td>MÃ©thode</td><td>{{ ucfirst($paiement->methode) }} â€” {{ $paiement->compte_tresorerie }}</td></tr>
+        <tr><td>Méthode</td><td>{{ ucfirst($paiement->methode) }} â€” {{ $paiement->compte_tresorerie }}</td></tr>
         @if($facture)
         <tr><td>Facture</td><td><strong>{{ $facture->numero }}</strong></td></tr>
         <tr><td>Tiers</td><td>{{ $facture->tiers->nom ?? '' }}</td></tr>
         @endif
-        <tr><td>EnregistrÃ© par</td><td>{{ $paiement->user->name ?? 'â€”' }}</td></tr>
+        <tr><td>Enregistré par</td><td>{{ $paiement->user->name ?? 'â€”' }}</td></tr>
     </table>
 
-    <div class="stamp">Document comptable validÃ© â€” Ã©criture nÂ° {{ $paiement->ecriture_id ?? 'â€”' }}</div>
+    <div class="stamp">Document comptable validé â€” écriture nÂ° {{ $paiement->ecriture_id ?? 'â€”' }}</div>
 
-    <div class="footer">GÃ©nÃ©rÃ© le {{ now()->format('d/m/Y H:i') }} â€” Conservez ce reÃ§u</div>
+    <div class="footer">Généré le {{ now()->format('d/m/Y H:i') }} â€” Conservez ce reÃ§u</div>
 </body>
 </html>
 

@@ -30,11 +30,11 @@ new Vue({
         },
 
         async initPage() {
-            await this.loadComptes();
+            await this.loadData();
         },
 
         async onSocieteChanged() {
-            await this.loadComptes();
+            await this.loadData();
         },
 
         emptyForm() {
@@ -51,10 +51,10 @@ new Vue({
 
         debounceSearch() {
             clearTimeout(searchTimer);
-            searchTimer = setTimeout(() => this.loadComptes(), 350);
+            searchTimer = setTimeout(() => this.loadData(), 350);
         },
 
-        async loadComptes() {
+        async loadData() {
             this.isLoading = true;
             const params = new URLSearchParams();
             if (this.search) params.set("search", this.search);
@@ -97,7 +97,7 @@ new Vue({
             this.isLoading = false;
             if (!this.handleResponse(data)) return;
             bootstrap.Modal.getInstance(document.getElementById("modal_compte"))?.hide();
-            this.loadComptes();
+            this.loadData();
         },
     },
 });

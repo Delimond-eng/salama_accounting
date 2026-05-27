@@ -24,7 +24,12 @@ class HomeController extends Controller
     {
         try {
             $societeId = SocieteContext::requireId();
-            $payload = $this->dashboard->assembler($societeId);
+            $filtres = array_filter([
+                'devise_affichage' => $request->get('devise_affichage'),
+                'scope_devise' => $request->get('scope_devise'),
+                'mode_conversion' => $request->get('mode_conversion'),
+            ], fn ($v) => $v !== null && $v !== '');
+            $payload = $this->dashboard->assembler($societeId, $filtres ?: null);
 
             return response()->json(['status' => 'success', 'data' => $payload]);
         } catch (\Throwable $e) {
@@ -32,6 +37,21 @@ class HomeController extends Controller
                 'status' => 'error',
                 'errors' => [$e->getMessage()],
             ], 500);
+        }
+    }
+
+    public function notifications(): JsonResponse
+    {
+        try {
+            $societeId = SocieteContext::requireId();
+            $payload = $this->dashboard->assembler($societeId);
+
+            return response()->json([
+                'status' => 'success',
+                'alertes' => $payload['alertes'] ?? ['items' => [], 'count' => 0]
+            ]);
+        } catch (\Throwable $e) {
+            return response()->json(['status' => 'error', 'message' => $e->getMessage()], 500);
         }
     }
 }

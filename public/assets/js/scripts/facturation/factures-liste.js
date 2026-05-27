@@ -28,10 +28,11 @@ new Vue({
     },
     computed: {
         createUrl() {
-            const base = this.page.includes("fournisseur") ? "fournisseurs" : "clients";
             if (this.typeDocument.includes("avoir")) {
-                return `/accounting/facturation/${this.page.includes("fournisseur") ? "avoirs-fournisseurs" : "avoirs-clients"}`;
+                const segment = this.page.includes("fournisseur") ? "avoirs-fournisseurs" : "avoirs-clients";
+                return `/accounting/facturation/${segment}/nouvelle`;
             }
+            const base = this.page.includes("fournisseur") ? "fournisseurs" : "clients";
             return `/accounting/facturation/${base}/nouvelle`;
         },
     },
@@ -60,7 +61,11 @@ new Vue({
             }
         },
         editUrl(id) {
-            const base = this.page.includes("fournisseur") || this.typeDocument.includes("achat") || this.typeDocument.includes("fournisseur")
+            if (this.typeDocument.includes("avoir")) {
+                const segment = this.page.includes("fournisseur") ? "avoirs-fournisseurs" : "avoirs-clients";
+                return `/accounting/facturation/${segment}/${id}`;
+            }
+            const base = this.page.includes("fournisseur") || this.typeDocument.includes("achat")
                 ? "fournisseurs"
                 : "clients";
             return `/accounting/facturation/${base}/${id}`;

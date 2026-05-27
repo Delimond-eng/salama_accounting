@@ -29,7 +29,7 @@
         <div class="card-header"><h5 class="mb-0">Écritures à lettrer</h5></div>
         <div class="card-body p-0">
             <div class="table-responsive">
-                <table class="table table-nowrap mb-0">
+                <table class="table table-nowrap table-bordered mb-0">
                     <thead class="table-light">
                         <tr>
                             <th>Date enregistrement</th><th>Pièce</th><th>Compte</th><th>Partenaire</th><th>Libellé</th>
@@ -49,6 +49,14 @@
                             <td>@{{ l.devise_saisie }}</td>
                         </tr>
                     </tbody>
+                    <tfoot class="table-light text-dark fw-bold" v-if="lignes.length">
+                        <tr>
+                            <td colspan="5" class="text-end">TOTAL NON LETTRÉ</td>
+                            <td class="text-end">@{{ fmt(lignes.reduce((s,l) => s + (Number(l.debit)||0), 0)) }}</td>
+                            <td class="text-end">@{{ fmt(lignes.reduce((s,l) => s + (Number(l.credit)||0), 0)) }}</td>
+                            <td></td>
+                        </tr>
+                    </tfoot>
                 </table>
             </div>
         </div>

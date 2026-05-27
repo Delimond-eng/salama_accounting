@@ -29,6 +29,8 @@ class AppServiceProvider extends ServiceProvider
     {
         DB::statement("SET time_zone = '+01:00'");
 
+        View::share('appBrand', config('brand.name'));
+
         View::composer(['components.header', 'components.sidebar'], function ($view): void {
             $societe = SocieteContext::societe();
             $logoUrl = null;

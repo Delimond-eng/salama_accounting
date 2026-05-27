@@ -55,24 +55,43 @@ class FacturationController extends Controller
         ]);
     }
 
-    public function factureForm(?int $id = null, ?string $type = 'clients'): View
+    public function factureForm(Request $request): View
     {
-        $typeDoc = $type === 'fournisseurs'
-            ? Facture::TYPE_ACHAT_FOURNISSEUR
-            : Facture::TYPE_VENTE_CLIENT;
+        $type = (string) $request->route('type', 'clients');
+        $rawId = $request->route('id');
+        $id = is_numeric($rawId) ? (int) $rawId : null;
+
+        $typeDoc = (string) $request->route('type_document', '');
+        if ($typeDoc === '') {
+            $typeDoc = match ($type) {
+                'fournisseurs' => Facture::TYPE_ACHAT_FOURNISSEUR,
+                'avoirs-fournisseurs' => Facture::TYPE_AVOIR_FOURNISSEUR,
+                'avoirs-clients' => Facture::TYPE_AVOIR_CLIENT,
+                default => Facture::TYPE_VENTE_CLIENT,
+            };
+        }
+
+        $page = match ($type) {
+            'fournisseurs', 'avoirs-fournisseurs' => str_contains($typeDoc, 'avoir') ? 'avoirs-fournisseurs' : 'fournisseurs',
+            'avoirs-clients' => 'avoirs-clients',
+            default => 'clients',
+        };
 
         if ($id) {
             $facture = Facture::parSociete(SocieteContext::requireId())->find($id);
             if ($facture) {
                 $typeDoc = $facture->type_document;
-                $type = in_array($typeDoc, [Facture::TYPE_ACHAT_FOURNISSEUR, Facture::TYPE_AVOIR_FOURNISSEUR], true)
-                    ? 'fournisseurs'
-                    : 'clients';
+                $page = match ($typeDoc) {
+                    Facture::TYPE_AVOIR_FOURNISSEUR => 'avoirs-fournisseurs',
+                    Facture::TYPE_AVOIR_CLIENT => 'avoirs-clients',
+                    Facture::TYPE_ACHAT_FOURNISSEUR => 'fournisseurs',
+                    default => 'clients',
+                };
             }
         }
 
         return view('facturation.facture-form', [
-            'page' => $type,
+            'page' => $page,
             'type_document' => $typeDoc,
             'facture_id' => $id,
             'title' => $id ? 'Modifier facture' : 'Nouvelle facture',
@@ -206,14 +225,17 @@ class FacturationController extends Controller
                 'devise' => 'nullable|string|in:CDF,USD',
                 'facture_origine_id' => 'nullable|integer',
                 'notes' => 'nullable|string',
+                'section_analytique_id' => 'nullable|integer|exists:sections_analytiques,id',
                 'lignes' => 'required|array|min:1',
                 'notes' => 'nullable|string',
+                'lignes.*.est_rubrique' => 'nullable|boolean',
                 'lignes.*.rubrique' => 'nullable|string|max:120',
-                'lignes.*.libelle' => 'required|string',
+                'lignes.*.libelle' => 'nullable|string',
                 'lignes.*.quantite' => 'nullable|numeric',
                 'lignes.*.prix_unitaire' => 'nullable|numeric',
                 'lignes.*.compte_comptable' => 'nullable|string',
                 'lignes.*.produit_id' => 'nullable|integer',
+                'lignes.*.section_analytique_id' => 'nullable|integer|exists:sections_analytiques,id',
             ]);
 
             $exercice = $this->saisie->exerciceCourant($societeId);
@@ -409,6 +431,7 @@ class FacturationController extends Controller
                 'motif' => 'required|string',
                 'journal_id' => 'nullable|integer',
                 'workflow_definition_id' => 'nullable|integer',
+                'section_analytique_id' => 'nullable|integer|exists:sections_analytiques,id',
             ]);
 
             $demande = $this->demandes->creer(SocieteContext::requireId(), $data);

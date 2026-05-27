@@ -89,7 +89,7 @@
                     @if($societe?->identification_nationale)<div>ID. nationale : {{ $societe->identification_nationale }}</div>@endif
                 </td>
                 <td>
-                    @foreach($societe?->banques ?? [] as $b)
+                    @foreach(($societe?->banques ?? []) as $b)
                     <div>{{ $b->banque }} — {{ $b->numero_compte }} ({{ $b->devise }})</div>
                     @endforeach
                 </td>

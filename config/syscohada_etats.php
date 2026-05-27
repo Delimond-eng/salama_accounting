@@ -98,6 +98,7 @@ return [
     ],
 
     'compte_resultat' => [
+        ['type' => 'titre', 'libelle' => 'I. PRODUITS D\'EXPLOITATION'],
         ['type' => 'ligne', 'ref' => 'TA', 'libelle' => 'Ventes de marchandises', 'note' => '21', 'prefixes' => ['701', '702'], 'nature' => 'produit'],
         ['type' => 'ligne', 'ref' => 'RA', 'libelle' => 'Achats de marchandises', 'note' => '22', 'prefixes' => ['601'], 'nature' => 'charge'],
         ['type' => 'ligne', 'ref' => 'RB', 'libelle' => 'Variation de stocks de marchandises', 'note' => '6', 'prefixes' => ['6031'], 'nature' => 'charge'],
@@ -111,6 +112,8 @@ return [
         ['type' => 'ligne', 'ref' => 'TG', 'libelle' => 'Subventions d\'exploitation', 'note' => '21', 'prefixes' => ['71'], 'nature' => 'produit'],
         ['type' => 'ligne', 'ref' => 'TH', 'libelle' => 'Autres produits', 'note' => '21', 'prefixes' => ['75'], 'nature' => 'produit'],
         ['type' => 'ligne', 'ref' => 'TI', 'libelle' => 'Transferts de charges d\'exploitation', 'note' => '12', 'prefixes' => ['781'], 'nature' => 'produit'],
+
+        ['type' => 'titre', 'libelle' => 'II. CHARGES D\'EXPLOITATION'],
         ['type' => 'ligne', 'ref' => 'RC', 'libelle' => 'Achats de matières premières et fournitures', 'note' => '22', 'prefixes' => ['602'], 'nature' => 'charge'],
         ['type' => 'ligne', 'ref' => 'RD', 'libelle' => 'Variation de stocks matières premières', 'note' => '6', 'prefixes' => ['6032'], 'nature' => 'charge'],
         ['type' => 'ligne', 'ref' => 'RE', 'libelle' => 'Autres achats', 'note' => '22', 'prefixes' => ['604', '605', '606', '607', '608'], 'nature' => 'charge'],
@@ -119,27 +122,32 @@ return [
         ['type' => 'ligne', 'ref' => 'RH', 'libelle' => 'Services extérieurs', 'note' => '24', 'prefixes' => ['62', '63'], 'nature' => 'charge'],
         ['type' => 'ligne', 'ref' => 'RI', 'libelle' => 'Impôts et taxes', 'note' => '25', 'prefixes' => ['64'], 'nature' => 'charge'],
         ['type' => 'ligne', 'ref' => 'RJ', 'libelle' => 'Autres charges', 'note' => '26', 'prefixes' => ['65'], 'nature' => 'charge'],
+
         ['type' => 'formule', 'ref' => 'XC', 'libelle' => 'VALEUR AJOUTÉE', 'formule' => 'XA+TB+TC+TD+TE+TF+TG+TH+TI-RC-RD-RE-RF-RG-RH-RI-RJ'],
         ['type' => 'ligne', 'ref' => 'RK', 'libelle' => 'Charges de personnel', 'note' => '27', 'prefixes' => ['66'], 'nature' => 'charge'],
         ['type' => 'formule', 'ref' => 'XD', 'libelle' => 'EXCÉDENT BRUT D\'EXPLOITATION (XC - RK)', 'formule' => 'XC-RK'],
         ['type' => 'ligne', 'ref' => 'TJ', 'libelle' => 'Reprises amort., provisions et dépréciations', 'note' => '28', 'prefixes' => ['781', '791'], 'nature' => 'produit'],
         ['type' => 'ligne', 'ref' => 'RL', 'libelle' => 'Dotations amort., provisions et dépréciations', 'note' => '28', 'prefixes' => ['681', '691'], 'nature' => 'charge'],
         ['type' => 'formule', 'ref' => 'XE', 'libelle' => 'RÉSULTAT D\'EXPLOITATION (XD + TJ - RL)', 'formule' => 'XD+TJ-RL'],
+
+        ['type' => 'titre', 'libelle' => 'III. RÉSULTAT FINANCIER'],
         ['type' => 'ligne', 'ref' => 'TK', 'libelle' => 'Revenus financiers et assimilés', 'note' => '29', 'prefixes' => ['77'], 'nature' => 'produit'],
         ['type' => 'ligne', 'ref' => 'TL', 'libelle' => 'Reprises provisions financières', 'note' => '28', 'prefixes' => ['797'], 'nature' => 'produit'],
         ['type' => 'ligne', 'ref' => 'TM', 'libelle' => 'Transferts charges financières', 'note' => '12', 'prefixes' => ['787'], 'nature' => 'produit'],
         ['type' => 'ligne', 'ref' => 'RM', 'libelle' => 'Frais financiers et charges assimilées', 'note' => '29', 'prefixes' => ['67'], 'nature' => 'charge'],
         ['type' => 'ligne', 'ref' => 'RN', 'libelle' => 'Dotations provisions financières', 'note' => '28', 'prefixes' => ['697'], 'nature' => 'charge'],
-        ['type' => 'formule', 'ref' => 'XF', 'libelle' => 'RÉSULTAT FINANCIER', 'formule' => 'TK+TL+TM-RM-RN'],
+        ['type' => 'formule', 'ref' => 'XF', 'libelle' => 'RÉSULTAT FINANCIER (TK+TL+TM-RM-RN)', 'formule' => 'TK+TL+TM-RM-RN'],
         ['type' => 'formule', 'ref' => 'XG', 'libelle' => 'RÉSULTAT DES ACTIVITÉS ORDINAIRES (XE + XF)', 'formule' => 'XE+XF'],
+
+        ['type' => 'titre', 'libelle' => 'IV. RÉSULTAT HORS ACTIVITÉS ORDINAIRES'],
         ['type' => 'ligne', 'ref' => 'TN', 'libelle' => 'Produits des cessions d\'immobilisations', 'note' => '30', 'prefixes' => ['82'], 'nature' => 'produit'],
         ['type' => 'ligne', 'ref' => 'TO', 'libelle' => 'Autres produits HAO', 'note' => '30', 'prefixes' => ['83', '84'], 'nature' => 'produit'],
         ['type' => 'ligne', 'ref' => 'RO', 'libelle' => 'Valeurs comptables cessions immobilisations', 'note' => '30', 'prefixes' => ['81'], 'nature' => 'charge'],
         ['type' => 'ligne', 'ref' => 'RP', 'libelle' => 'Autres charges HAO', 'note' => '30', 'prefixes' => ['83', '84'], 'nature' => 'charge'],
-        ['type' => 'formule', 'ref' => 'XH', 'libelle' => 'RÉSULTAT HORS ACTIVITÉS ORDINAIRES', 'formule' => 'TN+TO-RO-RP'],
+        ['type' => 'formule', 'ref' => 'XH', 'libelle' => 'RÉSULTAT HORS ACTIVITÉS ORDINAIRES (TN+TO-RO-RP)', 'formule' => 'TN+TO-RO-RP'],
         ['type' => 'ligne', 'ref' => 'RQ', 'libelle' => 'Participation des travailleurs', 'note' => '30', 'prefixes' => ['87'], 'nature' => 'charge'],
         ['type' => 'ligne', 'ref' => 'RS', 'libelle' => 'Impôts sur le résultat', 'note' => '30', 'prefixes' => ['89'], 'nature' => 'charge'],
-        ['type' => 'formule', 'ref' => 'XI', 'libelle' => 'RÉSULTAT NET', 'formule' => 'XG+XH-RQ-RS'],
+        ['type' => 'formule', 'ref' => 'XI', 'libelle' => 'RÉSULTAT NET (XG+XH-RQ-RS)', 'formule' => 'XG+XH-RQ-RS'],
     ],
 
     'flux_tresorerie' => [

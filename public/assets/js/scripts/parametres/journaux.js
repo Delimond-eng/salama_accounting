@@ -19,11 +19,11 @@ new Vue({
         },
 
         async initPage() {
-            await this.loadJournaux();
+            await this.loadData();
         },
 
         async onSocieteChanged() {
-            await this.loadJournaux();
+            await this.loadData();
         },
 
         emptyForm() {
@@ -37,12 +37,14 @@ new Vue({
                 format_numerotation: "annuel",
                 padding_numero: 5,
                 saisie_tiers_obligatoire: false,
+                analytique_obligatoire: false,
                 actif: true,
                 ordre_affichage: 10,
+                devise_defaut: "CDF",
             };
         },
 
-        async loadJournaux() {
+        async loadData() {
             this.isLoading = true;
             try {
                 const { data } = await get("/accounting/parametres/journaux/all");
@@ -73,7 +75,7 @@ new Vue({
             this.isLoading = false;
             if (!this.handleResponse(data)) return;
             bootstrap.Modal.getInstance(document.getElementById("modal_journal"))?.hide();
-            this.loadJournaux();
+            this.loadData();
         },
     },
 });

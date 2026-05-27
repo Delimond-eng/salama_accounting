@@ -35,15 +35,15 @@ export const compteSelectMixin = {
 
         getCompteNumero(key) {
             if (key === "journal_cp") {
-                return this.form ? .compte_contrepartie || "";
+                return this.form?.compte_contrepartie || "";
             }
             if (key === "tiers_collectif") {
-                return this.form ? .num_compte_collectif || "";
+                return this.form?.num_compte_collectif || "";
             }
             if (key === "gl_compte" || key === "lettrage_compte") {
                 return this.numCompte || "";
             }
-            if (typeof key === "number" && this.lignes ? .[key]) {
+            if (typeof key === "number" && this.lignes?.[key]) {
                 return this.lignes[key].num_compte || "";
             }
             return "";
@@ -56,7 +56,7 @@ export const compteSelectMixin = {
                 this.form.num_compte_collectif = numCompte;
             } else if (key === "gl_compte" || key === "lettrage_compte") {
                 this.numCompte = numCompte;
-            } else if (typeof key === "number" && this.lignes ? .[key]) {
+            } else if (typeof key === "number" && this.lignes?.[key]) {
                 this.lignes[key].num_compte = numCompte;
             }
             if (numCompte && libelle) {
@@ -134,7 +134,12 @@ export const compteSelectMixin = {
 
         selectCompteOption(key, compte) {
             this.setCompteNumero(key, compte.num_compte, compte.libelle);
-            if (typeof key === "number" && this.lignes ? .[key] && compte.est_compte_tiers) {
+            if (compte?.num_compte && this.comptesCache) {
+                this.$set(this.comptesCache, compte.num_compte, {
+                    exige_analytique: !!compte.exige_analytique,
+                });
+            }
+            if (typeof key === "number" && this.lignes?.[key] && compte.est_compte_tiers) {
                 // suggère un tiers si besoin — pas de changement auto
             }
         },

@@ -16,7 +16,7 @@
             </div>
             <div class="d-flex gap-2 align-items-center">
                 @include('components.export-buttons')
-                <select class="form-select w-auto" v-model="filtreType" @change="loadTiers">
+                <select class="form-select w-auto" v-model="filtreType" @change="loadData">
                     <option value="">Tous types</option>
                     <option value="client">Clients</option>
                     <option value="fournisseur">Fournisseurs</option>
@@ -40,7 +40,7 @@
                     <tr v-for="t in liste" :key="t.id">
                         <td><span class="fw-medium">@{{ t.code }}</span></td>
                         <td>@{{ t.nom }}</td>
-                        <td><span class="badge badge-soft-info">@{{ t.type }}</span></td>
+                        <td><span class="badge badge-soft-info">@{{ labelType(t.type) }}</span></td>
                         <td>@{{ t.num_compte_collectif || '—' }}</td>
                         <td>@{{ t.email || t.telephone || '—' }}</td>
                         <td><span class="badge" :class="t.actif ? 'badge-soft-success' : 'badge-soft-secondary'">@{{ t.actif ? 'Oui' : 'Non' }}</span></td>

@@ -38,6 +38,43 @@ class StockController extends Controller
         return view('facturation.stock-mouvements', ['page' => 'mouvements', 'title' => 'Mouvements de stock']);
     }
 
+    public function fiche(int $produitId): View
+    {
+        return view('facturation.stock-fiche', [
+            'page' => 'stock',
+            'title' => 'Fiche de stock',
+            'produit_id' => $produitId,
+        ]);
+    }
+
+    public function apiFiche(int $produitId): JsonResponse
+    {
+        $societeId = SocieteContext::requireId();
+        $produit = Produit::parSociete($societeId)->findOrFail($produitId);
+        $mouvements = MouvementStock::parSociete($societeId)
+            ->where('produit_id', $produitId)
+            ->with(['user:id,name', 'entrepot:id,code,libelle'])
+            ->orderByDesc('date_mouvement')
+            ->orderByDesc('id')
+            ->limit(500)
+            ->get();
+
+        $entrees = $mouvements->where('type_mouvement', 'entree')->sum('quantite');
+        $sorties = $mouvements->whereIn('type_mouvement', ['sortie'])->sum('quantite');
+
+        return response()->json([
+            'status' => 'success',
+            'produit' => $produit,
+            'mouvements' => $mouvements,
+            'stats' => [
+                'total_entrees' => round((float) $entrees, 4),
+                'total_sorties' => round((float) $sorties, 4),
+                'stock_actuel' => round((float) $produit->stock_actuel, 4),
+                'alerte' => $produit->gestion_stock && (float) $produit->stock_actuel <= (float) $produit->stock_minimum,
+            ],
+        ]);
+    }
+
     public function apiInventaire(): JsonResponse
     {
         $societeId = SocieteContext::requireId();

@@ -49,7 +49,7 @@
         <div class="card border-0 rounded-0">
             <div class="card-body p-0">
                 <div class="table-responsive">
-                    <table class="table table-hover mb-0">
+                    <table class="table table-bordered table-hover mb-0">
                         <thead class="table-light">
                             <tr>
                                 <th>Exercice</th>
@@ -61,7 +61,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr v-for="ex in exercices" :key="ex.id">
+                            <tr v-for="ex in exercices" :key="ex.id" :class="ex.est_courant ? 'table-primary-subtle' : ''">
                                 <td>
                                     <strong>@{{ ex.libelle }}</strong>
                                     <span v-if="ex.est_courant" class="badge bg-primary ms-1">Courant</span>

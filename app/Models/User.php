@@ -29,4 +29,9 @@ class User extends Authenticatable
     {
         return $date->format(DateTimeFormat::DATETIME);
     }
+
+    public function estSuperAdmin(): bool
+    {
+        return $this->hasRole('super_admin');
+    }
 }

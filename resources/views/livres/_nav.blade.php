@@ -11,7 +11,8 @@
     ];
     $active = $active ?? '';
 @endphp
-<div class="d-flex align-items-center justify-content-between gap-2 mb-3 flex-wrap">
+
+<div class="d-flex align-items-center justify-content-between gap-2 mb-4 flex-wrap">
     <div>
         <h4 class="mb-1">{{ $title ?? 'Livres comptables' }}</h4>
         <nav aria-label="breadcrumb">
@@ -22,7 +23,19 @@
             </ol>
         </nav>
     </div>
+    <div class="gap-2 d-flex align-items-center flex-wrap">
+        @include('components.export-buttons')
+
+        <a href="javascript:void(0);" class="btn btn-icon btn-outline-light shadow"
+           @click="loadData" :disabled="isLoading" data-bs-toggle="tooltip" title="Actualiser">
+            <i class="ti ti-refresh" :class="{'ti-spin': isLoading}"></i>
+        </a>
+        <a href="javascript:void(0);" class="btn btn-icon btn-outline-light shadow" id="collapse-header">
+            <i class="ti ti-transition-top"></i>
+        </a>
+    </div>
 </div>
+
 <ul class="nav nav-tabs nav-tabs-solid nav-tabs-rounded mb-4 flex-wrap">
     @foreach ($navItems as $key => $item)
         <li class="nav-item">
@@ -32,6 +45,7 @@
         </li>
     @endforeach
 </ul>
+
 <div v-if="error" class="alert alert-danger alert-dismissible fade show">
     <ul class="mb-0" v-if="Array.isArray(error)"><li v-for="(e,i) in error" :key="i">@{{ e }}</li></ul>
     <span v-else>@{{ error }}</span>

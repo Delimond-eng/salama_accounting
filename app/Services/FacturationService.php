@@ -42,6 +42,9 @@ class FacturationService
     {
         $ht = 0.0;
         foreach ($lignes as $l) {
+            if (! empty($l['est_rubrique'])) {
+                continue;
+            }
             $q = (float) ($l['quantite'] ?? 1);
             $pu = (float) ($l['prix_unitaire'] ?? 0);
             $ht += round($q * $pu, 2);
@@ -89,18 +92,36 @@ class FacturationService
 
             $facture->lignes()->delete();
             foreach ($lignes as $i => $l) {
+                $estRubrique = ! empty($l['est_rubrique']);
+                $titreRubrique = trim((string) ($l['rubrique'] ?? ''));
+                if ($estRubrique) {
+                    FactureLigne::create([
+                        'facture_id' => $facture->id,
+                        'ordre' => $i + 1,
+                        'est_rubrique' => true,
+                        'rubrique' => $titreRubrique,
+                        'libelle' => $titreRubrique,
+                        'quantite' => 0,
+                        'prix_unitaire' => 0,
+                        'montant_ht' => 0,
+                    ]);
+
+                    continue;
+                }
                 $q = (float) ($l['quantite'] ?? 1);
                 $pu = (float) ($l['prix_unitaire'] ?? 0);
                 FactureLigne::create([
                     'facture_id' => $facture->id,
                     'produit_id' => $l['produit_id'] ?? null,
                     'ordre' => $i + 1,
-                    'rubrique' => $l['rubrique'] ?? null,
+                    'est_rubrique' => false,
+                    'rubrique' => null,
                     'libelle' => $l['libelle'],
                     'quantite' => $q,
                     'prix_unitaire' => $pu,
                     'montant_ht' => round($q * $pu, 2),
                     'compte_comptable' => $l['compte_comptable'] ?? null,
+                    'section_analytique_id' => $l['section_analytique_id'] ?? null,
                 ]);
             }
 
@@ -127,9 +148,13 @@ class FacturationService
                 throw new InvalidArgumentException('Seules les factures en brouillon peuvent être validées.');
             }
 
-            if ($facture->lignes->isEmpty()) {
-                throw new InvalidArgumentException('La facture doit contenir au moins une ligne.');
+            $lignesArticles = $facture->lignes->where('est_rubrique', false);
+            if ($lignesArticles->isEmpty()) {
+                throw new InvalidArgumentException('La facture doit contenir au moins une ligne d\'article.');
             }
+
+            $dateFacture = $facture->date_facture->format('Y-m-d');
+            $this->comptable->verifierTauxFacture($facture->societe_id, $facture->devise, $dateFacture);
 
             $result = $this->comptable->ecritureValidationFacture($facture);
 
