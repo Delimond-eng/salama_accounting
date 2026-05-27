@@ -2,6 +2,7 @@
 @section('content')
 
 <div class="content pb-0" id="App" v-cloak>
+    <div>
     <template v-if="!pageReady">@include('components.vue-page-loading')</template>
     <template v-else>
     @include('facturation._nav', ['active' => $page, 'title' => $title, 'breadcrumb' => $title])
@@ -17,7 +18,14 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-2">
+                    <select class="form-select form-select-sm border-2" v-model="filtreDevise" @change="loadList">
+                        <option value="">Toutes devises</option>
+                        <option value="CDF">CDF</option>
+                        <option value="USD">USD</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
                     <select class="form-select form-select-sm border-2" v-model="filtreStatut" @change="loadList">
                         <option value="">Tous les statuts</option>
                         <option value="brouillon">Brouillon</option>
@@ -63,7 +71,7 @@
                         <tr v-else-if="!factures.length"><td colspan="6" class="text-center py-5 text-muted">Aucune facture trouvée</td></tr>
                         <tr v-for="f in factures" :key="f.id">
                             <td class="font-monospace fw-bold text-primary">@{{ f.numero }}</td>
-                            <td class="text-muted">@{{ f.date_facture }}</td>
+                            <td class="text-muted">@{{ fmtDate(f.date_facture) }}</td>
                             <td class="fw-medium text-dark">@{{ f.tiers?.nom }}</td>
                             <td class="text-end fw-bold">@{{ fmt(f.montant_ttc) }} <small class="text-muted">@{{ f.devise }}</small></td>
                             <td class="text-center">
@@ -80,7 +88,7 @@
                                     <button v-if="f.statut==='brouillon'" type="button" class="btn btn-icon btn-sm btn-label-success" @click="valider(f)" title="Valider">
                                         <i class="ti ti-check"></i>
                                     </button>
-                                    <button v-if="f.statut==='validee'" type="button" class="btn btn-icon btn-sm btn-label-info" @click="payer(f)" title="Enregistrer paiement">
+                                    <button v-if="f.statut==='validee'" type="button" class="btn btn-icon btn-sm btn-label-info" @click="preparePaiement(f)" title="Enregistrer paiement">
                                         <i class="ti ti-cash"></i>
                                     </button>
                                 </div>
@@ -92,6 +100,76 @@
         </div>
     </div>
     </template>
+
+    <div class="modal fade" id="modal_paiement" tabindex="-1" aria-labelledby="modal_paiement_label" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header bg-light">
+                    <h5 class="modal-title fw-bold" id="modal_paiement_label">Enregistrer un paiement</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div v-if="paiementForm.facture" class="alert alert-info border-0 mb-4">
+                        Facture <strong class="text-primary">@{{ paiementForm.facture.numero }}</strong> —
+                        solde TTC <strong class="text-primary">@{{ fmt(paiementForm.montant) }} @{{ paiementForm.devise }}</strong>
+                    </div>
+                    <div v-if="error && error.length" class="alert alert-danger py-2 border-0 mb-3">
+                        <div v-for="(e, i) in error" :key="i"><i class="ti ti-alert-triangle me-2"></i>@{{ e }}</div>
+                    </div>
+                    <div class="mb-4">
+                        <label class="form-label fw-bold small text-uppercase text-muted">Méthode de paiement</label>
+                        <div class="d-flex gap-4">
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" id="meth_banque" value="banque" v-model="paiementForm.methode" @change="loadComptesTreso">
+                                <label class="form-check-label fw-medium" for="meth_banque">Banque (521)</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" id="meth_caisse" value="caisse" v-model="paiementForm.methode" @change="loadComptesTreso">
+                                <label class="form-check-label fw-medium" for="meth_caisse">Caisse (571)</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-4">
+                        <label class="form-label fw-bold small text-uppercase text-muted">Compte de trésorerie</label>
+                        <select class="form-select border-2" v-model="paiementForm.compte_tresorerie" :disabled="!comptesTreso.length">
+                            <option value="">— Sélectionner un compte —</option>
+                            <option v-for="c in comptesTreso" :key="c.num_compte" :value="c.num_compte">
+                                @{{ c.num_compte }} — @{{ c.libelle }}
+                            </option>
+                        </select>
+                        <small v-if="!comptesTreso.length && paiementForm.methode" class="text-danger mt-1 d-block">
+                            <i class="ti ti-alert-circle me-1"></i>Aucun compte classe 5 trouvé pour cette méthode.
+                        </small>
+                    </div>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small text-uppercase text-muted">Montant</label>
+                            <div class="input-group">
+                                <input type="number" step="0.01" min="0.01" class="form-control border-2 fw-bold" v-model.number="paiementForm.montant">
+                                <span class="input-group-text bg-light border-2 border-start-0">@{{ paiementForm.devise }}</span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small text-uppercase text-muted">Date</label>
+                            <input type="date" class="form-control border-2" v-model="paiementForm.date_paiement">
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <label class="form-label fw-bold small text-uppercase text-muted">Notes (optionnel)</label>
+                        <textarea class="form-control border-2" rows="2" v-model="paiementForm.notes" placeholder="Référence virement, n° chèque..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light border-0">
+                    <button type="button" class="btn btn-white border px-4" data-bs-dismiss="modal">Annuler</button>
+                    <button type="button" class="btn btn-primary px-4 fw-bold" @click="confirmerPaiement" :disabled="isLoading || !paiementForm.compte_tresorerie">
+                        <span v-if="isLoading" class="spinner-border spinner-border-sm me-2"></span>
+                        <span v-else><i class="ti ti-check me-1"></i>Valider le paiement</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
 </div>
 @endsection
 

@@ -8,6 +8,10 @@
     <div v-if="error && error.length" class="alert alert-danger shadow-sm border-0 mb-4">
         <div v-for="(e,i) in error" :key="i"><i class="ti ti-alert-circle me-2"></i>@{{ e }}</div>
     </div>
+    <div v-if="message" class="alert alert-success shadow-sm border-0 mb-4">@{{ message }}</div>
+    <div v-if="lectureSeule" class="alert alert-warning shadow-sm border-0 mb-4">
+        <i class="ti ti-info-circle me-2"></i>Cette facture n'est plus en brouillon : consultation seule.
+    </div>
 
     <form @submit.prevent="save(false)">
         <div class="card border-0 shadow-sm mb-4">
@@ -21,32 +25,39 @@
                 <div class="row g-4 mb-4">
                     <div class="col-md-4">
                         <label class="form-label fw-bold small text-uppercase text-muted">Partenaire / Tiers <span class="text-danger">*</span></label>
-                        <select class="form-select border-2" v-model.number="form.tiers_id" required>
+                        <select class="form-select border-2" v-model.number="form.tiers_id" required :disabled="lectureSeule">
                             <option :value="null">— Sélectionner un tiers —</option>
                             <option v-for="t in tiers" :key="t.id" :value="t.id">@{{ t.code }} — @{{ t.nom }}</option>
                         </select>
                     </div>
                     <div class="col-md-2">
                         <label class="form-label fw-bold small text-uppercase text-muted">Date Facture</label>
-                        <input type="date" class="form-control border-2" v-model="form.date_facture" required>
+                        <input type="date" class="form-control border-2" v-model="form.date_facture" required :disabled="lectureSeule">
                     </div>
                     <div class="col-md-2">
                         <label class="form-label fw-bold small text-uppercase text-muted">Date Échéance</label>
-                        <input type="date" class="form-control border-2" v-model="form.date_echeance" required>
+                        <input type="date" class="form-control border-2" v-model="form.date_echeance" required :disabled="lectureSeule">
                     </div>
                     <div class="col-md-2">
                         <label class="form-label fw-bold small text-uppercase text-muted">Devise</label>
-                        <input class="form-control border-2 text-center font-monospace fw-bold" v-model="form.devise" maxlength="3" readonly>
+                        <select class="form-select border-2 font-monospace fw-bold" v-model="form.devise" @change="onDeviseChange" :disabled="lectureSeule">
+                            <option v-for="code in devisesFacture" :key="code" :value="code">@{{ code }}</option>
+                        </select>
+                        <div class="form-text fs-10" v-if="form.devise !== 'CDF'">Taux requis à la validation.</div>
                     </div>
                     <div class="col-md-2 d-flex align-items-end">
                         <div class="form-check form-switch mb-2">
-                            <input class="form-check-input" type="checkbox" id="tva" v-model="form.tva_active" @change="recalc">
-                            <label class="form-check-label fw-medium" for="tva">Appliquer TVA (@{{ form.taux_tva }}%)</label>
+                            <input class="form-check-input" type="checkbox" id="tva" v-model="form.tva_active" @change="recalc" :disabled="lectureSeule">
+                            <label class="form-check-label fw-medium" for="tva">TVA (@{{ form.taux_tva }}%)</label>
                         </div>
                     </div>
                     <div class="col-12">
                         <label class="form-label fw-bold small text-uppercase text-muted">Objet / Libellé de la facture</label>
-                        <input class="form-control border-2" v-model="form.objet" placeholder="ex: Prestations du mois de Mai 2024...">
+                        <input class="form-control border-2" v-model="form.objet" placeholder="ex: Prestations du mois de Mai 2024..." :disabled="lectureSeule">
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label fw-bold small text-uppercase text-muted">Commentaires <span class="text-muted fw-normal">(affichés sur le PDF)</span></label>
+                        <textarea class="form-control border-2" rows="2" v-model="form.notes" :disabled="lectureSeule" placeholder="Conditions de paiement, remarques, mentions légales…"></textarea>
                     </div>
                 </div>
 
@@ -54,6 +65,7 @@
                     <table class="table table-bordered table-custom-edit">
                         <thead class="bg-light">
                             <tr>
+                                <th style="width: 50px">#</th>
                                 <th>Description des articles / services</th>
                                 <th style="width: 120px" class="text-center">Quantité</th>
                                 <th style="width: 180px" class="text-end">Prix Unitaire</th>
@@ -62,25 +74,55 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr v-for="(l, i) in form.lignes" :key="i">
-                                <td class="p-2"><input class="form-control form-control-sm border-0 bg-transparent" v-model="l.libelle" placeholder="Désignation..."></td>
-                                <td class="p-2"><input type="number" step="0.01" class="form-control form-control-sm border-0 text-center bg-transparent" v-model.number="l.quantite" @input="recalc"></td>
-                                <td class="p-2"><input type="number" step="0.01" class="form-control form-control-sm border-0 text-end bg-transparent fw-medium" v-model.number="l.prix_unitaire" @input="recalc"></td>
-                                <td class="p-2 text-end align-middle fw-bold">@{{ fmt(ligneHt(l)) }}</td>
-                                <td class="text-center align-middle">
-                                    <button type="button" class="btn btn-sm text-danger p-0" @click="form.lignes.splice(i,1); recalc()" :disabled="form.lignes.length <= 1">
-                                        <i class="ti ti-trash fs-18"></i>
-                                    </button>
-                                </td>
-                            </tr>
+                            <template v-for="(l, i) in form.lignes">
+                                <tr v-if="l.est_rubrique" :key="'r-'+i" class="table-secondary">
+                                    <td class="text-muted align-middle text-center">§</td>
+                                    <td colspan="4">
+                                        <input class="form-control form-control-sm border-0 bg-transparent fw-bold text-uppercase" v-model="l.rubrique"
+                                            placeholder="Nom de la rubrique (ex. CCTV, Access Control…)" :disabled="lectureSeule">
+                                    </td>
+                                    <td class="text-center align-middle">
+                                        <button type="button" class="btn btn-sm text-danger p-0" @click="form.lignes.splice(i,1)" :disabled="lectureSeule">
+                                            <i class="ti ti-trash fs-18"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr v-else :key="'l-'+i">
+                                    <td class="text-muted align-middle text-center small">@{{ numeroLigneArticle(i) }}</td>
+                                    <td class="p-2">
+                                        <select class="form-select form-select-sm border-0 bg-transparent mb-1" v-model.number="l.produit_id" @change="appliquerProduit(i)" :disabled="lectureSeule">
+                                            <option :value="null">— Saisie libre —</option>
+                                            <option v-for="p in produits" :key="p.id" :value="p.id">@{{ p.code ? p.code + ' — ' : '' }}@{{ p.libelle }}</option>
+                                        </select>
+                                        <input class="form-control form-control-sm border-0 bg-transparent" v-model="l.libelle" placeholder="Désignation..." :disabled="lectureSeule">
+                                    </td>
+                                    <td class="p-2">
+                                        <input type="number" step="0.01" class="form-control form-control-sm border-0 text-center bg-transparent" v-model.number="l.quantite" @input="recalc" :disabled="lectureSeule">
+                                    </td>
+                                    <td class="p-2">
+                                        <input type="number" step="0.01" class="form-control form-control-sm border-0 text-end bg-transparent fw-medium" v-model.number="l.prix_unitaire" @input="recalc" :disabled="lectureSeule">
+                                    </td>
+                                    <td class="p-2 text-end align-middle fw-bold">@{{ fmt(ligneHt(l)) }}</td>
+                                    <td class="text-center align-middle">
+                                        <button type="button" class="btn btn-sm text-danger p-0" @click="form.lignes.splice(i,1); recalc()" :disabled="lectureSeule">
+                                            <i class="ti ti-trash fs-18"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            </template>
                         </tbody>
                     </table>
                 </div>
 
                 <div class="d-flex justify-content-between align-items-start mt-4">
-                    <button type="button" class="btn btn-outline-primary btn-sm px-3" @click="addLigne">
-                        <i class="ti ti-plus me-1"></i>Ajouter une ligne
-                    </button>
+                    <div class="d-flex gap-2">
+                        <button type="button" class="btn btn-outline-secondary btn-sm px-3" @click="addRubrique" :disabled="lectureSeule">
+                            <i class="ti ti-layout-rows me-1"></i>Rubrique
+                        </button>
+                        <button type="button" class="btn btn-outline-primary btn-sm px-3" @click="addLigne" :disabled="lectureSeule">
+                            <i class="ti ti-plus me-1"></i>Article
+                        </button>
+                    </div>
 
                     <div class="invoice-summary border rounded-3 p-3 bg-light" style="min-width: 350px;">
                         <div class="d-flex justify-content-between mb-2">
@@ -101,10 +143,10 @@
             </div>
             <div class="card-footer bg-light-soft border-top p-4 d-flex gap-2 justify-content-end">
                 <a href="javascript:history.back()" class="btn btn-white border px-4">Annuler</a>
-                <button type="submit" class="btn btn-outline-primary px-4" :disabled="isLoading">
+                <button type="submit" class="btn btn-outline-primary px-4" :disabled="isLoading || lectureSeule">
                     <i class="ti ti-device-floppy me-1"></i>Enregistrer brouillon
                 </button>
-                <button type="button" class="btn btn-success px-4" @click="save(true)" :disabled="isLoading">
+                <button type="button" class="btn btn-success px-4" @click="save(true)" :disabled="isLoading || lectureSeule">
                     <i class="ti ti-check me-1"></i>Valider la facture
                 </button>
             </div>
