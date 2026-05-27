@@ -134,7 +134,7 @@
                                 </td>
                             </tr>
                         </tbody>
-                        <tfoot class="bg-primary text-white fw-bold" v-if="data.lignes.length">
+                        <tfoot class="table-light text-dark fw-bold" v-if="data.lignes.length">
                             <tr>
                                 <td colspan="4" class="text-end px-4 text-uppercase">Totaux Période</td>
                                 <td class="text-end">@{{ fmt(totaux.debit) }}</td>

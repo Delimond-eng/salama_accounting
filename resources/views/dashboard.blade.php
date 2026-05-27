@@ -22,8 +22,8 @@
                 </nav>
 
             </div>
-            <div class="d-flex align-items-center gap-2">
-                <div v-if="data && data.exercice">
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+                <div v-if="data && data.exercice" class="d-flex gap-2 flex-wrap">
                     <span class="badge bg-info text-white p-2 shadow-sm">
                         <i class="ti ti-calendar-stats me-1"></i>@{{ data.exercice.libelle || data.exercice.annee }}
                         <span v-if="data.exercice.est_courant" class="ms-1">(courant)</span>
@@ -32,6 +32,34 @@
                 <button type="button" class="btn btn-white btn-sm border shadow-sm" :disabled="isLoading" @click="loadData">
                     <i class="ti ti-refresh me-1" :class="{ 'ti-spin': isLoading }"></i>Actualiser
                 </button>
+            </div>
+        </div>
+
+        {{-- Filtre devise / périmètre --}}
+        <div v-if="data && data.exercice" class="card border-0 shadow-sm mb-4">
+            <div class="card-body py-3">
+                <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+                    <div>
+                        <h6 class="mb-1 fw-semibold"><i class="ti ti-currency-dollar me-1 text-primary"></i>Périmètre d'affichage</h6>
+                        <p class="text-muted fs-12 mb-0">KPI, graphiques et contrôles recalculés selon le filtre sélectionné.</p>
+                    </div>
+                    <div class="btn-group flex-wrap" role="group">
+                        <button v-for="p in presetsDevise" :key="p.id" type="button"
+                            class="btn btn-sm"
+                            :class="presetActif(p) ? 'btn-primary' : 'btn-outline-primary'"
+                            :disabled="isLoading"
+                            @click="appliquerPreset(p)">
+                            @{{ p.label }}
+                        </button>
+                    </div>
+                    <div v-if="filtresDevise.scope_devise === 'consolide'" class="d-flex align-items-center gap-2">
+                        <label class="form-label mb-0 fs-12 text-muted text-nowrap">Taux de conversion</label>
+                        <select class="form-select form-select-sm" style="min-width:130px" v-model="filtresDevise.mode_conversion" @change="onFiltreChange" :disabled="isLoading">
+                            <option value="origine">Taux à l'origine</option>
+                            <option value="actuel">Taux actuel</option>
+                        </select>
+                    </div>
+                </div>
             </div>
         </div>
 

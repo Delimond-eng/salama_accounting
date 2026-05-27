@@ -1,0 +1,912 @@
+================================================================================
+  SALAMA COMPTA — PRÉSENTATION & MANUEL D'UTILISATION COMPLET
+  Référentiel comptable SYSCOHADA (OHADA) — Version application
+================================================================================
+
+Date du document : mai 2026
+Éditeur : Salama compta
+Périmètre : Tous les modules SAUF « Facturation & trésorerie » (module ⑤)
+
+================================================================================
+TABLE DES MATIÈRES
+================================================================================
+
+  1.  Présentation générale de l'application
+  2.  Accès, connexion et navigation
+  3.  Concepts fondamentaux (société, exercice, devise)
+  4.  Rôles utilisateurs et droits d'accès
+  5.  Module ① — Tableau de bord
+  6.  Module ② — Saisie comptable
+  7.  Module ③ — Livres comptables
+  8.  Module ④ — États financiers
+  9.  Module ⑥ — Fiscalité & déclarations
+ 10.  Module ⑦ — Exercices comptables
+ 11.  Module ⑧ — Paramètres
+ 12.  Administration (utilisateurs, rôles, audit)
+ 13.  Exports PDF, Excel et CSV
+ 14.  Règles comptables SYSCOHADA dans l'application
+ 15.  Journal d'audit et traçabilité
+ 16.  Dépannage et bonnes pratiques
+ 17.  Annexes techniques
+
+================================================================================
+1. PRÉSENTATION GÉNÉRALE DE L'APPLICATION
+================================================================================
+
+1.1 Qu'est-ce que Salama compta ?
+-------------------------------
+Salama compta est une application web de comptabilité générale conçue pour
+les entreprises soumises au référentiel SYSCOHADA (Système Comptable OHADA).
+Elle permet de :
+
+  • Saisir et valider des écritures comptables multi-lignes et multi-devises
+  • Consulter les livres (journal, grand livre, balances, lettrage)
+  • Produire les états financiers réglementaires (bilan, compte de résultat,
+    flux de trésorerie, variation des capitaux propres, annexes)
+  • Gérer la fiscalité (TVA, IS, DSF, déclarations)
+  • Administrer les exercices (ouverture, clôture, report à nouveau)
+  • Paramétrer le plan comptable, les journaux, les tiers et les devises
+  • Contrôler les accès par rôles et consulter le journal d'audit
+
+L'application ne repose pas sur un module POS ni e-commerce : toute la
+comptabilité passe par des écritures explicites dans des journaux dédiés.
+
+1.2 Architecture fonctionnelle
+------------------------------
+L'interface est organisée en MODULES accessibles depuis le menu latéral gauche.
+Chaque module regroupe des fonctions métier (cartes cliquables sur la page hub).
+
+Modules documentés dans ce manuel :
+  ① Tableau de bord
+  ② Saisie comptable
+  ③ Livres comptables
+  ④ États financiers
+  ⑥ Fiscalité & déclarations
+  ⑦ Exercices comptables
+  ⑧ Paramètres
+  + Administration (utilisateurs, rôles, journal d'audit)
+
+Module NON couvert par ce document (voir documentation dédiée si disponible) :
+  ⑤ Facturation & trésorerie (factures, paiements, demandes de fonds, etc.)
+
+1.3 Technologies et prérequis utilisateur
+-----------------------------------------
+  • Navigateur web moderne (Chrome, Edge, Firefox recommandé)
+  • Connexion Internet ou réseau local vers le serveur (XAMPP / hébergement)
+  • Identifiants personnels (email + mot de passe)
+  • Connaissances de base en comptabilité SYSCOHADA
+
+1.4 Multi-société
+-----------------
+L'application gère plusieurs sociétés comptables. La société active détermine
+toutes les données affichées (écritures, balances, états). Le changement de
+société se fait dans Paramètres > Société & exercice (profil autorisé).
+
+================================================================================
+2. ACCÈS, CONNEXION ET NAVIGATION
+================================================================================
+
+2.1 Connexion
+-------------
+  1. Ouvrir l'URL de l'application dans le navigateur
+  2. Saisir l'adresse email et le mot de passe
+  3. Cliquer sur « Se connecter »
+  4. En cas d'erreur : vérifier les identifiants ou contacter l'administrateur
+
+Comptes par défaut (environnement de démonstration — à modifier en production) :
+  • Super administrateur : admin@salama.cd / Admin@2025
+  • Compte démo          : demo@gmail.com / demo@2025
+
+2.2 Déconnexion
+---------------
+Menu utilisateur en haut à droite (avatar) > Déconnexion (Sign out).
+La session est fermée côté serveur (requête POST sécurisée).
+
+2.3 Menu principal (barre latérale)
+-----------------------------------
+Section « SYSCOHADA » :
+  ① Tableau de bord
+  ② Saisie comptable
+  ③ Livres comptables
+  ④ États financiers
+  ⑥ Fiscalité & déclarations
+  ⑦ Exercices comptables
+  ⑧ Paramètres
+
+Section « ADMINISTRATION » (selon droits) :
+  • Utilisateurs
+  • Rôles & Permissions
+  • Journal d'audit
+
+Seuls les modules pour lesquels vous avez la permission « view » apparaissent.
+
+2.4 Pages « Hub » (portail de module)
+-------------------------------------
+En cliquant sur un module dans le menu, une page liste toutes les fonctions
+disponibles sous forme de cartes (titre, description, icône). Cliquer sur une
+carte ouvre l'écran correspondant.
+
+2.5 En-tête de page (header)
+----------------------------
+  • Logo / retour accueil
+  • Indication de la société active (si configuré)
+  • Lien Paramètres (selon droits)
+  • Menu profil : déconnexion
+
+2.6 Interface des écrans de données
+-----------------------------------
+La plupart des écrans métier utilisent :
+  • Un écran de chargement initial (splash)
+  • Des filtres en haut de page (dates, exercice, devise, conversion)
+  • Un bouton « Actualiser » (icône refresh)
+  • Un menu « Exporter » (PDF / Excel / CSV) lorsque disponible
+  • Des tableaux interactifs (tri, recherche selon les pages)
+
+2.7 Fil d'Ariane (breadcrumb)
+-----------------------------
+Présent sur la plupart des pages : Accueil > Module > Fonction en cours.
+
+================================================================================
+3. CONCEPTS FONDAMENTAUX
+================================================================================
+
+3.1 Société
+-----------
+Entité juridique comptable (raison sociale, NIF, adresse, logo, devise
+principale, paramètres JSON). Toutes les écritures sont rattachées à une
+société.
+
+3.2 Exercice comptable
+----------------------
+Période comptable (date début, date fin, libellé). Un seul exercice est marqué
+« courant » à la fois. Les écritures doivent avoir une date comprise dans
+l'exercice (sauf écritures d'ouverture/clôture selon règles métier).
+
+États possibles de l'exercice :
+  • Ouvert (accepte les saisies normales)
+  • En cours de clôture
+  • Clôturé (plus de saisies normales sauf opérations autorisées)
+
+3.3 Journal comptable
+---------------------
+Registre regroupant des écritures par nature (achats, ventes, banque, caisse,
+opérations diverses). Chaque journal possède :
+  • Un code (ex. HA, VT, BQ, CA, OD)
+  • Un libellé
+  • Un type métier
+  • Une numérotation automatique des pièces
+  • Option : saisie obligatoire du tiers
+
+3.4 Écriture et lignes
+----------------------
+Une écriture (pièce) comprend :
+  • En-tête : journal, dates, libellé, devise, taux de change, statut
+  • Lignes : compte, libellé, débit OU crédit, tiers éventuel
+
+Règle absolue : total débit = total crédit (équilibre obligatoire).
+Une ligne ne peut pas avoir débit et crédit simultanément.
+
+3.5 Statuts des écritures
+-------------------------
+  • brouillon   : modifiable, supprimable, non définitive
+  • validee     : figée pour la comptabilité courante ; alimente les livres
+  • extournee   : écriture d'annulation (si utilisé)
+  • simulee     : écriture de simulation (si utilisé)
+
+3.6 Plan comptable
+------------------
+Liste des comptes SYSCOHADA (numéro, libellé, classe 1 à 9, type, compte tiers).
+Peut être global ou personnalisé par société.
+
+3.7 Tiers
+---------
+Fichier des partenaires : clients, fournisseurs, salariés, banques, etc.
+Chaque tiers peut avoir un compte collectif (411xxx, 401xxx, etc.).
+
+3.8 Devises et conversion
+-------------------------
+  • Devise principale : généralement CDF (Franc congolais) ou autre
+  • Devises secondaires : USD, EUR, etc.
+  • Taux de change enregistrés par date
+  • Modes d'affichage dans les livres et états :
+      - « Taux d'origine » : taux enregistré à la saisie de l'écriture
+      - « Taux actuel » : taux du jour pour revalorisation d'affichage
+
+3.9 Permissions
+---------------
+Chaque action sensible est contrôlée (voir chapitre 4). Sans permission, le
+menu ou le bouton n'apparaît pas, ou l'API renvoie une erreur 403.
+
+================================================================================
+4. RÔLES UTILISATEURS ET DROITS D'ACCÈS
+================================================================================
+
+4.1 Liste des rôles métier
+--------------------------
+  super_admin      : Accès total, gestion utilisateurs et paramètres système
+  admin_comptable  : Responsable comptable (saisie, validation, états, clôture)
+  comptable        : Saisie et consultation, pas de clôture ni suppressions lourdes
+  caissier         : Focus journal caisse et consultation trésorerie caisse
+  tresorier        : Focus journal banque, rapprochement, exports trésorerie
+  auditeur         : Lecture seule sur livres et états
+  direction        : Dashboard et états financiers en lecture
+
+4.2 Matrice des permissions (résumé)
+------------------------------------
+Entités contrôlées :
+  dashboard, saisie, livres, tresorerie, etats, exercices, parametres,
+  fiscalite, users, roles, audit
+
+Actions possibles :
+  view     = Consulter
+  create   = Créer
+  update   = Modifier
+  validate = Valider (écritures, pièces)
+  delete   = Supprimer
+  export   = Exporter PDF/Excel/CSV
+  process  = Opérations de traitement (clôture, déclarations fiscales, etc.)
+
+4.3 Bonnes pratiques sécurité
+-----------------------------
+  • Ne pas partager les comptes utilisateurs
+  • Attribuer le rôle le plus restrictif possible
+  • Réserver super_admin aux administrateurs IT / responsables SI
+  • Révoquer les accès des collaborateurs sortants
+
+================================================================================
+5. MODULE ① — TABLEAU DE BORD
+================================================================================
+
+5.1 Objectif
+------------
+Vue synthétique de l'activité comptable : indicateurs, soldes clés, alertes
+et raccourcis vers la saisie.
+
+5.2 Accès
+---------
+Menu latéral > ① Tableau de bord
+URL : page d'accueil après connexion (/)
+
+5.3 Contenu type
+----------------
+  • KPIs financiers (soldes, flux, indicateurs selon données disponibles)
+  • Synthèse trésorerie (banque, caisse)
+  • Alertes et points de vigilance
+  • Raccourcis vers les journaux de saisie
+
+5.4 Utilisation
+---------------
+  1. Se connecter : le tableau de bord s'affiche par défaut
+  2. Consulter les indicateurs pour la société et l'exercice courants
+  3. Utiliser les liens rapides pour accéder à la saisie
+
+5.5 Public cible
+----------------
+Direction, administrateurs, comptables (vue d'ensemble avant travail détaillé).
+
+================================================================================
+6. MODULE ② — SAISIE COMPTABLE
+================================================================================
+
+6.1 Objectif
+------------
+Enregistrer toutes les opérations comptables sous forme d'écritures équilibrées,
+par journal spécialisé, avec gestion des devises et validation métier.
+
+6.2 Sous-fonctions
+------------------
+
+  A) Nouvelle écriture
+     Route : Saisie > Nouvelle écriture
+     Journal libre (choix du journal dans la liste)
+
+  B) Journal des achats (HA)
+     Factures fournisseurs, charges — modèle 601 / 401
+
+  C) Journal des ventes (VT)
+     Ventes clients — modèle 411 / 701
+
+  D) Journal de banque (BQ)
+     Mouvements bancaires — comptes classe 52
+
+  E) Journal de caisse (CA)
+     Encaissements et décaissements espèces — compte 571
+
+  F) Opérations diverses (OD)
+     Salaires, amortissements, régularisations, provisions
+
+  G) Import relevé bancaire
+     Import fichier CSV de relevé pour le journal banque
+
+  H) Écritures en devises
+     Saisie avec devise étrangère et taux de change
+
+  I) Liste des écritures (par journal)
+     Consultation, recherche, validation, suppression des brouillons
+
+6.3 Saisie d'une écriture — pas à pas
+-------------------------------------
+
+  ÉTAPE 1 — Ouvrir le formulaire
+    Choisir le journal adapté (ex. Achats pour une facture fournisseur)
+
+  ÉTAPE 2 — En-tête de pièce
+    • Journal : sélectionné ou verrouillé selon la page
+    • Date comptable : obligatoire, dans l'exercice courant
+    • Date pièce / date valeur / échéance : optionnel
+    • Libellé : description de l'opération
+    • Devise et taux : si multi-devises activé
+    • Références externes / facture : optionnel
+
+  ÉTAPE 3 — Lignes comptables
+    Pour chaque ligne :
+    • Numéro de compte (saisie avec aide autocomplete)
+    • Libellé de ligne
+    • Montant au DÉBIT ou au CRÉDIT (jamais les deux)
+    • Tiers : obligatoire sur comptes de tiers (classe 4) si règle active
+
+    Boutons :
+    • Ajouter une ligne
+    • Supprimer une ligne
+    • Modèle suggéré selon le journal (ex. achats : charge + fournisseur)
+
+  ÉTAPE 4 — Contrôles automatiques
+    L'application vérifie :
+    • Équilibre débit = crédit
+    • Exercice ouvert et date dans la période
+    • Compte existant et actif
+    • Pas de débit et crédit sur la même ligne
+    • Tiers si requis
+    • Avertissements non bloquants sur sens inhabituel (classes 6 et 7)
+
+  ÉTAPE 5 — Enregistrement
+    • « Enregistrer brouillon » : statut brouillon, modifiable plus tard
+    • « Enregistrer et valider » : statut validée directement (si autorisé)
+
+  ÉTAPE 6 — Numéro de pièce
+    Généré automatiquement selon le journal (ex. HA-2026-00001)
+
+6.4 Liste des écritures
+-----------------------
+Filtres disponibles :
+  • Date début / date fin
+  • Recherche (pièce, libellé, référence)
+  • Statut (tous, brouillon, validée)
+
+Actions sur une écriture en brouillon :
+  • Modifier (ouvrir le formulaire)
+  • Valider (confirmation)
+  • Supprimer (confirmation)
+
+Actions sur une écriture validée :
+  • Consultation seule (pas de modification standard)
+
+6.5 Import relevé bancaire
+--------------------------
+  1. Aller dans Saisie > Import relevé bancaire
+  2. Sélectionner le compte bancaire (journal BQ)
+  3. Charger le fichier CSV au format attendu
+  4. Contrôler les lignes proposées
+  5. Valider l'import pour créer les écritures
+
+Prérequis : journal de type « banque » actif, exercice ouvert.
+
+6.6 Journaux — correspondance SYSCOHADA
+---------------------------------------
+  Code  | Type                  | Usage principal
+  ------|----------------------|----------------------------------
+  HA    | achats               | Achats, factures fournisseurs
+  VT    | ventes               | Ventes, factures clients
+  BQ    | banque               | Mouvements bancaires
+  CA    | caisse               | Caisse espèces
+  OD    | operations_diverses  | OD, régularisations
+  SA    | salaires             | Paie (si activé)
+  AN    | ouverture            | À-nouveaux
+  CL    | cloture              | Écritures de clôture
+
+6.7 Audit
+---------
+Chaque création, modification, validation et suppression d'écriture est
+tracée dans le journal d'audit (voir chapitre 15).
+
+================================================================================
+7. MODULE ③ — LIVRES COMPTABLES
+================================================================================
+
+7.1 Objectif
+------------
+Consulter et analyser les données comptables validées : journaux, balances,
+grand livre, lettrage, situation des tiers.
+
+7.2 Filtres communs (barre supérieure)
+--------------------------------------
+Présents sur la plupart des livres :
+  • Du / Au : période d'analyse
+  • Journal : filtre sur journal général (page journal)
+  • Classe : filtre 1 à 9 (page balance)
+  • Type tiers : client / fournisseur (balance auxiliaire)
+  • Devise d'affichage : CDF, USD, etc.
+  • Conversion : taux d'origine ou taux actuel
+  • Taux du jour USD : pour conversion actuelle (1 USD = X CDF)
+  • Bouton Actualiser
+  • Bouton Exporter (PDF, Excel, CSV)
+
+7.3 Journal général
+-------------------
+Affichage chronologique de toutes les lignes d'écritures validées.
+Colonnes typiques : dates, pièce, journal, compte, libellé, débit, crédit, devise.
+
+Utilisation :
+  1. Définir la période
+  2. Filtrer par journal si besoin
+  3. Actualiser
+  4. Exporter si nécessaire
+
+7.4 Grand livre
+---------------
+Deux modes :
+  • Mode général : vue agrégée des mouvements par compte
+  • Mode par compte : saisir un numéro de compte et afficher toutes les lignes
+    avec solde progressif
+
+7.5 Balance générale
+--------------------
+Balance de vérification SYSCOHADA :
+  • Soldes de début (débiteur / créditeur)
+  • Mouvements de la période (débit / crédit)
+  • Soldes de fin (débiteur / créditeur)
+  • Filtre par classe (1 à 9)
+  • Ligne de totaux
+
+Contrôle : total débit = total crédit en fin de période.
+
+7.6 Balance auxiliaire
+----------------------
+Balances des comptes de tiers (clients 41, fournisseurs 40, etc.).
+Filtre par type de tiers possible.
+
+7.7 Lettrage des comptes
+------------------------
+Recherche des écritures non lettrées sur un compte (préfixe, ex. 41 pour clients).
+Permet de préparer le rapprochement des factures et paiements.
+
+Note : lettrage manuel avancé — fonctionnalité en évolution selon version.
+
+7.8 Livre de banque / Livre de caisse
+-------------------------------------
+Consultation des mouvements et soldes des comptes de trésorerie (classe 52 et 57).
+Sélection du compte de trésorerie dans la liste proposée.
+
+7.9 Comptes de tiers
+--------------------
+Situation détaillée par partenaire : soldes débiteurs/créditeurs, mouvements.
+
+7.10 Exports livres
+-------------------
+Format : PDF (impression), Excel (.xlsx), CSV (séparateur point-virgule)
+Les exports respectent les filtres actifs (dates, devise, classe, etc.).
+
+================================================================================
+8. MODULE ④ — ÉTATS FINANCIERS
+================================================================================
+
+8.1 Objectif
+------------
+Produire les états réglementaires SYSCOHADA à une date d'arrêté donnée,
+avec comparaison N-1 optionnelle.
+
+8.2 Filtres communs
+-------------------
+  • Date d'arrêté
+  • Exercice (change la date de fin automatiquement)
+  • Devise d'affichage
+  • Mode de conversion (origine / actuel)
+  • Case « Comparer N-1 » pour afficher l'exercice précédent
+
+8.3 Bilan (actif / passif)
+--------------------------
+Présentation en deux colonnes :
+  • ACTIF : immobilisations, stocks, tiers, trésorerie…
+  • PASSIF : capitaux propres, dettes…
+
+Contrôles affichés :
+  • Message d'équilibre actif = passif
+  • Alerte si écart (déséquilibre)
+  • Liste des comptes non affectés au bilan (diagnostic)
+
+Export : via filtres > Exporter ou page Exports centralisée.
+
+8.4 Compte de résultat
+----------------------
+Présentation des charges (classe 6) et produits (classe 7), soldes intermédiaires
+de gestion (SIG) selon configuration SYSCOHADA, résultat net.
+
+8.5 Tableau des flux de trésorerie (TFT)
+----------------------------------------
+Mouvements de trésorerie par activité (exploitation, investissement, financement).
+
+8.6 Tableau de variation des capitaux propres
+-------------------------------------------
+Mouvements affectant les capitaux propres sur l'exercice.
+
+8.7 Annexes SYSCOHADA
+---------------------
+Notes et informations complémentaires aux états (détail selon données).
+
+8.8 Comparatif N / N-1
+----------------------
+Analyse comparative des principaux agrégats entre exercice N et N-1.
+
+8.9 Page Exports
+----------------
+Hub central pour télécharger rapidement :
+  • Bilan
+  • Compte de résultat
+  • Flux de trésorerie
+  • Variation KP
+Formats PDF et Excel avec les filtres de la barre supérieure.
+
+8.10 Interprétation
+-----------------
+Les états sont calculés à partir des écritures VALIDÉES uniquement.
+Toute écriture en brouillon n'apparaît pas dans les états officiels.
+
+================================================================================
+9. MODULE ⑥ — FISCALITÉ & DÉCLARATIONS
+================================================================================
+
+9.1 Objectif
+------------
+Suivre les obligations fiscales : TVA, impôt sur les sociétés, DSF, calendrier
+des déclarations.
+
+9.2 Filtres communs
+-------------------
+  • Période (date début, date fin)
+  • Exercice
+  • Devise
+  • Conversion
+
+9.3 TVA collectée
+-----------------
+Suivi de la TVA facturée sur les ventes (comptes 443, opérations classe 7).
+Détail des bases et montants de TVA sur la période.
+
+9.4 TVA déductible
+------------------
+Suivi de la TVA récupérable sur achats et charges (comptes 445, classe 6).
+
+9.5 Impôt sur les sociétés (IS)
+-------------------------------
+Calcul indicatif basé sur le résultat comptable (ligne résultat du compte de
+résultat) et taux configuré (paramètre système, ex. 30 %).
+
+9.6 DSF — Déclaration Statistique et Fiscale
+--------------------------------------------
+Synthèse annuelle : totaux bilan, résultat, chiffre d'affaires, indicateurs TVA.
+
+9.7 Génération des déclarations
+-------------------------------
+Préparation des enregistrements de déclarations fiscales pour une période.
+Actions :
+  • Générer les déclarations (bouton dédié)
+  • Marquer comme déposée après envoi à l'administration
+
+Statuts des déclarations :
+  brouillon, a_declarer, deposee, validee
+
+9.8 Suivi des échéances
+-----------------------
+Calendrier des échéances fiscales (TVA mensuelle, IS, DSF, etc.).
+Alertes visuelles pour échéances dépassées.
+
+9.9 Exports fiscalité
+---------------------
+Export PDF / Excel / CSV des listes TVA et déclarations selon les écrans.
+
+================================================================================
+10. MODULE ⑦ — EXERCICES COMPTABLES
+================================================================================
+
+10.1 Objectif
+-------------
+Structurer le temps comptable : créer des exercices, ouvrir, clôturer,
+reporter les soldes.
+
+10.2 Multi-exercices (liste)
+---------------------------
+  • Voir tous les exercices de la société
+  • Libellé, dates, statut, indicateur « courant »
+  • Définir l'exercice courant (action autorisée)
+  • Créer / modifier un exercice
+
+10.3 Ouverture d'exercice
+-------------------------
+  1. Créer le nouvel exercice (année N+1)
+  2. Générer le bilan d'ouverture (reprise des soldes de clôture N)
+  3. Vérifier les écritures d'ouverture dans le journal AN
+
+Prérequis : exercice N clôturé ou soldes de fin disponibles.
+
+10.4 Clôture comptable
+----------------------
+Processus (selon droits « process ») :
+  1. Pré-clôture : contrôles (écritures non validées, déséquilibres…)
+  2. Clôture : génération des écritures de résultat et clôture
+  3. L'exercice passe en statut clôturé
+
+Attention : opération sensible et difficilement réversible. Sauvegarder avant.
+
+10.5 Report à nouveau
+-------------------
+Génération des écritures de report des soldes des comptes de bilan vers
+le nouvel exercice (comptes 12/13 selon SYSCOHADA).
+
+10.6 Bonnes pratiques
+---------------------
+  • Une seule exercice « courant » pour la saisie quotidienne
+  • Clôturer N avant d'ouvrir N+1 proprement
+  • Ne pas saisir sur un exercice clôturé
+
+================================================================================
+11. MODULE ⑧ — PARAMÈTRES
+================================================================================
+
+11.1 Objectif
+-------------
+Configurer le référentiel comptable et l'organisation : plan comptable,
+journaux, devises, tiers, société.
+
+11.2 Plan comptable SYSCOHADA
+-----------------------------
+  • Navigation par classes (1 à 9)
+  • Recherche par numéro ou libellé
+  • Création de comptes personnalisés (sous-comptes)
+  • Champs : numéro, libellé, classe, type, compte tiers, rapprochable
+  • Export PDF / Excel / CSV
+
+Règle : respecter la numérotation SYSCOHADA (ne pas mélanger les classes).
+
+11.3 Journaux comptables
+------------------------
+  • Liste des journaux de la société
+  • Création / modification : code, libellé, type, compte de contrepartie,
+    préfixe pièce, format numérotation, tiers obligatoire, actif/inactif
+  • Export de la liste
+
+11.4 Devises & taux de change
+-----------------------------
+  • Liste des devises actives (CDF, USD, EUR…)
+  • Saisie des taux par date (ex. 1 USD = 2200 CDF)
+  • Utilisés pour saisie multi-devises et conversion des états
+
+11.5 Tiers (clients, fournisseurs)
+----------------------------------
+  • Fichier unique des tiers
+  • Types : client, fournisseur, client_fournisseur, salarié, banque, autre
+  • Champs : code, nom, adresse, compte collectif, délai paiement, etc.
+  • Recherche et filtre par type
+  • Export
+
+11.6 Société & exercice
+-----------------------
+  • Informations légales : raison sociale, NIF, RCCM, adresse, contacts
+  • Logo de l'entreprise (upload image pour en-têtes et documents)
+  • Devise principale
+  • Sélection de l'exercice courant
+  • Changement de société active (multi-société)
+
+11.7 Liens administration
+---------------------------
+Depuis Paramètres (si autorisé) :
+  • Utilisateurs
+  • Rôles & permissions
+
+================================================================================
+12. ADMINISTRATION
+================================================================================
+
+12.1 Utilisateurs
+-----------------
+Accès : Menu ADMINISTRATION > Utilisateurs
+
+Fonctions :
+  • Liste de tous les utilisateurs
+  • Création : nom, email, mot de passe, rôle principal
+  • Modification des informations
+  • Attribution des rôles Spatie
+  • Permissions directes optionnelles (avancé)
+  • Export PDF / Excel de la liste
+
+12.2 Rôles & permissions
+------------------------
+Accès : Menu ADMINISTRATION > Rôles & Permissions
+
+Fonctions :
+  • Liste des rôles (super_admin, comptable, etc.)
+  • Matrice permissions par module et action (cases à cocher)
+  • Création de rôles personnalisés
+  • Modification des permissions d'un rôle
+  • Le rôle super_admin est protégé (non modifiable)
+
+Synchronisation : les permissions sont définies dans la configuration système
+et appliquées via le seeder ou l'interface admin.
+
+12.3 Journal d'audit
+--------------------
+Accès : Menu ADMINISTRATION > Journal d'audit
+
+Contenu :
+  • Date et heure de l'action
+  • Utilisateur
+  • Type d'action (creation, validation, modification, suppression…)
+  • Entité concernée (écriture, facture, etc.)
+  • Référence (numéro de pièce)
+  • Description détaillée
+
+Recherche par référence, description ou action.
+Export PDF / Excel disponible.
+
+================================================================================
+13. EXPORTS PDF, EXCEL ET CSV
+================================================================================
+
+13.1 Où trouver les exports ?
+-----------------------------
+Bouton « Exporter » (menu déroulant) sur :
+  • Livres comptables (toutes pages avec filtres)
+  • États financiers (filtres + page Exports)
+  • Fiscalité
+  • Saisie (liste écritures)
+  • Paramètres (plan comptable, tiers, journaux)
+  • Administration (utilisateurs, audit)
+
+13.2 Formats
+------------
+  PDF   : mise en page pour impression, en-tête avec filtres et date
+  Excel : fichier .xlsx (feuille de calcul)
+  CSV   : texte séparé par point-virgule, UTF-8 avec BOM (compatible Excel FR)
+
+13.3 Paramètres d'export
+------------------------
+Les exports utilisent TOUJOURS les filtres affichés à l'écran :
+  période, exercice, devise, classe, journal, recherche, etc.
+
+Changer les filtres puis cliquer Exporter pour obtenir le bon périmètre.
+
+13.4 URLs d'export (technique)
+------------------------------
+Préfixe général : /accounting/export/{module}/{type}/{format}
+Exemples :
+  /accounting/export/livres/balance/pdf?date_debut=...&date_fin=...
+  /accounting/export/etats/bilan/excel?date_arrete=...&exercice_id=...
+
+================================================================================
+14. RÈGLES COMPTABLES SYSCOHADA DANS L'APPLICATION
+================================================================================
+
+14.1 Principes respectés
+------------------------
+  • Partie double stricte (débit = crédit)
+  • Pas de compensation automatique entre comptes
+  • Écritures explicites par journal
+  • Comptes 411 (clients) et 401 (fournisseurs) en tiers
+  • Classes 6 (charges) et 7 (produits) pour le résultat
+  • Classes 5 (trésorerie) pour banque et caisse
+
+14.2 Comptes principaux (référence rapide)
+------------------------------------------
+  Classe 1 : Capitaux permanents
+  Classe 2 : Immobilisations
+  Classe 3 : Stocks
+  Classe 4 : Tiers (40 fournisseurs, 41 clients, 42 personnel…)
+  Classe 5 : Trésorerie (52 banques, 57 caisse)
+  Classe 6 : Charges
+  Classe 7 : Produits
+  Classe 8 : Autres charges/produits (HAO)
+  Classe 9 : Engagements hors bilan (analytique)
+
+14.3 Ce que l'application ne fait pas automatiquement
+-----------------------------------------------------
+  • Ne reclassifie pas les comptes sans écriture explicite
+  • Ne fusionne pas les comptes
+  • Ne corrige pas les erreurs de saisie sans intervention utilisateur
+  • N'impute pas de charges/produits sans ligne d'écriture
+
+================================================================================
+15. JOURNAL D'AUDIT ET TRAÇABILITÉ
+================================================================================
+
+15.1 Actions tracées
+--------------------
+  • Création, modification, validation, suppression d'écritures
+  • Opérations sur factures et paiements (module facturation — hors ce doc)
+  • Actions utilisateurs et rôles (selon configuration)
+
+15.2 Informations enregistrées
+------------------------------
+  • Identifiant utilisateur
+  • Date/heure (serveur)
+  • Adresse IP
+  • Type d'entité et identifiant
+  • Métadonnées JSON (montants, statuts, etc.)
+
+15.3 Consultation
+-----------------
+Administration > Journal d'audit — réservé aux profils autorisés (audit.view).
+
+================================================================================
+16. DÉPANNAGE ET BONNES PRATIQUES
+================================================================================
+
+16.1 Problèmes fréquents
+------------------------
+
+  PROBLÈME : « Écriture déséquilibrée »
+  SOLUTION : Vérifier que la somme des débits = somme des crédits (écart < 0,01)
+
+  PROBLÈME : « Compte introuvable »
+  SOLUTION : Créer le compte dans Plan comptable ou corriger le numéro
+
+  PROBLÈME : « Tiers obligatoire »
+  SOLUTION : Renseigner un tiers sur les lignes en compte 40/41 ou activer règle journal
+
+  PROBLÈME : « Date hors exercice »
+  SOLUTION : Corriger la date ou ouvrir le bon exercice / exercice courant
+
+  PROBLÈME : « Permission refusée » / page 403
+  SOLUTION : Demander à l'administrateur d'ajuster le rôle
+
+  PROBLÈME : Bilan déséquilibré
+  SOLUTION : Vérifier comptes non affectés (liste diagnostic sur page bilan),
+             valider toutes les écritures, contrôler à-nouveaux
+
+  PROBLÈME : Montants incohérents en USD
+  SOLUTION : Vérifier mode conversion (origine vs actuel) et taux du jour
+
+16.2 Bonnes pratiques quotidiennes
+----------------------------------
+  1. Saisir au journal adapté (HA, VT, BQ, CA, OD)
+  2. Valider les brouillons en fin de journée
+  3. Contrôler la balance chaque semaine
+  4. Lettrer les comptes clients/fournisseurs mensuellement
+  5. Exporter les états avant clôture annuelle
+  6. Sauvegarder la base de données avant clôture
+
+16.3 Procédure de fin de mois (recommandée)
+-------------------------------------------
+  1. Lister les brouillons restants → valider ou supprimer
+  2. Balance générale du mois → vérifier équilibre
+  3. Balance auxiliaire clients/fournisseurs
+  4. TVA collectée / déductible du mois
+  5. Livre banque et rapprochement
+  6. Export PDF balance + journal pour archive
+
+16.4 Procédure de fin d'année (recommandée)
+-------------------------------------------
+  1. Contrôles pré-clôture (module Exercices)
+  2. Bilan et compte de résultat provisoires
+  3. Clôture exercice N
+  4. Ouverture exercice N+1 + bilan d'ouverture
+  5. Report à nouveau si nécessaire
+  6. Archivage exports PDF/Excel
+
+================================================================================
+17. ANNEXES TECHNIQUES
+================================================================================
+
+17.4 Support et évolution
+-------------------------
+Pour toute demande d'évolution fonctionnelle ou formation complémentaire,
+contacter l'administrateur système ou l'équipe Salama compta.
+
+================================================================================
+FIN DU DOCUMENT
+================================================================================
+
+Document généré pour : Salama compta
+Périmètre exclu volontairement : Module ⑤ Facturation & trésorerie
+Pour une documentation incluant la facturation, demander le manuel complémentaire
+« Facturation & trésorerie ».
+
+© Salama compta — Usage interne et formation utilisateurs.

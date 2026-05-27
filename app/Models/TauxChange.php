@@ -15,7 +15,7 @@ class TauxChange extends Model
     ];
 
     protected $casts = [
-        'date_taux' => 'datetime:d/m/Y H:s',
+        'date_taux' => 'date:Y-m-d',
         'taux' => 'float', 'taux_achat' => 'float', 'taux_vente' => 'float',
     ];
 

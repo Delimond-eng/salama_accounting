@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>{{ $title ?? 'SALAMA ACCOUNTING - Rapport' }}</title>
+    <title>{{ $title ?? config('brand.name') . ' - Rapport' }}</title>
     <style>
         @page {
             margin: 1.5cm;
@@ -102,8 +102,8 @@
     <table class="header-table">
         <tr>
             <td style="border: none; padding: 0;">
-                <div class="logo-text">SALAMA ATTENDANCE</div>
-                <div class="company-sub">Système de Gestion de Présence de SALAMA GROUP</div>
+                <div class="logo-text">{{ config('brand.name') }}</div>
+                <div class="company-sub">{{ config('brand.tagline', 'Comptabilité & gestion intégrée') }}</div>
             </td>
             <td style="border: none; padding: 0; text-align: right;">
                 <div class="report-title">{{ $title ?? 'Rapport Export' }}</div>
@@ -122,7 +122,7 @@
     @yield('body')
 
     <footer>
-        SALAMA GROUP LTD  - Page <span class="pagenum"></span>
+        {{ config('brand.name') }} — Page <span class="pagenum"></span>
     </footer>
 </body>
 </html>

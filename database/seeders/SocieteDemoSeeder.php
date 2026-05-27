@@ -22,7 +22,7 @@ class SocieteDemoSeeder extends Seeder
                 'ville' => 'Kinshasa',
                 'pays' => 'République Démocratique du Congo',
                 'telephone' => '+243 000 000 000',
-                'email' => 'demo@salama-accounting.local',
+                'email' => 'demo@salama-compta.local',
                 'regime_fiscal' => 'Réel normal',
                 'devise_principale' => 'CDF',
                 'statut' => 'active',

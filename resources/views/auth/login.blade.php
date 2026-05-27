@@ -48,7 +48,7 @@
                         </div>
                     </div>
                     <div class="text-center pb-4">
-                        <p class="text-dark mb-0">Copyright &copy; <script>document.write(new Date().getFullYear())</script> - SALAMA DRC</p>
+                        <p class="text-dark mb-0">Copyright &copy; <script>document.write(new Date().getFullYear())</script> — {{ config('brand.name') }}</p>
                     </div>
                 </form>
             </div> <!-- end col -->

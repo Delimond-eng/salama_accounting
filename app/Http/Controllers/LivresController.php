@@ -96,12 +96,16 @@ class LivresController extends Controller
         $data = $request->validate([
             'devise_affichage' => 'required|string|size:3',
             'mode_conversion' => 'required|in:origine,actuel',
+            'scope_devise' => 'nullable|in:natif,consolide',
         ]);
 
         $societe = Societe::findOrFail($societeId);
         $params = $societe->parametres ?? [];
         $params['devise_affichage'] = strtoupper($data['devise_affichage']);
         $params['mode_conversion'] = $data['mode_conversion'];
+        if (isset($data['scope_devise'])) {
+            $params['scope_devise'] = $data['scope_devise'];
+        }
         $societe->update(['parametres' => $params]);
 
         return response()->json(['status' => 'success', 'message' => 'Préférences devise enregistrées.', 'options' => $this->livres->optionsDefaut($societe->fresh())]);
@@ -117,8 +121,9 @@ class LivresController extends Controller
         $dateFin = $request->get('date_fin', $exercice?->date_fin?->format('Y-m-d'));
         $deviseAffichage = strtoupper($request->get('devise_affichage', $options['devise_affichage']));
         $modeConversion = $request->get('mode_conversion', $options['mode_conversion']);
+        $scopeDevise = $request->get('scope_devise', $options['scope_devise'] ?? 'consolide');
 
-        return compact('societe', 'exercice', 'dateDebut', 'dateFin', 'deviseAffichage', 'modeConversion', 'options');
+        return compact('societe', 'exercice', 'dateDebut', 'dateFin', 'deviseAffichage', 'modeConversion', 'scopeDevise', 'options');
     }
 
     public function apiBalance(Request $request): JsonResponse
@@ -136,7 +141,8 @@ class LivresController extends Controller
             $f['dateFin'],
             $f['deviseAffichage'],
             $f['modeConversion'],
-            $request->integer('classe') ?: null
+            $request->integer('classe') ?: null,
+            $f['scopeDevise']
         );
 
         return response()->json(['status' => 'success', 'data' => $data, 'filtres' => $f]);
@@ -157,7 +163,8 @@ class LivresController extends Controller
             $f['dateFin'],
             $f['deviseAffichage'],
             $f['modeConversion'],
-            $request->integer('journal_id') ?: null
+            $request->integer('journal_id') ?: null,
+            $f['scopeDevise']
         );
 
         return response()->json(['status' => 'success', 'lignes' => $lignes, 'filtres' => $f]);
@@ -180,7 +187,8 @@ class LivresController extends Controller
             $f['dateDebut'],
             $f['dateFin'],
             $f['deviseAffichage'],
-            $f['modeConversion']
+            $f['modeConversion'],
+            $f['scopeDevise']
         );
 
         return response()->json(['status' => 'success', 'data' => $data, 'filtres' => $f]);
@@ -200,7 +208,8 @@ class LivresController extends Controller
             $f['dateDebut'],
             $f['dateFin'],
             $f['deviseAffichage'],
-            $f['modeConversion']
+            $f['modeConversion'],
+            $f['scopeDevise']
         );
 
         return response()->json(['status' => 'success', 'data' => $data, 'filtres' => $f]);

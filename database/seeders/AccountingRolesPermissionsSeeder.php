@@ -86,6 +86,8 @@ class AccountingRolesPermissionsSeeder extends Seeder
             ...$v('exercices', ['view']),
             ...$v('fiscalite', ['view']),
             ...$v('facturation', ['view']),
+            ...$v('taches', ['view']),
+            ...$v('analytique', ['view']),
         ];
 
         $comptableBase = [
@@ -93,12 +95,16 @@ class AccountingRolesPermissionsSeeder extends Seeder
             ...$v('saisie', ['view', 'create', 'update', 'validate']),
             ...$v('livres', ['view', 'export']),
             ...$v('etats', ['view', 'export']),
+            ...$v('analytique', ['view', 'export']),
             ...$v('tresorerie', ['view']),
             ...$v('exercices', ['view']),
             ...$v('parametres', ['view']),
             ...$v('fiscalite', ['view']),
             ...$v('facturation', ['view', 'create', 'update', 'validate', 'export']),
+            ...$v('taches', ['view', 'create', 'update', 'process']),
         ];
+
+        $tachesAssigne = [...$v('taches', ['view', 'process'])];
 
         return [
             'super_admin' => '*',
@@ -113,6 +119,8 @@ class AccountingRolesPermissionsSeeder extends Seeder
                 ...$v('parametres', ['view', 'create', 'update']),
                 ...$v('fiscalite', ['view', 'export', 'process']),
                 ...$v('facturation', ['view', 'create', 'update', 'validate', 'delete', 'export', 'process']),
+                ...$v('taches', ['view', 'create', 'update', 'delete', 'process']),
+                ...$v('analytique', ['view', 'create', 'update', 'delete', 'export']),
                 ...$v('audit', ['view']),
             ],
 
@@ -147,6 +155,7 @@ class AccountingRolesPermissionsSeeder extends Seeder
                 ...$v('tresorerie', ['view']),
                 ...$v('exercices', ['view']),
                 ...$v('livres', ['view']),
+                ...$v('taches', ['view', 'create', 'update', 'process']),
             ],
         ];
     }

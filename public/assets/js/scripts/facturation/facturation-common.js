@@ -1,4 +1,4 @@
-import { get, postJson } from "../../modules/http.js";
+import {get, postJson } from "../../modules/http.js";
 import { vuePageMixin } from "../../modules/vue-page-mixin.js";
 
 export const facturationMixin = {
@@ -35,6 +35,16 @@ export const facturationMixin = {
 
         fmt(v) {
             return new Intl.NumberFormat("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(v || 0);
+        },
+
+        fmtDate(d) {
+            if (!d) return "—";
+            const s = String(d).slice(0, 10);
+            if (/^\d{4}-\d{2}-\d{2}$/.test(s)) {
+                const [y, m, day] = s.split("-");
+                return `${day}/${m}/${y}`;
+            }
+            return s;
         },
 
         badgeStatut(s) {

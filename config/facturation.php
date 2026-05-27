@@ -1,6 +1,8 @@
 <?php
 
 return [
+    'devises_autorisees' => ['CDF', 'USD'],
+
     'taux_tva_defaut' => (float) env('FACTURATION_TVA', 16),
 
     'numerotation' => [

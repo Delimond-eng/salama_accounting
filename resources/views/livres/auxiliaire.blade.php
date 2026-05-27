@@ -57,7 +57,7 @@
                             <td class="text-end fw-bold bg-light-soft">@{{ fmt(r.solde_fin_crediteur) }}</td>
                         </tr>
                     </tbody>
-                    <tfoot class="bg-primary text-white fw-bold" v-if="lignes.length">
+                    <tfoot class="table-light text-dark fw-bold" v-if="lignes.length">
                         <tr>
                             <td colspan="2" class="text-end px-3">TOTAUX GÉNÉRAUX</td>
                             <td class="text-end">@{{ fmt(lignes.reduce((s,l) => s + (Number(l.solde_debut_debiteur)||0), 0)) }}</td>

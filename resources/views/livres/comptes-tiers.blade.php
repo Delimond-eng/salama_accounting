@@ -44,7 +44,7 @@
                             <td class="text-end fw-bold" :class="t.solde_fin_crediteur > 0 ? 'text-dark' : 'text-light-soft'">@{{ t.solde_fin_crediteur > 0 ? fmt(t.solde_fin_crediteur) : '0,00' }}</td>
                         </tr>
                     </tbody>
-                    <tfoot class="bg-primary text-white fw-bold" v-if="tiers.length">
+                    <tfoot class="table-light text-dark fw-bold" v-if="tiers.length">
                         <tr>
                             <td colspan="4" class="text-end px-4 text-uppercase">Total Général des Tiers</td>
                             <td class="text-end">@{{ fmt(tiers.reduce((s,t) => s + (Number(t.solde_fin_debiteur)||0), 0)) }}</td>

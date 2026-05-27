@@ -27,7 +27,8 @@ class EtatsFinanciersService
         Exercice $exercice,
         string $dateFin,
         string $deviseAffichage = 'CDF',
-        string $modeConversion = 'origine'
+        string $modeConversion = 'origine',
+        string $scopeDevise = 'consolide'
     ): Collection {
         $balance = $this->livres->balanceGenerale(
             $societeId,
@@ -35,7 +36,9 @@ class EtatsFinanciersService
             $exercice->date_debut->format('Y-m-d'),
             $dateFin,
             $deviseAffichage,
-            $modeConversion
+            $modeConversion,
+            null,
+            $scopeDevise
         );
 
         return collect($balance['lignes'])->mapWithKeys(function ($row) {
@@ -63,7 +66,8 @@ class EtatsFinanciersService
         string $dateArrete,
         string $deviseAffichage = 'CDF',
         string $modeConversion = 'origine',
-        ?Exercice $exerciceN1 = null
+        ?Exercice $exerciceN1 = null,
+        string $scopeDevise = 'consolide'
     ): array {
         // Génération N
         $bilan = $this->bilanComptable->generer(
@@ -71,7 +75,8 @@ class EtatsFinanciersService
             $exercice,
             $dateArrete,
             $deviseAffichage,
-            $modeConversion
+            $modeConversion,
+            $scopeDevise
         );
 
         // Intégration N-1 pour le comparatif
@@ -118,12 +123,13 @@ class EtatsFinanciersService
         string $dateFin,
         string $deviseAffichage = 'CDF',
         string $modeConversion = 'origine',
-        ?Exercice $exerciceN1 = null
+        ?Exercice $exerciceN1 = null,
+        string $scopeDevise = 'consolide'
     ): array {
         $definitions = config('syscohada_etats.compte_resultat');
-        $soldesN = $this->soldesComptes($societeId, $exercice, $dateFin, $deviseAffichage, $modeConversion);
+        $soldesN = $this->soldesComptes($societeId, $exercice, $dateFin, $deviseAffichage, $modeConversion, $scopeDevise);
         $soldesN1 = $exerciceN1
-            ? $this->soldesComptes($societeId, $exerciceN1, $exerciceN1->date_fin->format('Y-m-d'), $deviseAffichage, $modeConversion)
+            ? $this->soldesComptes($societeId, $exerciceN1, $exerciceN1->date_fin->format('Y-m-d'), $deviseAffichage, $modeConversion, $scopeDevise)
             : null;
 
         $lignes = $this->construireCompteResultat($definitions, $soldesN, $soldesN1);
@@ -135,6 +141,7 @@ class EtatsFinanciersService
             'exercice_n1' => $exerciceN1?->libelle,
             'lignes' => $lignes,
             'devise' => $deviseAffichage,
+            'scope_devise' => $scopeDevise,
         ];
     }
 

@@ -7,8 +7,10 @@ use App\Models\Exercice;
 use App\Models\Journal;
 use App\Models\PlanComptable;
 use App\Models\Societe;
+use App\Models\SocieteBanque;
 use App\Models\TauxChange;
 use App\Models\Tiers;
+use App\Support\DeviseAffichage;
 use App\Support\SocieteContext;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -53,6 +55,17 @@ class ParametresController extends Controller
             'societe' => $societe,
             'exercice_courant' => $societe?->exercices()->where('est_courant', true)->first(),
             'societes' => Societe::orderBy('raison_sociale')->get(['id', 'code', 'raison_sociale', 'devise_principale']),
+            'options_devise' => DeviseAffichage::options($societe),
+        ]);
+    }
+
+    public function deviseOptions(): JsonResponse
+    {
+        $societe = SocieteContext::societe();
+
+        return response()->json([
+            'status' => 'success',
+            'options' => DeviseAffichage::options($societe),
         ]);
     }
 
@@ -165,10 +178,13 @@ class ParametresController extends Controller
                 'format_numerotation' => 'required|in:annuel,mensuel,continu',
                 'padding_numero' => 'integer|min:1|max:8',
                 'saisie_tiers_obligatoire' => 'boolean',
+                'analytique_obligatoire' => 'boolean',
                 'actif' => 'boolean',
                 'ordre_affichage' => 'integer',
+                'devise_defaut' => 'nullable|string|in:CDF,USD',
             ]);
             $payload = array_merge($data, ['societe_id' => $societeId]);
+            $payload['devise_defaut'] = strtoupper($data['devise_defaut'] ?? Societe::find($societeId)?->devise_principale ?? 'CDF');
             unset($payload['id']);
 
             if (! empty($data['id'])) {
@@ -187,9 +203,12 @@ class ParametresController extends Controller
     public function devisesAll(): JsonResponse
     {
         $societeId = SocieteContext::id();
+        $societe = SocieteContext::societe();
+        $devisePrincipale = strtoupper($societe?->devise_principale ?? 'CDF');
 
         return response()->json([
             'status' => 'success',
+            'devise_principale' => $devisePrincipale,
             'devises' => Devise::actif()->orderBy('code_iso')->get(),
             'taux' => $societeId ? TauxChange::where('societe_id', $societeId)->orderByDesc('date_taux')->limit(100)->get() : [],
         ]);
@@ -268,11 +287,14 @@ class ParametresController extends Controller
         if (! $societeId) {
             return response()->json(['status' => 'success', 'societe' => null, 'exercices' => [], 'devises' => Devise::actif()->orderBy('code_iso')->get(['code_iso', 'libelle'])]);
         }
-        $societe = Societe::with(['exercices'])->find($societeId);
+        $societe = Societe::with(['exercices', 'banques'])->find($societeId);
 
         return response()->json([
             'status' => 'success',
-            'societe' => array_merge($societe->toArray(), ['logo_url' => $societe->logo_url]),
+            'societe' => array_merge($societe->toArray(), [
+                'logo_url' => $societe->logo_url,
+                'banques' => $societe->banques,
+            ]),
             'exercices' => $societe->exercices,
             'devises' => Devise::actif()->orderBy('code_iso')->get(['code_iso', 'libelle', 'symbole']),
         ]);
@@ -288,32 +310,29 @@ class ParametresController extends Controller
             $societe = Societe::findOrFail($societeId);
             // Supprimer l'ancien logo
             if ($societe->logo_path) {
-                $oldFile = public_path(
-                    str_replace(url('/').'/', '', $societe->logo_path)
-                );
+                $relative = str_starts_with($societe->logo_path, 'http')
+                    ? str_replace(url('/').'/', '', $societe->logo_path)
+                    : $societe->logo_path;
+                $oldFile = public_path($relative);
                 if (file_exists($oldFile)) {
-                    unlink($oldFile);
+                    @unlink($oldFile);
                 }
             }
 
-            // Upload dans public/logos
             $file = $request->file('logo');
-
             $filename = time().'_'.uniqid().'.'.$file->getClientOriginalExtension();
-
+            if (! is_dir(public_path('logos'))) {
+                mkdir(public_path('logos'), 0755, true);
+            }
             $file->move(public_path('logos'), $filename);
+            $relativePath = 'logos/'.$filename;
 
-            // URL complète avec host
-            $fullUrl = asset('logos/'.$filename);
-
-            $societe->update([
-                'logo_path' => $fullUrl,
-            ]);
+            $societe->update(['logo_path' => $relativePath]);
 
             return response()->json([
                 'status' => 'success',
                 'message' => 'Logo enregistré.',
-                'logo_url' => $fullUrl,
+                'logo_url' => asset($relativePath),
             ]);
 
         } catch (\Illuminate\Validation\ValidationException $e) {
@@ -339,10 +358,20 @@ class ParametresController extends Controller
                 'email' => 'nullable|email',
                 'rccm' => 'nullable|string|max:100',
                 'num_contribuable' => 'nullable|string|max:100',
+                'identification_nationale' => 'nullable|string|max:100',
+                'num_cnps' => 'nullable|string|max:100',
                 'regime_fiscal' => 'nullable|string|max:50',
                 'devise_principale' => 'required|string|size:3',
                 'statut' => 'required|in:active,inactive,suspendue',
+                'banques' => 'nullable|array',
+                'banques.*.banque' => 'required_with:banques|string|max:150',
+                'banques.*.numero_compte' => 'required_with:banques|string|max:80',
+                'banques.*.devise' => 'nullable|string|size:3',
+                'banques.*.est_defaut' => 'boolean',
             ]);
+
+            $banques = $data['banques'] ?? [];
+            unset($data['banques']);
 
             if (! empty($data['id'])) {
                 $societe = Societe::findOrFail($data['id']);
@@ -352,7 +381,18 @@ class ParametresController extends Controller
                 SocieteContext::set($societe->id);
             }
 
-            return response()->json(['status' => 'success', 'message' => 'Société enregistrée.', 'societe' => $societe->fresh()]);
+            $this->syncBanques($societe->id, $banques);
+
+            $societe = $societe->fresh(['banques']);
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Société enregistrée.',
+                'societe' => array_merge($societe->toArray(), [
+                    'logo_url' => $societe->logo_url,
+                    'banques' => $societe->banques,
+                ]),
+            ]);
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json(['errors' => $e->validator->errors()->all()], 422);
         }
@@ -405,5 +445,29 @@ class ParametresController extends Controller
         });
 
         return response()->json(['status' => 'success', 'message' => 'Exercice courant défini.', 'exercice' => $exercice->fresh()]);
+    }
+
+    /**
+     * @param  array<int, array<string, mixed>>  $banques
+     */
+    private function syncBanques(int $societeId, array $banques): void
+    {
+        SocieteBanque::where('societe_id', $societeId)->delete();
+        $ordre = 0;
+        foreach ($banques as $b) {
+            $nom = trim((string) ($b['banque'] ?? ''));
+            $compte = trim((string) ($b['numero_compte'] ?? ''));
+            if ($nom === '' || $compte === '') {
+                continue;
+            }
+            SocieteBanque::create([
+                'societe_id' => $societeId,
+                'banque' => $nom,
+                'numero_compte' => $compte,
+                'devise' => strtoupper($b['devise'] ?? 'CDF'),
+                'est_defaut' => (bool) ($b['est_defaut'] ?? false),
+                'ordre' => $ordre++,
+            ]);
+        }
     }
 }

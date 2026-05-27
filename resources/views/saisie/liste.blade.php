@@ -29,12 +29,15 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr v-if="isLoading"><td colspan="9" class="text-center py-4">Chargement...</td></tr>
+                        <tr v-if="isLoading"><td colspan="9" class="text-center py-4">Chargement…</td></tr>
                         <tr v-else-if="!ecritures.length"><td colspan="9" class="text-center py-4 text-muted">Aucune écriture</td></tr>
                         <tr v-for="e in ecritures" :key="e.id">
                             <td class="text-nowrap">@{{ formatDateTime(e.created_at) }}</td>
                             <td><span class="fw-medium">@{{ e.num_piece }}</span></td>
-                            <td><span class="badge badge-soft-primary">@{{ e.journal?.code }}</span></td>
+                            <td>
+                                <span class="badge badge-soft-primary">@{{ e.journal?.code }}</span>
+                                <span v-if="e.journal?.devise_defaut && e.journal.devise_defaut !== devisePrincipale" class="badge badge-soft-info ms-1">@{{ e.journal.devise_defaut }}</span>
+                            </td>
                             <td>@{{ e.libelle }}</td>
                             <td><span class="badge badge-soft-secondary">@{{ e.devise || 'CDF' }}</span></td>
                             <td class="text-end">@{{ formatMontantDevise(e.total_debit, e.devise) }}</td>

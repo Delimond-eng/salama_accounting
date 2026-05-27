@@ -13,6 +13,8 @@ return [
         'accounting.exercices.' => 'exercices.view',
         'accounting.parametres.' => 'parametres.view',
         'accounting.facturation.' => 'facturation.view',
+        'accounting.taches.' => 'taches.view',
+        'accounting.analytique.' => 'analytique.view',
     ],
 
     'routes' => [
@@ -56,6 +58,16 @@ return [
         'accounting.facturation.demandes.traiter' => 'facturation.validate',
         'accounting.facturation.workflow.save' => 'facturation.update',
         'accounting.facturation.produits.save' => 'facturation.update',
+
+        'accounting.taches.save' => 'taches.create',
+        'accounting.taches.etapes.toggle' => 'taches.process',
+        'accounting.taches.rapport' => 'taches.process',
+        'accounting.taches.fichier' => 'taches.process',
+
+        'accounting.analytique.axes.save' => 'analytique.create',
+        'accounting.analytique.sections.save' => 'analytique.create',
+        'accounting.analytique.config.save' => 'analytique.update',
+        'accounting.analytique.compte-axes.save' => 'analytique.update',
     ],
 
     /** module URL key => permission vue */
@@ -64,9 +76,11 @@ return [
         'saisie' => 'saisie.view',
         'livres' => 'livres.view',
         'etats' => 'etats.view',
+        'analytique' => 'analytique.view',
         'fiscalite' => 'fiscalite.view',
         'exercices' => 'exercices.view',
         'parametres' => 'parametres.view',
         'facturation' => 'facturation.view',
+        'taches' => 'taches.view',
     ],
 ];

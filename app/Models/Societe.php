@@ -14,8 +14,8 @@ class Societe extends Model
 
     protected $fillable = [
         'code', 'raison_sociale', 'forme_juridique', 'sigle', 'adresse', 'ville', 'pays',
-        'telephone', 'email', 'site_web', 'rccm', 'num_contribuable', 'num_cnps',
-        'regime_fiscal', 'devise_principale', 'logo_path', 'statut', 'parametres',
+        'telephone', 'email', 'site_web', 'rccm', 'num_contribuable', 'identification_nationale',
+        'num_cnps', 'regime_fiscal', 'devise_principale', 'logo_path', 'statut', 'parametres',
     ];
 
     protected $casts = ['parametres' => 'array'];
@@ -35,6 +35,11 @@ class Societe extends Model
         return $this->hasMany(Tiers::class);
     }
 
+    public function banques(): HasMany
+    {
+        return $this->hasMany(SocieteBanque::class)->orderBy('ordre');
+    }
+
     public function scopeActif($query)
     {
         return $query->where('statut', 'active');
@@ -44,6 +49,14 @@ class Societe extends Model
     {
         if (! $this->logo_path) {
             return null;
+        }
+
+        if (str_starts_with($this->logo_path, 'http://') || str_starts_with($this->logo_path, 'https://')) {
+            return $this->logo_path;
+        }
+
+        if (str_starts_with($this->logo_path, 'logos/')) {
+            return asset($this->logo_path);
         }
 
         return asset('storage/'.$this->logo_path);

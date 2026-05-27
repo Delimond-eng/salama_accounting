@@ -20,13 +20,17 @@ class DashboardComptableService
         protected DeviseConversionService $devises
     ) {}
 
-    public function assembler(int $societeId): array
+    /**
+     * @param  array{devise_affichage?: string, scope_devise?: string, mode_conversion?: string}|null  $filtresDevise
+     */
+    public function assembler(int $societeId, ?array $filtresDevise = null): array
     {
         $societe = Societe::findOrFail($societeId);
         $exercice = $this->livres->exerciceCourant($societeId);
-        $options = $this->livres->optionsDefaut($societe);
+        $options = $this->livres->resoudreFiltresDevise($societe, $filtresDevise);
         $devise = $options['devise_affichage'];
         $mode = $options['mode_conversion'];
+        $scope = $options['scope_devise'] ?? 'consolide';
         $today = now()->toDateString();
 
         if (! $exercice) {
@@ -34,6 +38,7 @@ class DashboardComptableService
                 'societe' => $societe,
                 'exercice' => null,
                 'devise' => $devise,
+                'options_devise' => $options,
                 'message' => 'Aucun exercice courant. Configurez une société et un exercice dans Paramètres.',
             ];
         }
@@ -42,8 +47,8 @@ class DashboardComptableService
         $debutMois = Carbon::parse($dateFin)->startOfMonth()->toDateString();
         $debutExercice = $exercice->date_debut->format('Y-m-d');
 
-        $kpis = $this->kpis($societeId, $exercice, $dateFin, $debutMois, $debutExercice, $devise, $mode);
-        $controles = $this->controles($societeId, $exercice, $dateFin, $devise, $mode);
+        $kpis = $this->kpis($societeId, $exercice, $dateFin, $debutMois, $debutExercice, $devise, $mode, $scope);
+        $controles = $this->controles($societeId, $exercice, $dateFin, $devise, $mode, $scope);
         $devises = $this->blocDevises($societeId, $exercice->id, $today);
         $alertes = $this->alertes($kpis, $controles, $devises);
 
@@ -51,15 +56,18 @@ class DashboardComptableService
             'societe' => $societe,
             'exercice' => $exercice,
             'devise' => $devise,
+            'scope_devise' => $scope,
+            'mode_conversion' => $mode,
+            'options_devise' => $options,
             'date_reference' => $dateFin,
             'kpis' => $kpis,
             'controles' => $controles,
             'alertes' => $alertes,
             'activite_recente' => $this->activiteRecente($societeId, $exercice->id),
-            'graphiques' => $this->graphiques($societeId, $exercice, $dateFin, $devise, $mode),
+            'graphiques' => $this->graphiques($societeId, $exercice, $dateFin, $devise, $mode, $scope),
             'exercices' => $this->listeExercices($societeId),
             'devises' => $devises,
-            'ventes' => $this->blocVentes($societeId, $exercice, $dateFin, $debutMois, $today),
+            'ventes' => $this->blocVentes($societeId, $exercice, $dateFin, $debutMois, $today, $devise, $mode, $scope),
             'liens_rapides' => $this->liensRapides(),
         ];
     }
@@ -71,11 +79,12 @@ class DashboardComptableService
         string $debutMois,
         string $debutExercice,
         string $devise,
-        string $mode
+        string $mode,
+        string $scope
     ): array {
-        $banque = $this->soldePrefixe($societeId, $exercice->id, '52', $dateFin, $devise, $mode);
-        $caisse = $this->soldePrefixe($societeId, $exercice->id, '57', $dateFin, $devise, $mode);
-        $resultat = $this->bilan->resultatNetExercice($societeId, $exercice, $dateFin, $devise, $mode);
+        $banque = $this->soldePrefixe($societeId, $exercice->id, '52', $dateFin, $devise, $mode, $scope);
+        $caisse = $this->soldePrefixe($societeId, $exercice->id, '57', $dateFin, $devise, $mode, $scope);
+        $resultat = $this->bilan->resultatNetExercice($societeId, $exercice, $dateFin, $devise, $mode, $scope);
 
         return [
             'tresorerie' => [
@@ -85,8 +94,8 @@ class DashboardComptableService
             ],
             'resultat_exercice' => round($resultat, 2),
             'resultat_positif' => $resultat >= 0,
-            'creances_clients' => $this->soldeClassePrefixe($societeId, $exercice->id, '411', $dateFin, $devise, $mode, 'debit'),
-            'dettes_fournisseurs' => $this->soldeClassePrefixe($societeId, $exercice->id, '401', $dateFin, $devise, $mode, 'credit'),
+            'creances_clients' => $this->soldeClassePrefixe($societeId, $exercice->id, '411', $dateFin, $devise, $mode, $scope, 'debit'),
+            'dettes_fournisseurs' => $this->soldeClassePrefixe($societeId, $exercice->id, '401', $dateFin, $devise, $mode, $scope, 'credit'),
             'ecritures' => [
                 'aujourdhui' => $this->compterEcritures($societeId, $exercice->id, $dateFin, $dateFin),
                 'mois' => $this->compterEcritures($societeId, $exercice->id, $debutMois, $dateFin),
@@ -101,12 +110,13 @@ class DashboardComptableService
         Exercice $exercice,
         string $dateFin,
         string $devise,
-        string $mode
+        string $mode,
+        string $scope
     ): array {
         $balance = $this->controleBalance($societeId, $exercice->id, $exercice->date_debut->format('Y-m-d'), $dateFin);
-        $bilan = $this->controleBilan($societeId, $exercice, $dateFin, $devise, $mode);
-        $tft = $this->controleTft($societeId, $exercice, $dateFin, $devise, $mode);
-        $anomalies = $this->comptesAnormaux($societeId, $exercice->id, $dateFin, $devise, $mode);
+        $bilan = $this->controleBilan($societeId, $exercice, $dateFin, $devise, $mode, $scope);
+        $tft = $this->controleTft($societeId, $exercice, $dateFin, $devise, $mode, $scope);
+        $anomalies = $this->comptesAnormaux($societeId, $exercice->id, $dateFin, $devise, $mode, $scope);
         $journal = $this->controleJournaux($societeId, $exercice->id);
 
         return [
@@ -243,13 +253,14 @@ class DashboardComptableService
         Exercice $exercice,
         string $dateFin,
         string $devise,
-        string $mode
+        string $mode,
+        string $scope
     ): array {
         return [
-            'tresorerie_mensuelle' => $this->evolutionTresorerieMensuelle($societeId, $exercice, $dateFin, $devise, $mode),
-            'charges' => $this->repartitionClasse($societeId, $exercice, $dateFin, '6', 6),
-            'produits' => $this->repartitionClasse($societeId, $exercice, $dateFin, '7', 6),
-            'resultat_mensuel' => $this->resultatMensuel($societeId, $exercice, $dateFin),
+            'tresorerie_mensuelle' => $this->evolutionTresorerieMensuelle($societeId, $exercice, $dateFin, $devise, $mode, $scope),
+            'charges' => $this->repartitionClasse($societeId, $exercice, $dateFin, '6', 6, $devise, $mode, $scope),
+            'produits' => $this->repartitionClasse($societeId, $exercice, $dateFin, '7', 6, $devise, $mode, $scope),
+            'resultat_mensuel' => $this->resultatMensuel($societeId, $exercice, $dateFin, $devise, $mode, $scope),
         ];
     }
 
@@ -300,17 +311,24 @@ class DashboardComptableService
         Exercice $exercice,
         string $dateFin,
         string $debutMois,
-        string $today
+        string $today,
+        string $devise,
+        string $mode,
+        string $scope
     ): array {
-        $caMois = $this->sommePrefixe($societeId, $exercice->id, '70', $debutMois, $dateFin);
-        $caJour = $this->sommePrefixe($societeId, $exercice->id, '70', $today, $today);
+        $caMois = $this->livres->sommeFluxPeriode($societeId, $exercice->id, '70', $debutMois, $dateFin, $devise, $mode, $scope, 'produit');
+        $caJour = $this->livres->sommeFluxPeriode($societeId, $exercice->id, '70', $today, $today, $devise, $mode, $scope, 'produit');
         $moisPrec = Carbon::parse($debutMois)->subMonth();
-        $caMoisPrec = $this->sommePrefixe(
+        $caMoisPrec = $this->livres->sommeFluxPeriode(
             $societeId,
             $exercice->id,
             '70',
             $moisPrec->startOfMonth()->toDateString(),
-            $moisPrec->endOfMonth()->toDateString()
+            $moisPrec->endOfMonth()->toDateString(),
+            $devise,
+            $mode,
+            $scope,
+            'produit'
         );
         $evolution = $caMoisPrec != 0 ? round((($caMois - $caMoisPrec) / abs($caMoisPrec)) * 100, 1) : null;
 
@@ -352,11 +370,12 @@ class DashboardComptableService
         string $prefix,
         string $date,
         string $devise,
-        string $mode
+        string $mode,
+        string $scope
     ): float {
         $total = 0.0;
         foreach ($this->livres->comptesTresorerie($societeId, $prefix === '52' ? 'banque' : 'caisse') as $compte) {
-            $total += $this->livres->soldeCompteAuDate($societeId, $exerciceId, $compte->num_compte, $date, $devise, $mode);
+            $total += $this->livres->soldeCompteAuDate($societeId, $exerciceId, $compte->num_compte, $date, $devise, $mode, $scope);
         }
 
         return $total;
@@ -369,6 +388,7 @@ class DashboardComptableService
         string $dateFin,
         string $devise,
         string $mode,
+        string $scope,
         string $sensAttendu
     ): float {
         $balance = $this->livres->balanceGenerale(
@@ -377,7 +397,9 @@ class DashboardComptableService
             Exercice::find($exerciceId)->date_debut->format('Y-m-d'),
             $dateFin,
             $devise,
-            $mode
+            $mode,
+            null,
+            $scope
         );
 
         $total = 0.0;
@@ -457,10 +479,10 @@ class DashboardComptableService
         ];
     }
 
-    protected function controleBilan(int $societeId, Exercice $exercice, string $dateFin, string $devise, string $mode): array
+    protected function controleBilan(int $societeId, Exercice $exercice, string $dateFin, string $devise, string $mode, string $scope = 'consolide'): array
     {
         try {
-            $this->bilan->generer($societeId, $exercice, $dateFin, $devise, $mode);
+            $this->bilan->generer($societeId, $exercice, $dateFin, $devise, $mode, $scope);
 
             return ['ok' => true, 'message' => 'Actif = Passif.'];
         } catch (BilanDesequilibreException $e) {
@@ -468,10 +490,10 @@ class DashboardComptableService
         }
     }
 
-    protected function controleTft(int $societeId, Exercice $exercice, string $dateFin, string $devise, string $mode): array
+    protected function controleTft(int $societeId, Exercice $exercice, string $dateFin, string $devise, string $mode, string $scope = 'consolide'): array
     {
         try {
-            $tft = $this->tft->generer($societeId, $exercice, $dateFin, $devise, $mode);
+            $tft = $this->tft->generer($societeId, $exercice, $dateFin, $devise, $mode, null, $scope);
             $ok = ($tft['controle']['ok'] ?? false) === true;
 
             return [
@@ -484,7 +506,7 @@ class DashboardComptableService
         }
     }
 
-    protected function comptesAnormaux(int $societeId, int $exerciceId, string $dateFin, string $devise, string $mode): array
+    protected function comptesAnormaux(int $societeId, int $exerciceId, string $dateFin, string $devise, string $mode, string $scope = 'consolide'): array
     {
         $items = [];
         $exercice = Exercice::find($exerciceId);
@@ -494,7 +516,9 @@ class DashboardComptableService
             $exercice->date_debut->format('Y-m-d'),
             $dateFin,
             $devise,
-            $mode
+            $mode,
+            null,
+            $scope
         );
 
         foreach ($balance['lignes'] as $row) {
@@ -560,7 +584,8 @@ class DashboardComptableService
         Exercice $exercice,
         string $dateFin,
         string $devise,
-        string $mode
+        string $mode,
+        string $scope
     ): array {
         $labels = [];
         $banque = [];
@@ -575,8 +600,8 @@ class DashboardComptableService
             }
             $dernier = min($m->copy()->endOfMonth()->toDateString(), $dateFin);
             $labels[] = $m->translatedFormat('M Y');
-            $b = $this->soldePrefixe($societeId, $exercice->id, '52', $dernier, $devise, $mode);
-            $c = $this->soldePrefixe($societeId, $exercice->id, '57', $dernier, $devise, $mode);
+            $b = $this->soldePrefixe($societeId, $exercice->id, '52', $dernier, $devise, $mode, $scope);
+            $c = $this->soldePrefixe($societeId, $exercice->id, '57', $dernier, $devise, $mode, $scope);
             $banque[] = round($b, 2);
             $caisse[] = round($c, 2);
             $total[] = round($b + $c, 2);
@@ -584,8 +609,8 @@ class DashboardComptableService
 
         if ($labels === []) {
             $labels[] = Carbon::parse($dateFin)->translatedFormat('M Y');
-            $b = $this->soldePrefixe($societeId, $exercice->id, '52', $dateFin, $devise, $mode);
-            $c = $this->soldePrefixe($societeId, $exercice->id, '57', $dateFin, $devise, $mode);
+            $b = $this->soldePrefixe($societeId, $exercice->id, '52', $dateFin, $devise, $mode, $scope);
+            $c = $this->soldePrefixe($societeId, $exercice->id, '57', $dateFin, $devise, $mode, $scope);
             $banque[] = round($b, 2);
             $caisse[] = round($c, 2);
             $total[] = round($b + $c, 2);
@@ -599,30 +624,32 @@ class DashboardComptableService
         Exercice $exercice,
         string $dateFin,
         string $classe,
-        int $top
+        int $top,
+        string $devise,
+        string $mode,
+        string $scope
     ): array {
-        $rows = DB::table('lignes_ecritures as l')
-            ->join('ecritures as e', 'e.id', '=', 'l.ecriture_id')
-            ->leftJoin('plan_comptable as pc', 'pc.id', '=', 'l.compte_id')
-            ->where('l.societe_id', $societeId)
-            ->where('l.exercice_id', $exercice->id)
-            ->where('e.statut', 'validee')
-            ->whereNull('e.deleted_at')
-            ->where('l.num_compte', 'like', $classe.'%')
-            ->whereBetween('e.date_ecriture', [$exercice->date_debut->format('Y-m-d'), $dateFin])
-            ->groupBy('l.num_compte', 'pc.libelle')
-            ->selectRaw('l.num_compte, MAX(pc.libelle) as libelle, SUM(l.debit) as d, SUM(l.credit) as c')
-            ->get()
-            ->map(function ($r) use ($classe) {
-                $montant = $classe === '6'
-                    ? (float) $r->d - (float) $r->c
-                    : (float) $r->c - (float) $r->d;
+        $balance = $this->livres->balanceGenerale(
+            $societeId,
+            $exercice->id,
+            $exercice->date_debut->format('Y-m-d'),
+            $dateFin,
+            $devise,
+            $mode,
+            (int) $classe,
+            $scope
+        );
 
-                return [
-                    'libelle' => trim($r->num_compte.' '.($r->libelle ?? '')),
-                    'montant' => round(max(0, $montant), 2),
-                ];
-            })
+        $rows = collect($balance['lignes'])->map(function ($row) use ($classe) {
+            $debit = (float) ($row['mouvement_debit'] ?? 0);
+            $credit = (float) ($row['mouvement_credit'] ?? 0);
+            $montant = $classe === '6' ? $debit - $credit : $credit - $debit;
+
+            return [
+                'libelle' => trim($row['num_compte'].' '.($row['libelle'] ?? '')),
+                'montant' => round(max(0, $montant), 2),
+            ];
+        })
             ->filter(fn ($x) => $x['montant'] > 0)
             ->sortByDesc('montant')
             ->values();
@@ -639,8 +666,14 @@ class DashboardComptableService
         return ['labels' => $labels, 'series' => $series];
     }
 
-    protected function resultatMensuel(int $societeId, Exercice $exercice, string $dateFin): array
-    {
+    protected function resultatMensuel(
+        int $societeId,
+        Exercice $exercice,
+        string $dateFin,
+        string $devise,
+        string $mode,
+        string $scope
+    ): array {
         $labels = [];
         $series = [];
         $fin = Carbon::parse($dateFin);
@@ -653,44 +686,18 @@ class DashboardComptableService
             $debut = max($m->copy()->startOfMonth()->toDateString(), $exercice->date_debut->format('Y-m-d'));
             $finM = min($m->copy()->endOfMonth()->toDateString(), $dateFin);
 
-            $row = DB::table('lignes_ecritures as l')
-                ->join('ecritures as e', 'e.id', '=', 'l.ecriture_id')
-                ->where('l.societe_id', $societeId)
-                ->where('l.exercice_id', $exercice->id)
-                ->where('e.statut', 'validee')
-                ->whereNull('e.deleted_at')
-                ->whereBetween('e.date_ecriture', [$debut, $finM])
-                ->where(function ($q): void {
-                    $q->where('l.num_compte', 'like', '6%')->orWhere('l.num_compte', 'like', '7%');
-                })
-                ->selectRaw('COALESCE(SUM(l.credit),0)-COALESCE(SUM(l.debit),0) as res')
-                ->value('res');
+            $produits = $this->livres->sommeFluxPeriode($societeId, $exercice->id, '7', $debut, $finM, $devise, $mode, $scope, 'produit');
+            $charges = $this->livres->sommeFluxPeriode($societeId, $exercice->id, '6', $debut, $finM, $devise, $mode, $scope, 'charge');
 
             $labels[] = $m->translatedFormat('M');
-            $series[] = round((float) $row, 2);
+            $series[] = round($produits - $charges, 2);
         }
 
         if ($labels === []) {
             $labels[] = Carbon::parse($dateFin)->translatedFormat('M');
-            $series[] = round($this->bilan->resultatNetExercice($societeId, $exercice, $dateFin), 2);
+            $series[] = round($this->bilan->resultatNetExercice($societeId, $exercice, $dateFin, $devise, $mode, $scope), 2);
         }
 
         return ['labels' => $labels, 'series' => $series];
-    }
-
-    protected function sommePrefixe(int $societeId, int $exerciceId, string $prefix, string $debut, string $fin): float
-    {
-        $row = DB::table('lignes_ecritures as l')
-            ->join('ecritures as e', 'e.id', '=', 'l.ecriture_id')
-            ->where('l.societe_id', $societeId)
-            ->where('l.exercice_id', $exerciceId)
-            ->where('e.statut', 'validee')
-            ->whereNull('e.deleted_at')
-            ->where('l.num_compte', 'like', $prefix.'%')
-            ->whereBetween('e.date_ecriture', [$debut, $fin])
-            ->selectRaw('COALESCE(SUM(l.credit),0)-COALESCE(SUM(l.debit),0) as m')
-            ->first();
-
-        return (float) ($row->m ?? 0);
     }
 }

@@ -1,4 +1,4 @@
-import { get } from "./http.js";
+import {get } from "./http.js";
 
 const SEARCH_URL = "/accounting/saisie/comptes/search";
 
@@ -94,7 +94,7 @@ export const compteSelectMixin = {
             ui.loading = true;
 
             clearTimeout(ui._timer);
-            ui._timer = setTimeout(async () => {
+            ui._timer = setTimeout(async() => {
                 try {
                     ui.results = await this.searchComptes(ui.query);
                 } finally {
@@ -134,6 +134,11 @@ export const compteSelectMixin = {
 
         selectCompteOption(key, compte) {
             this.setCompteNumero(key, compte.num_compte, compte.libelle);
+            if (compte?.num_compte && this.comptesCache) {
+                this.$set(this.comptesCache, compte.num_compte, {
+                    exige_analytique: !!compte.exige_analytique,
+                });
+            }
             if (typeof key === "number" && this.lignes?.[key] && compte.est_compte_tiers) {
                 // suggère un tiers si besoin — pas de changement auto
             }

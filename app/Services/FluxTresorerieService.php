@@ -24,16 +24,18 @@ class FluxTresorerieService
         string $dateFin,
         string $deviseAffichage = 'CDF',
         string $modeConversion = 'origine',
-        ?Exercice $exerciceN1 = null
+        ?Exercice $exerciceN1 = null,
+        string $scopeDevise = 'consolide'
     ): array {
-        $ctxN = $this->chargerContexte($societeId, $exercice, $dateFin, $deviseAffichage, $modeConversion);
+        $ctxN = $this->chargerContexte($societeId, $exercice, $dateFin, $deviseAffichage, $modeConversion, $scopeDevise);
         $ctxN1 = $exerciceN1
             ? $this->chargerContexte(
                 $societeId,
                 $exerciceN1,
                 $exerciceN1->date_fin->format('Y-m-d'),
                 $deviseAffichage,
-                $modeConversion
+                $modeConversion,
+                $scopeDevise
             )
             : null;
 
@@ -77,7 +79,8 @@ class FluxTresorerieService
         Exercice $exercice,
         string $dateFin,
         string $deviseAffichage,
-        string $modeConversion
+        string $modeConversion,
+        string $scopeDevise = 'consolide'
     ): array {
         $dateDebut = $exercice->date_debut->format('Y-m-d');
         $balance = $this->livres->balanceGenerale(
@@ -86,7 +89,9 @@ class FluxTresorerieService
             $dateDebut,
             $dateFin,
             $deviseAffichage,
-            $modeConversion
+            $modeConversion,
+            null,
+            $scopeDevise
         );
 
         $soldesFin = $this->soldesDepuisBalance(collect($balance['lignes']), false);

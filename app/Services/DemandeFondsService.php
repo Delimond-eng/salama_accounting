@@ -79,6 +79,7 @@ class DemandeFondsService
                 'devise' => $data['devise'] ?? 'CDF',
                 'motif' => $data['motif'],
                 'journal_id' => $data['journal_id'] ?? null,
+                'section_analytique_id' => $data['section_analytique_id'] ?? null,
                 'statut' => DemandeFonds::STATUT_EN_VALIDATION,
             ]);
 

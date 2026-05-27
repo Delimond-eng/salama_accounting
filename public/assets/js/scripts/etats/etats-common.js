@@ -12,11 +12,12 @@ export const etatsMixin = {
             exercice: null,
             exerciceN1: null,
             exercices: [],
-            options: { devises: [], devise_affichage: "CDF", mode_conversion: "origine" },
+            options: { devises: [], devise_affichage: "CDF", mode_conversion: "origine", scope_devise: "consolide" },
             filtres: {
                 date_arrete: "",
                 exercice_id: null,
                 devise_affichage: "CDF",
+                scope_devise: "consolide",
                 mode_conversion: "origine",
                 avec_n1: true,
                 taux: 1,
@@ -77,6 +78,7 @@ export const etatsMixin = {
             this.filtres.date_arrete = data.date_arrete || this.filtres.date_arrete;
             this.filtres.exercice_id = data.exercice?.id || null;
             this.filtres.devise_affichage = this.options.devise_affichage || "CDF";
+            this.filtres.scope_devise = this.options.scope_devise || "consolide";
             this.filtres.mode_conversion = this.options.mode_conversion || "origine";
 
             if (data.taux_usd) {
@@ -89,6 +91,7 @@ export const etatsMixin = {
                 date_arrete: this.filtres.date_arrete,
                 exercice_id: this.filtres.exercice_id || "",
                 devise_affichage: this.filtres.devise_affichage,
+                scope_devise: this.filtres.scope_devise,
                 mode_conversion: this.filtres.mode_conversion,
                 avec_n1: this.filtres.avec_n1 ? "1" : "0",
                 taux: this.filtres.taux,

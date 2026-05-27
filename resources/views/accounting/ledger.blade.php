@@ -81,7 +81,7 @@
                         <tr>
                             <td>411100</td>
                             <td>12 Juin 2024</td>
-                            <td>Facture Client - SALAMA</td>
+                            <td>Facture Client - Client démo</td>
                             <td>1,200.00</td>
                             <td>0.00</td>
                             <td>1,200.00</td>

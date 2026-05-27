@@ -77,4 +77,16 @@ return [
         'label' => 'Facturation & trésorerie',
         'actions' => ['view', 'create', 'update', 'validate', 'delete', 'export', 'process'],
     ],
+
+    'taches' => [
+        'entity' => 'taches',
+        'label' => 'Gestion des tâches',
+        'actions' => ['view', 'create', 'update', 'delete', 'process'],
+    ],
+
+    'analytique' => [
+        'entity' => 'analytique',
+        'label' => 'Comptabilité analytique',
+        'actions' => ['view', 'create', 'update', 'delete', 'export'],
+    ],
 ];

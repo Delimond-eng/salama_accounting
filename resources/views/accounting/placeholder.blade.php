@@ -25,7 +25,7 @@
             </div>
             <h5 class="mb-2">Fonctionnalité à venir</h5>
             <p class="text-muted mb-0 mx-auto" style="max-width: 420px;">
-                Cette section SYSCOHADA sera disponible prochainement dans SALAMA Accounting.
+                Cette section SYSCOHADA sera disponible prochainement dans {{ config('brand.name') }}.
             </p>
         </div>
     </div>

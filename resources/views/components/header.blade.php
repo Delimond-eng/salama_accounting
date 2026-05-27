@@ -45,6 +45,7 @@
         </div>
 
         <div class="d-flex align-items-center">
+            @include('components.devise-bar')
             <div class="header-item">
                 <div class="dropdown me-2">
                     <a href="javascript:void(0);" class="btn topbar-link btnFullscreen"><i class="ti ti-maximize"></i></a>

@@ -45,6 +45,7 @@ export const parametresMixin = {
                 return;
             }
             await this.loadContext();
+            window.dispatchEvent(new CustomEvent("societe-changed"));
             if (typeof this.onSocieteChanged === "function") {
                 await this.onSocieteChanged();
             } else {

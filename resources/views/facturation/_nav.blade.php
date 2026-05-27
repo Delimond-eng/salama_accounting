@@ -5,8 +5,11 @@
         ['key' => 'avoirs-clients', 'route' => 'accounting.facturation.avoirs-clients', 'label' => 'Avoirs clients', 'icon' => 'ti-receipt-refund'],
         ['key' => 'paiements', 'route' => 'accounting.facturation.paiements', 'label' => 'Paiements', 'icon' => 'ti-cash'],
         ['key' => 'demandes', 'route' => 'accounting.facturation.demandes', 'label' => 'Demandes de fonds', 'icon' => 'ti-git-pull-request'],
-        ['key' => 'echeancier-clients', 'route' => 'accounting.facturation.echeancier-clients', 'label' => 'Echéancier clients', 'icon' => 'ti-calendar-due'],
+        ['key' => 'echeancier-clients', 'route' => 'accounting.facturation.echeancier-clients', 'label' => 'Échéancier clients', 'icon' => 'ti-calendar-due'],
         ['key' => 'produits', 'route' => 'accounting.facturation.produits', 'label' => 'Produits', 'icon' => 'ti-package'],
+        ['key' => 'stock', 'route' => 'accounting.facturation.stock', 'label' => 'Stock', 'icon' => 'ti-box'],
+        ['key' => 'bons-commande', 'route' => 'accounting.facturation.stock.bons-commande', 'label' => 'Bons de commande', 'icon' => 'ti-shopping-cart'],
+        ['key' => 'mouvements', 'route' => 'accounting.facturation.stock.mouvements', 'label' => 'Mouvements', 'icon' => 'ti-arrows-exchange'],
     ];
     $active = $active ?? $page ?? '';
 @endphp
@@ -44,6 +47,7 @@
     </li>
     @endforeach
 </ul>
+<<<<<<< HEAD
 
 <div v-if="error" class="alert alert-danger alert-dismissible fade show border-0 shadow-sm">
     <ul class="mb-0" v-if="Array.isArray(error)"><li v-for="(e,i) in error" :key="i">@{{ e }}</li></ul>
@@ -55,3 +59,5 @@
     <i class="ti ti-circle-check me-2"></i>@{{ message }}
     <button type="button" class="btn-close" @click="message=null"></button>
 </div>
+=======
+>>>>>>> 356d4919f7208489f8fadf9a5b1244abeb82c9b0

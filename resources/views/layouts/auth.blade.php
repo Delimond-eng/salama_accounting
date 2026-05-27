@@ -5,12 +5,12 @@
     <!-- Meta Tags -->
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <title>Login | SALAMA ACCOUNTING</title>
+    <title>Login | {{ config('brand.name') }}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 	<meta name="description" content="Application de comptabilité sur mesure respectant le système OHADA">
 	<meta name="keywords" content="Comptabilité, Accounting">
-	<meta name="author" content="SALAMA DRC">
+	<meta name="author" content="{{ config('brand.name') }}">
 	<meta name="robots" content="index, follow">
 
     <!-- Favicon -->

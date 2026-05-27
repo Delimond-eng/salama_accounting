@@ -48,4 +48,19 @@ class LigneEcriture extends Model
     {
         return $this->belongsTo(Journal::class);
     }
+
+    public function sectionAnalytique(): BelongsTo
+    {
+        return $this->belongsTo(SectionAnalytique::class, 'section_analytique_id');
+    }
+
+    public function axeAnalytique(): BelongsTo
+    {
+        return $this->belongsTo(AxeAnalytique::class, 'axe_analytique_id');
+    }
+
+    public function analytiques(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(LigneEcritureAnalytique::class, 'ligne_ecriture_id');
+    }
 }

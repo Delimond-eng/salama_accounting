@@ -89,14 +89,24 @@ export const saisieMixin = {
                 this.journal = data.journal;
                 this.journaux = data.journaux || [];
                 this.multiDevise = !!data.multi_devise;
-                this.devisePrincipale = data.devise_principale;
+                this.devisePrincipale = data.devise_principale || "CDF";
+                this.deviseDefaut = data.devise_defaut || this.devisePrincipale;
+                this.journalDeviseEtrangere = !!data.journal_devise_etrangere;
                 this.template = data.template || [];
+<<<<<<< HEAD
                 this.tauxUsd = data.taux_usd || 1;
                 this.filtres.taux = this.tauxUsd;
                 if (data.societe?.parametres) {
                     const p = data.societe.parametres;
                     this.filtres.devise_affichage = p.devise_affichage || this.filtres.devise_affichage;
                     this.filtres.mode_conversion = p.mode_conversion || this.filtres.mode_conversion;
+=======
+                if (typeof this.analytiqueObligatoireJournal !== "undefined") {
+                    this.analytiqueObligatoireJournal = !!data.analytique_obligatoire;
+                }
+                if (typeof this.axesAnalytiques !== "undefined") {
+                    this.axesAnalytiques = data.axes_analytiques || [];
+>>>>>>> 356d4919f7208489f8fadf9a5b1244abeb82c9b0
                 }
             }
             return data;
@@ -160,6 +170,31 @@ export const saisieMixin = {
             const parts = d.split('-');
             if (parts.length !== 3) return d;
             return `${parts[2]}/${parts[1]}/${parts[0]}`;
+        },
+
+        journalSelectionne() {
+            const id = this.entete?.journal_id;
+            if (!id) return this.journal || null;
+            return (this.journaux || []).find((j) => j.id === id) || this.journal;
+        },
+
+        devisePourJournal(journal) {
+            const principale = (this.devisePrincipale || "CDF").toUpperCase();
+            const d = journal?.devise_defaut ? String(journal.devise_defaut).toUpperCase() : principale;
+            return d || principale;
+        },
+
+        appliquerDeviseJournal() {
+            if (!this.entete) return;
+            const j = this.journalSelectionne();
+            const principale = (this.devisePrincipale || "CDF").toUpperCase();
+            const devise = this.devisePourJournal(j);
+            this.entete.devise = devise;
+            this.journalDeviseEtrangere = devise !== principale;
+            this.multiDevise = this.multiDevise || this.journalDeviseEtrangere;
+            if (typeof this.fetchTaux === "function") {
+                this.fetchTaux();
+            }
         },
 
         badgeStatut(s) {

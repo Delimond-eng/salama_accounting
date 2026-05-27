@@ -14,6 +14,7 @@
                 <h5 class="mb-0 fw-bold text-primary">Répertoire des Tiers</h5>
                 <p class="mb-0 text-muted small">Clients, fournisseurs et partenaires de l'entreprise.</p>
             </div>
+<<<<<<< HEAD
             <div class="d-flex gap-2 align-items-center flex-wrap">
                 <div class="search-box">
                     <div class="input-group input-group-sm border rounded-2 px-2 bg-light">
@@ -23,6 +24,12 @@
                 </div>
                 <select class="form-select form-select-sm w-auto border-2" v-model="filtreType" @change="loadTiers">
                     <option value="">Tous les types</option>
+=======
+            <div class="d-flex gap-2 align-items-center">
+                @include('components.export-buttons')
+                <select class="form-select w-auto" v-model="filtreType" @change="loadData">
+                    <option value="">Tous types</option>
+>>>>>>> 356d4919f7208489f8fadf9a5b1244abeb82c9b0
                     <option value="client">Clients</option>
                     <option value="fournisseur">Fournisseurs</option>
                     <option value="client_fournisseur">Client / Fournisseur</option>
@@ -35,6 +42,7 @@
             </div>
         </div>
         <div class="card-body p-0">
+<<<<<<< HEAD
             <div class="table-responsive">
                 <table class="table table-hover table-bordered table-custom mb-0">
                     <thead>
@@ -82,6 +90,28 @@
                     </tbody>
                 </table>
             </div>
+=======
+            <table class="table table-nowrap mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Code</th><th>Nom</th><th>Type</th><th>Compte</th><th>Contact</th><th>Actif</th><th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-if="isLoading"><td colspan="7" class="text-center py-4">Chargement…</td></tr>
+                    <tr v-else-if="!liste.length"><td colspan="7" class="text-center py-4 text-muted">Aucun tiers</td></tr>
+                    <tr v-for="t in liste" :key="t.id">
+                        <td><span class="fw-medium">@{{ t.code }}</span></td>
+                        <td>@{{ t.nom }}</td>
+                        <td><span class="badge badge-soft-info">@{{ labelType(t.type) }}</span></td>
+                        <td>@{{ t.num_compte_collectif || '—' }}</td>
+                        <td>@{{ t.email || t.telephone || '—' }}</td>
+                        <td><span class="badge" :class="t.actif ? 'badge-soft-success' : 'badge-soft-secondary'">@{{ t.actif ? 'Oui' : 'Non' }}</span></td>
+                        <td><button type="button" class="btn btn-sm btn-outline-light" @click="editTiers(t)"><i class="ti ti-edit"></i></button></td>
+                    </tr>
+                </tbody>
+            </table>
+>>>>>>> 356d4919f7208489f8fadf9a5b1244abeb82c9b0
         </div>
     </div>
 

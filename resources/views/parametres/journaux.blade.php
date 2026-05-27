@@ -26,9 +26,16 @@
                 <table class="table table-hover table-bordered table-custom mb-0">
                     <thead>
                         <tr>
+<<<<<<< HEAD
                             <th style="width: 100px">Code</th>
                             <th>Intitulé du journal</th>
                             <th>Type de journal</th>
+=======
+                            <th>Code</th>
+                            <th>Libellé</th>
+                            <th>Type</th>
+                            <th>Devise</th>
+>>>>>>> 356d4919f7208489f8fadf9a5b1244abeb82c9b0
                             <th>Contrepartie</th>
                             <th>Numérotation</th>
                             <th class="text-center">Statut</th>
@@ -36,12 +43,24 @@
                         </tr>
                     </thead>
                     <tbody>
+<<<<<<< HEAD
                         <tr v-if="isLoading"><td colspan="7" class="text-center py-5"><span class="spinner-border spinner-border-sm me-2"></span>Chargement…</td></tr>
                         <tr v-else-if="!journaux.length"><td colspan="7" class="text-center py-5 text-muted">Aucun journal configuré</td></tr>
                         <tr v-for="j in journaux" :key="j.id">
                             <td class="font-monospace fw-bold text-primary text-center"><span class="badge bg-label-primary px-3">@{{ j.code }}</span></td>
                             <td class="fw-medium">@{{ j.libelle }}</td>
                             <td><span class="badge bg-soft-info text-info text-uppercase fs-11">@{{ j.type }}</span></td>
+=======
+                        <tr v-if="isLoading"><td colspan="8" class="text-center py-4">Chargement…</td></tr>
+                        <tr v-else-if="!journaux.length"><td colspan="8" class="text-center py-4 text-muted">Aucun journal</td></tr>
+                        <tr v-for="j in journaux" :key="j.id">
+                            <td><span class="badge badge-soft-primary">@{{ j.code }}</span></td>
+                            <td>@{{ j.libelle }}</td>
+                            <td>@{{ j.type }}</td>
+                            <td><span class="badge badge-soft-info">@{{ j.devise_defaut || 'CDF' }}</span></td>
+                            <td>@{{ j.compte_contrepartie || '—' }}</td>
+                            <td>@{{ j.format_numerotation }}</td>
+>>>>>>> 356d4919f7208489f8fadf9a5b1244abeb82c9b0
                             <td>
                                 <span v-if="j.compte_contrepartie" class="font-monospace text-muted">@{{ j.compte_contrepartie }}</span>
                                 <span v-else class="text-light-soft">—</span>
@@ -103,6 +122,13 @@
                                     <option value="cloture">Clôture</option>
                                 </select>
                             </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Devise par défaut</label>
+                                <select class="form-select" v-model="form.devise_defaut" required>
+                                    <option value="CDF">CDF — Franc congolais</option>
+                                    <option value="USD">USD — Dollar américain</option>
+                                </select>
+                            </div>
                             <div class="col-md-6">
                                 <label class="form-label fw-bold">Compte de contrepartie par défaut</label>
                                 @include('components.compte-select', ['compteKey' => 'journal_cp', 'inputClass' => 'form-control border-2'])
@@ -124,6 +150,7 @@
                                 <label class="form-label fw-bold">Nombre de zéros (Padding)</label>
                                 <input type="number" class="form-control border-2" v-model.number="form.padding_numero" min="1" max="8">
                             </div>
+<<<<<<< HEAD
                             <div class="col-12">
                                 <div class="bg-light p-3 rounded-3 border">
                                     <div class="row g-3">
@@ -144,6 +171,28 @@
                                             <input type="number" class="form-control form-control-sm" v-model.number="form.ordre_affichage">
                                         </div>
                                     </div>
+=======
+                            <div class="col-md-4">
+                                <label class="form-label">Ordre affichage</label>
+                                <input type="number" class="form-control" v-model.number="form.ordre_affichage">
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-check mt-4">
+                                    <input class="form-check-input" type="checkbox" v-model="form.saisie_tiers_obligatoire" id="chk_st">
+                                    <label class="form-check-label" for="chk_st">Tiers obligatoire</label>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-check mt-4">
+                                    <input class="form-check-input" type="checkbox" v-model="form.analytique_obligatoire" id="chk_an">
+                                    <label class="form-check-label" for="chk_an">Analytique obligatoire</label>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-check mt-4">
+                                    <input class="form-check-input" type="checkbox" v-model="form.actif" id="chk_act">
+                                    <label class="form-check-label" for="chk_act">Actif</label>
+>>>>>>> 356d4919f7208489f8fadf9a5b1244abeb82c9b0
                                 </div>
                             </div>
                         </div>

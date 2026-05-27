@@ -76,7 +76,11 @@
                             <td class="text-center"><small class="text-muted">@{{ l.devise_saisie }}</small></td>
                         </tr>
                     </tbody>
+<<<<<<< HEAD
                     <tfoot class="bg-light fw-bold" v-if="lignes.length">
+=======
+                    <tfoot class="table-light text-dark fw-bold" v-if="lignes.length">
+>>>>>>> 356d4919f7208489f8fadf9a5b1244abeb82c9b0
                         <tr>
                             <td colspan="4" class="text-end px-3">TOTAL NON LETTRÉ</td>
                             <td class="text-end text-primary">@{{ fmt(lignes.reduce((s,l) => s + (Number(l.debit)||0), 0)) }}</td>

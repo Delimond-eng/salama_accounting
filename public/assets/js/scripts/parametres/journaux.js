@@ -37,8 +37,10 @@ new Vue({
                 format_numerotation: "annuel",
                 padding_numero: 5,
                 saisie_tiers_obligatoire: false,
+                analytique_obligatoire: false,
                 actif: true,
                 ordre_affichage: 10,
+                devise_defaut: "CDF",
             };
         },
 

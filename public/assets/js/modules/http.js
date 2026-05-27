@@ -89,7 +89,15 @@ export async function get(url) {
             accept: "application/json",
         },
     });
-    const data = await response.json();
+    let data = {};
+    try {
+        data = await response.json();
+    } catch (e) {
+        data = {};
+    }
+    if (!response.ok && !data.errors) {
+        data.errors = [data.message || `Erreur serveur (${response.status})`];
+    }
     return { data, status: response.status };
 }
 

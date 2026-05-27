@@ -58,7 +58,7 @@
                             </tr>
                         </template>
                     </tbody>
-                    <tfoot class="bg-primary text-white fw-bold" v-if="lignes.length">
+                    <tfoot class="table-light text-dark fw-bold" v-if="lignes.length">
                         <tr>
                             <td colspan="6" class="text-end px-3">TOTAL GÉNÉRAL (@{{ filtres.devise_affichage }})</td>
                             <td class="text-end">@{{ fmt(lignes.reduce((s, l) => s + (Number(l.debit) || 0), 0)) }}</td>

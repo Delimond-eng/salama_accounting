@@ -28,7 +28,7 @@ class Facture extends Model
     public const STATUT_ANNULEE = 'annulee';
 
     protected $fillable = [
-        'societe_id', 'exercice_id', 'type_document', 'numero', 'tiers_id',
+        'societe_id', 'exercice_id', 'type_document', 'numero', 'tiers_id', 'section_analytique_id',
         'facture_origine_id', 'date_facture', 'date_echeance', 'statut', 'objet',
         'montant_ht', 'montant_tva', 'montant_ttc', 'taux_tva', 'tva_active', 'devise',
         'ecriture_validation_id', 'notes', 'cree_par', 'valide_par', 'valide_le',

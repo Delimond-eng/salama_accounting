@@ -181,7 +181,6 @@
             @endforeach
         </tbody>
     </table>
-
     <table class="signature-table">
         <tr>
             <td>Le Comptable</td>
@@ -189,9 +188,17 @@
         </tr>
     </table>
 
+<<<<<<< HEAD
     <htmlpagefooter name="html_footer">
         <div class="footer">
             SALAMA ACCOUNTING — Page {PAGENO} / {TOTALPAGES} — Document confidentiel généré le {{ $generated_at }}
+=======
+    <div class="watermark">Document généré électroniquement par {{ config('brand.name') }} le {{ $generated_at }}</div>
+
+    <htmlpagefooter name="html_footer">
+        <div class="footer">
+            {{ config('brand.name') }} — Page {PAGENO} / {TOTALPAGES} — Document à caractère confidentiel
+>>>>>>> 356d4919f7208489f8fadf9a5b1244abeb82c9b0
         </div>
     </htmlpagefooter>
 
