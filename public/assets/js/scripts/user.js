@@ -12,6 +12,7 @@ new Vue({
             message: null,
             isLoading: false,
             search: "",
+            searchRole: "",
             users: [],
             roles: [],
             actions: [],
@@ -33,8 +34,9 @@ new Vue({
                 name: "",
                 email: "",
                 password: "",
-                role: "",
+                role_id: "",
                 user_id: "",
+                actif: true,
                 permissions: [],
             },
             formRole: {
@@ -47,16 +49,41 @@ new Vue({
 
     computed: {
         exportBase() {
-            if (location.pathname.includes("/admin/users")) {
-                return "/accounting/export/admin/users";
-            }
-            if (location.pathname.includes("/admin/roles")) {
-                return "/accounting/export/admin/roles";
-            }
-            if (location.pathname.includes("/admin/logs")) {
-                return "/accounting/export/admin/audit-logs";
-            }
+            if (location.pathname.includes("/admin/users")) return "/accounting/export/admin/users";
+            if (location.pathname.includes("/admin/roles")) return "/accounting/export/admin/roles";
+            if (location.pathname.includes("/admin/logs")) return "/accounting/export/admin/audit-logs";
             return "";
+        },
+        filteredUsers() {
+            const q = (this.search || "").toLowerCase().trim();
+            if (!q) return this.users;
+            return this.users.filter(u =>
+                u.name.toLowerCase().includes(q) ||
+                u.email.toLowerCase().includes(q)
+            );
+        },
+        filteredRoles() {
+            const q = (this.searchRole || "").toLowerCase().trim();
+            if (!q) return this.roles;
+            return this.roles.filter(r =>
+                r.name.toLowerCase().includes(q) ||
+                (this.roleLabel(r.name)).toLowerCase().includes(q)
+            );
+        },
+        currentUserId() {
+            return window.__CURRENT_USER_ID__ || null;
+        },
+        allActions() {
+            return this.actions;
+        },
+        allRoles() {
+            return this.roles;
+        },
+        allUsers() {
+            return this.users;
+        },
+        errorList() {
+            return this.normalizeErrors(this.error);
         },
     },
 
@@ -78,9 +105,7 @@ new Vue({
     methods: {
         queryParams() {
             const p = new URLSearchParams();
-            if (this.search) {
-                p.set("search", this.search);
-            }
+            if (this.search) p.set("search", this.search);
             return p.toString();
         },
 
@@ -110,9 +135,7 @@ new Vue({
         formatDateTime(dt) {
             if (!dt) return "—";
             const s = String(dt).trim();
-            if (/^\d{2}\/\d{2}\/\d{4}/.test(s)) {
-                return s.length > 16 ? s.slice(0, 16) : s;
-            }
+            if (/^\d{2}\/\d{2}\/\d{4}/.test(s)) return s;
             const d = new Date(s.includes("T") ? s : s.replace(" ", "T"));
             if (Number.isNaN(d.getTime())) return s;
             const pad = (n) => String(n).padStart(2, "0");
@@ -122,9 +145,7 @@ new Vue({
         normalizeErrors(errors) {
             if (!errors) return [];
             if (Array.isArray(errors)) return errors;
-            if (typeof errors === "object") {
-                return Object.values(errors).flat();
-            }
+            if (typeof errors === "object") return Object.values(errors).flat();
             return [String(errors)];
         },
 
@@ -142,160 +163,130 @@ new Vue({
         },
 
         async viewAllUsers() {
-            const { data, status } = await get("/users/all");
-            if (status >= 400) {
-                this.error = ["Impossible de charger les utilisateurs."];
-                return;
-            }
+            const { data } = await get("/users/all");
             this.users = data.users || [];
-            if (data.role_labels) {
-                this.roleLabels = data.role_labels;
-            }
         },
 
         async viewAllRoles() {
-            const { data, status } = await get("/roles/all");
-            if (status >= 400) {
-                this.error = ["Impossible de charger les rôles."];
-                return;
-            }
+            const { data } = await get("/roles/all");
             this.roles = data.roles || [];
-            if (data.role_labels) {
-                this.roleLabels = data.role_labels;
-            }
-            if (data.protected_roles) {
-                this.protectedRoles = data.protected_roles;
-            }
         },
 
         async viewAuditLogs() {
-            const { data, status } = await get("/audit/logs");
-            if (status >= 400) {
-                this.error = ["Impossible de charger le journal d'audit."];
-                return;
-            }
+            const { data } = await get("/audit/logs");
             this.logs = data.logs || [];
         },
 
-        openCreateUser() {
+        openForm() {
             this.reset();
-            this.error = null;
-            this.message = null;
-            $("#add_users").modal("show");
+            const modal = new bootstrap.Modal(document.getElementById("modal_user"));
+            modal.show();
         },
 
-        async createUser() {
-            if (!this.form.role) {
-                this.error = ["Veuillez sélectionner un rôle."];
-                return;
-            }
-            if (!this.form.user_id && (!this.form.password || this.form.password.length < 6)) {
-                this.error = ["Le mot de passe doit contenir au moins 6 caractères."];
-                return;
-            }
+        openRoleForm() {
+            this.formRole = { name: "", permissions: [], role_id: "" };
+            const modal = new bootstrap.Modal(document.getElementById("role-modal"));
+            modal.show();
+        },
 
+        async saveUser() {
             this.isLoading = true;
-            this.error = null;
-
             const payload = {
                 name: this.form.name,
                 email: this.form.email,
                 password: this.form.password || null,
-                role: this.form.role,
+                role: this.roles.find(r => r.id === this.form.role_id)?.name,
                 user_id: this.form.user_id || null,
+                actif: this.form.actif
             };
 
             try {
                 const { data } = await postJson("/user/create", payload);
                 this.isLoading = false;
-                if (!this.handleResponse(data)) {
-                    return;
-                }
+                if (!this.handleResponse(data)) return;
                 await this.viewAllUsers();
-                $("#add_users").modal("hide");
+                bootstrap.Modal.getInstance(document.getElementById("modal_user"))?.hide();
                 this.reset();
             } catch (e) {
                 this.isLoading = false;
-                this.error = [e.message || "Erreur lors de l'enregistrement."];
+                this.error = ["Erreur lors de l'enregistrement."];
             }
         },
 
         async createRole() {
             this.isLoading = true;
-            this.error = null;
             try {
                 const { data } = await postJson("/role/create", this.formRole);
                 this.isLoading = false;
-                if (!this.handleResponse(data)) {
-                    return;
-                }
-                this.formRole = { name: "", permissions: [], role_id: "" };
+                if (!this.handleResponse(data)) return;
                 await this.viewAllRoles();
-                $("#role-create").modal("hide");
+                bootstrap.Modal.getInstance(document.getElementById("role-modal"))?.hide();
             } catch (e) {
                 this.isLoading = false;
-                this.error = [e.message || "Erreur lors de l'enregistrement du rôle."];
+                this.error = ["Erreur lors de l'enregistrement du rôle."];
             }
+        },
+
+        manageAccess(user) {
+            this.error = null;
+            this.form.user_id = user.id;
+
+            // On combine les permissions directes et celles héritées du rôle pour les afficher cochées
+            let directPerms = user.permissions || [];
+            let inheritedPerms = [];
+            if (user.roles && user.roles.length > 0) {
+                user.roles.forEach(role => {
+                    if (role.permissions) {
+                        inheritedPerms = [...inheritedPerms, ...role.permissions];
+                    }
+                });
+            }
+
+            const allCombined = [...directPerms, ...inheritedPerms];
+            this.form.permissions = [...new Set(allCombined.map(p => typeof p === "string" ? p : p.name))];
+
+            const modal = new bootstrap.Modal(document.getElementById("access_users"));
+            modal.show();
         },
 
         async addAccess() {
             this.isLoading = true;
-            this.error = null;
             try {
                 const { data } = await postJson("/user/access", {
                     user_id: this.form.user_id,
                     permissions: this.form.permissions,
                 });
                 this.isLoading = false;
-                if (!this.handleResponse(data)) {
-                    return;
-                }
+                if (!this.handleResponse(data)) return;
                 await this.viewAllUsers();
-                $("#access_users").modal("hide");
+                bootstrap.Modal.getInstance(document.getElementById("access_users"))?.hide();
             } catch (e) {
                 this.isLoading = false;
-                this.error = [e.message || "Erreur lors de la mise à jour des accès."];
+                this.error = ["Erreur lors de la mise à jour des accès."];
             }
         },
 
         editRole(role) {
-            if (this.isProtectedRole(role.name)) {
-                return;
-            }
+            if (this.isProtectedRole(role.name)) return;
             this.error = null;
             this.formRole.name = role.name;
-            this.formRole.permissions = (role.permissions || []).map((p) =>
-                typeof p === "string" ? p : p.name
-            );
+            this.formRole.permissions = (role.permissions || []).map((p) => typeof p === "string" ? p : p.name);
             this.formRole.role_id = role.id;
-            $("#role-create").modal("show");
+            const modal = new bootstrap.Modal(document.getElementById("role-modal"));
+            modal.show();
         },
 
         editUser(user) {
             this.error = null;
-            this.message = null;
-            const roleName = user.roles?.[0]?.name || user.role;
+            const roleId = user.roles?.[0]?.id || "";
             this.form.name = user.name;
             this.form.email = user.email;
-            this.form.role = roleName;
+            this.form.role_id = roleId;
             this.form.user_id = user.id;
             this.form.password = "";
-            $("#add_users").modal("show");
-        },
-
-        getAccess(user) {
-            const roleName = user.roles?.[0]?.name || user.role;
-            if (this.isProtectedRole(roleName)) {
-                return;
-            }
-            this.error = null;
-            this.form.user_id = user.id;
-            const perms =
-                user.permissions?.length > 0
-                    ? user.permissions
-                    : user.roles?.[0]?.permissions || [];
-            this.form.permissions = perms.map((p) => (typeof p === "string" ? p : p.name));
-            $("#access_users").modal("show");
+            this.form.actif = !!user.actif;
+            const modal = new bootstrap.Modal(document.getElementById("modal_user"));
+            modal.show();
         },
 
         reset() {
@@ -303,38 +294,11 @@ new Vue({
                 name: "",
                 email: "",
                 password: "",
-                role: "",
+                role_id: "",
                 user_id: "",
+                actif: true,
                 permissions: [],
             };
         },
-    },
-
-    computed: {
-        allActions() {
-            return this.actions;
-        },
-        allRoles() {
-            return this.roles;
-        },
-        allUsers() {
-            return this.users;
-        },
-        filteredLogs() {
-            const q = (this.search || "").toLowerCase().trim();
-            if (!q) {
-                return this.logs;
-            }
-            return this.logs.filter(
-                (l) =>
-                    (l.reference || "").toLowerCase().includes(q) ||
-                    (l.description || "").toLowerCase().includes(q) ||
-                    (l.action || "").toLowerCase().includes(q) ||
-                    (l.user_name || "").toLowerCase().includes(q)
-            );
-        },
-        errorList() {
-            return this.normalizeErrors(this.error);
-        },
-    },
+    }
 });

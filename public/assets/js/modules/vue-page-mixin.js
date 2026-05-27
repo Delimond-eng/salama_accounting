@@ -1,5 +1,6 @@
 /**
  * Évite l'affichage des moustaches Vue (@{{ }}) au chargement / refresh.
+ * Gère également la communication avec le loader global du header.
  */
 export const vuePageMixin = {
     data() {
@@ -8,9 +9,22 @@ export const vuePageMixin = {
         };
     },
 
+    watch: {
+        // Surveille isLoading pour notifier le header
+        isLoading(val) {
+            if (val) {
+                window.dispatchEvent(new CustomEvent('page-loading-start'));
+            } else {
+                window.dispatchEvent(new CustomEvent('page-loading-stop'));
+            }
+        }
+    },
+
     methods: {
         async bootPage(initFn) {
             const splash = document.getElementById("vue-splash-loader");
+            window.dispatchEvent(new CustomEvent('page-loading-start'));
+
             try {
                 if (typeof initFn === "function") {
                     await initFn.call(this);
@@ -27,6 +41,7 @@ export const vuePageMixin = {
                 if (globalLoader) {
                     globalLoader.style.display = "none";
                 }
+                window.dispatchEvent(new CustomEvent('page-loading-stop'));
             }
         },
     },

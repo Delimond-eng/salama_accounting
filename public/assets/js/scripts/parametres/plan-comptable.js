@@ -56,12 +56,9 @@ new Vue({
 
         async loadData() {
             this.isLoading = true;
-            const params = new URLSearchParams();
-            if (this.search) params.set("search", this.search);
-            if (this.filtreClasse) params.set("classe", this.filtreClasse);
             try {
                 const { data } = await get(
-                    `/accounting/parametres/plan-comptable/all?${params.toString()}`
+                    `/accounting/parametres/plan-comptable/all?${this.queryParams()}`
                 );
                 if (data.status === "success") {
                     this.comptes = data.comptes || [];
@@ -99,5 +96,19 @@ new Vue({
             bootstrap.Modal.getInstance(document.getElementById("modal_compte"))?.hide();
             this.loadData();
         },
+
+        indentClass(num) {
+            const len = String(num).length;
+            if (len <= 2) return 'fw-bold text-dark';
+            if (len === 3) return 'ps-3 fw-semibold text-secondary';
+            return 'ps-4 text-muted small';
+        },
+
+        typeBadgeClass(classe) {
+            const c = parseInt(classe);
+            if (c <= 5) return 'bg-soft-primary text-primary'; // Bilan
+            if (c <= 7) return 'bg-soft-warning text-warning'; // Gestion
+            return 'bg-soft-secondary text-secondary'; // Autres
+        }
     },
 });

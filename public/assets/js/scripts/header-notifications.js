@@ -11,20 +11,27 @@ new Vue({
     },
     mounted() {
         this.loadNotifications();
+        // Rafraîchissement automatique toutes les 5 minutes
         setInterval(() => this.loadNotifications(), 300000);
+
+        // Écouteur global pour afficher le loader quand une page charge
+        window.addEventListener('page-loading-start', () => { this.isLoading = true; });
+        window.addEventListener('page-loading-stop', () => { this.isLoading = false; });
     },
     methods: {
         async loadNotifications() {
+            this.isLoading = true;
             try {
                 const { data } = await get("/accounting/notifications");
                 if (data.status === "success" && data.alertes) {
                     const rawItems = data.alertes.items || [];
-                    // Force en tableau pour garantir la réactivité et le .length
                     this.alertes = Array.isArray(rawItems) ? rawItems : Object.values(rawItems);
                     this.count = this.alertes.length;
                 }
             } catch (e) {
                 console.error("Erreur notifications:", e);
+            } finally {
+                this.isLoading = false;
             }
         },
         alerteBadgeClass(niveau) {

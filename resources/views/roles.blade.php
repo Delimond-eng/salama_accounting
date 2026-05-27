@@ -7,18 +7,15 @@
         @include('components.vue-page-loading')
     </template>
     <template v-else>
-        <div v-if="errorList.length" class="alert alert-danger alert-dismissible fade show">
+        <div v-if="errorList.length" class="alert alert-danger alert-dismissible fade show border-0 shadow-sm mb-4">
             <ul class="mb-0 ps-3"><li v-for="(err, i) in errorList" :key="i">@{{ err }}</li></ul>
             <button type="button" class="btn-close" @click="error = null"></button>
         </div>
-        <div v-if="message" class="alert alert-success alert-dismissible fade show">
-            @{{ message }}
-            <button type="button" class="btn-close" @click="message = null"></button>
-        </div>
+
         <!-- Page Header -->
         <div class="d-flex align-items-center justify-content-between gap-2 mb-4 flex-wrap">
             <div>
-                <h4 class="mb-1">Rôles & Permissions <span class="badge badge-soft-primary ms-2">@{{ allRoles.length }}</span></h4>
+                <h4 class="mb-1 text-dark fw-bold">Rôles & Habilitations</h4>
                 <nav aria-label="breadcrumb">
                     <ol class="breadcrumb mb-0 p-0">
                         <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Accueil</a></li>
@@ -27,172 +24,133 @@
                     </ol>
                 </nav>
             </div>
-            <div class="gap-2 d-flex align-items-center flex-wrap">
-                @include('components.export-buttons')
-                <a href="javascript:void(0);" class="btn btn-icon btn-outline-light shadow"
-                    data-bs-toggle="tooltip" data-bs-placement="top" title="Refresh"><i class="ti ti-refresh"></i></a>
-                <a href="javascript:void(0);" class="btn btn-icon btn-outline-light shadow"
-                    data-bs-toggle="tooltip" data-bs-placement="top" title="Collapse" id="collapse-header"><i
-                        class="ti ti-transition-top"></i></a>
-            </div>
-        </div>
-        <!-- /Page Header -->
-
-        <!-- card start -->
-        <div class="card border-0 rounded-0">
-            <div class="card-header d-flex align-items-center justify-content-between gap-2 flex-wrap">
-                <div class="input-icon input-icon-start position-relative">
-                    <span class="input-icon-addon text-dark"><i class="ti ti-search"></i></span>
-                    <input type="text" class="form-control" placeholder="Rechercher un rôle...">
-                </div>
+            <div class="gap-2 d-flex align-items-center">
                 @can('roles.create')
-                <a href="javascript:void(0);" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#role-create">
+                <button type="button" class="btn btn-primary px-4 shadow-sm" @click="openRoleForm()">
                     <i class="ti ti-square-rounded-plus-filled me-1"></i>Ajout Rôle
-                </a>
+                </button>
                 @endcan
             </div>
-            <div class="card-body">
+        </div>
 
-                <!-- table header filters -->
-                <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
-                    <div class="d-flex align-items-center gap-2 flex-wrap">
-                        <div class="dropdown">
-                            <a href="javascript:void(0);" class="dropdown-toggle btn btn-outline-light shadow"
-                                data-bs-toggle="dropdown"><i class="ti ti-sort-ascending-2 me-2"></i>Trier par</a>
-                            <div class="dropdown-menu">
-                                <ul>
-                                    <li><a href="javascript:void(0);" class="dropdown-item">Nom A-Z</a></li>
-                                    <li><a href="javascript:void(0);" class="dropdown-item">Date création</a></li>
-                                </ul>
-                            </div>
-                        </div>
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white border-bottom py-3">
+                <div class="row align-items-center">
+                    <div class="col">
+                        <h5 class="mb-0 fw-bold text-primary">Matrice des droits d'accès</h5>
                     </div>
-                    <div class="d-flex align-items-center gap-2 flex-wrap">
-                        <div class="dropdown">
-                            <a href="javascript:void(0);" class="btn btn-outline-light shadow px-2"
-                                data-bs-toggle="dropdown" data-bs-auto-close="outside"><i
-                                    class="ti ti-filter me-2"></i>Filtrer<i
-                                    class="ti ti-chevron-down ms-2"></i></a>
+                    <div class="col-auto">
+                        <div class="input-group input-group-sm bg-light rounded-2 px-2">
+                            <span class="input-group-text bg-transparent border-0"><i class="ti ti-search text-muted"></i></span>
+                            <input type="text" class="form-control bg-transparent border-0" placeholder="Rechercher un rôle..." v-model="searchRole">
                         </div>
                     </div>
                 </div>
-                <!-- /table header filters -->
-
-                <!-- Roles List -->
-                <div class="table-responsive custom-table table-nowrap">
-                    <table class="table table-nowrap datatable" v-cloak>
-                        <thead class="table-light">
-                        <tr>
-                            <th class="no-sort">
-                                <div class="form-check form-check-md">
-                                    <input class="form-check-input" type="checkbox" id="select-all">
-                                </div>
-                            </th>
-                            <th>Libellé du Rôle</th>
-                            <th>Date de création</th>
-                            <th>Dernière modification</th>
-                            <th>Statut</th>
-                            <th class="no-sort">Action</th>
-                        </tr>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover table-bordered table-custom mb-0">
+                        <thead>
+                            <tr>
+                                <th>Libellé du Rôle</th>
+                                <th>Code Système</th>
+                                <th>Création</th>
+                                <th>Dernière Maj.</th>
+                                <th class="text-center">Statut</th>
+                                <th class="text-end">Actions</th>
+                            </tr>
                         </thead>
                         <tbody>
-                        <tr v-for="(data, index) in allRoles">
-                            <td>
-                                <div class="form-check form-check-md">
-                                    <input class="form-check-input" type="checkbox">
-                                </div>
-                            </td>
-                            <td class="fw-medium text-dark">
-                                @{{ data.label || roleLabel(data.name) }}
-                                <small class="d-block text-muted fs-12">@{{ data.name }}</small>
-                            </td>
-                            <td>@{{ formatDateTime(data.created_at) }}</td>
-                            <td>@{{ formatDateTime(data.updated_at) }}</td>
-                            <td>
-                                <span class="badge badge-success d-inline-flex align-items-center badge-xs">
-                                    <i class="ti ti-point-filled me-1"></i>Actif
-                                </span>
-                            </td>
-                            <td class="action-table-data">
-                                <div class="edit-delete-action">
-                                    @can('roles.update')
-                                        <a href="javascript:void(0);" class="me-2 p-2" @click="editRole(data)" title="Modifier">
-                                            <i :class="{'text-gray-3': isProtectedRole(data.name)}" class="ti ti-edit text-info"></i>
-                                        </a>
-                                    @endcan
-                                    @can('roles.delete')
-                                        <a href="javascript:void(0);" class="p-2" data-bs-toggle="modal" data-bs-target="#delete_modal" title="Supprimer">
-                                            <i class="ti ti-trash text-danger" :class="{'text-gray-3': isProtectedRole(data.name)}"></i>
-                                        </a>
-                                    @endcan
-                                </div>
-                            </td>
-                        </tr>
+                            <tr v-if="isLoading"><td colspan="6" class="text-center py-5"><span class="spinner-border spinner-border-sm me-2"></span>Chargement…</td></tr>
+                            <tr v-for="data in filteredRoles" :key="data.id">
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="avatar avatar-sm bg-soft-primary text-primary rounded me-3">
+                                            <i class="ti ti-shield-check fs-18"></i>
+                                        </div>
+                                        <span class="fw-bold text-dark">@{{ data.label || roleLabel(data.name) }}</span>
+                                    </div>
+                                </td>
+                                <td><code class="fs-12">@{{ data.name }}</code></td>
+                                <td class="text-muted fs-12">@{{ formatDateTime(data.created_at) }}</td>
+                                <td class="text-muted fs-12">@{{ formatDateTime(data.updated_at) }}</td>
+                                <td class="text-center">
+                                    <span class="badge rounded-pill bg-soft-success text-success px-3">
+                                        Actif
+                                    </span>
+                                </td>
+                                <td class="text-end">
+                                    <div class="d-flex gap-1 justify-content-end">
+                                        @can('roles.update')
+                                        <button type="button" class="btn btn-icon btn-sm btn-label-primary" @click="editRole(data)" :disabled="isProtectedRole(data.name)">
+                                            <i class="ti ti-edit"></i>
+                                        </button>
+                                        @endcan
+                                        @can('roles.delete')
+                                        <button type="button" class="btn btn-icon btn-sm btn-label-danger" @click="confirmDelete(data)" :disabled="isProtectedRole(data.name)">
+                                            <i class="ti ti-trash"></i>
+                                        </button>
+                                        @endcan
+                                    </div>
+                                </td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>
-                <div class="row align-items-center mt-3">
-                    <div class="col-md-6"><div class="datatable-length"></div></div>
-                    <div class="col-md-6"><div class="datatable-paginate"></div></div>
-                </div>
-                <!-- /Roles List -->
             </div>
         </div>
-        <!-- card end -->
 
         <!-- Modal create/edit Role -->
         @canany(['roles.create','roles.update'])
-        <div class="modal fade" id="role-create">
+        <div class="modal fade" id="role-modal" tabindex="-1">
             <div class="modal-dialog modal-dialog-centered modal-lg">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h4 class="modal-title">@{{ formRole.role_id ? 'Modifier le Rôle' : 'Création Rôle utilisateur' }}</h4>
-                        <button type="button" class="btn-close custom-btn-close" data-bs-dismiss="modal"
-                                aria-label="Close">
-                            <i class="ti ti-x"></i>
-                        </button>
+                <div class="modal-content border-0 shadow-lg">
+                    <div class="modal-header bg-primary py-3">
+                        <h5 class="modal-title text-white fw-bold">@{{ formRole.role_id ? 'Configuration du Rôle' : 'Création d\'un Rôle' }}</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                     </div>
                     <form @submit.prevent="createRole">
-                        <div class="modal-body pb-0">
+                        <div class="modal-body p-4">
                             <div class="mb-4">
-                                <label class="form-label fw-bold">Libellé du rôle</label>
-                                <input v-model="formRole.name" type="text" class="form-control" placeholder="ex: Comptable Senior" required>
+                                <label class="form-label fw-bold small text-uppercase">Libellé du rôle <span class="text-danger">*</span></label>
+                                <input v-model="formRole.name" type="text" class="form-control border-2" placeholder="ex: Responsable Facturation" required>
                             </div>
 
-                            <div class="table-responsive custom-table">
-                                <table class="table">
-                                    <thead class="table-light">
-                                    <tr>
-                                        <th>Module Permissions</th>
-                                        <th v-for="col in permissionColumns" :key="col" class="text-center">@{{ columnLabels[col] || col }}</th>
-                                    </tr>
-                                    </thead>
-                                    <tbody>
-                                    <tr v-for="module in allActions" :key="module.entity">
-                                        <td>
-                                            <h6 class="fs-14 fw-normal text-gray-9 mb-0">@{{ module.label }}</h6>
-                                        </td>
-                                        <td v-for="col in permissionColumns" :key="col" class="text-center">
-                                            <div class="form-check form-check-md d-inline-block" v-if="moduleHasAction(module, col)">
-                                                <input
-                                                    class="form-check-input"
-                                                    type="checkbox"
-                                                    :value="`${module.entity}.${col}`"
-                                                    v-model="formRole.permissions"
-                                                >
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    </tbody>
-                                </table>
+                            <div class="permissions-matrix mt-4">
+                                <h6 class="fw-bold mb-3"><i class="ti ti-key me-2 text-primary"></i>Matrice des permissions</h6>
+                                <div class="table-responsive border rounded-3 bg-light-soft">
+                                    <table class="table table-sm mb-0">
+                                        <thead class="bg-white">
+                                            <tr>
+                                                <th class="ps-3 py-2">Module / Entité</th>
+                                                <th v-for="col in permissionColumns" :key="col" class="text-center py-2">@{{ columnLabels[col] || col }}</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr v-for="module in allActions" :key="module.entity">
+                                                <td class="ps-3 py-2 fw-medium text-dark fs-13">@{{ module.label }}</td>
+                                                <td v-for="col in permissionColumns" :key="col" class="text-center py-2">
+                                                    <div class="form-check form-check-md d-inline-block" v-if="moduleHasAction(module, col)">
+                                                        <input
+                                                            class="form-check-input"
+                                                            type="checkbox"
+                                                            :value="`${module.entity}.${col}`"
+                                                            v-model="formRole.permissions"
+                                                        >
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
                         </div>
 
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-white border me-2" data-bs-dismiss="modal">Annuler</button>
-                            <button type="submit" class="btn btn-primary" :disabled="isLoading">
-                                <span v-if="formRole.role_id">@{{ isLoading ? "Mise à jour..." : "Mettre à jour" }}</span>
-                                <span v-else>@{{ isLoading ? "Enregistrement..." : "Enregistrer" }}</span>
+                        <div class="modal-footer bg-light border-0">
+                            <button type="button" class="btn btn-white border px-4" data-bs-dismiss="modal">Annuler</button>
+                            <button type="submit" class="btn btn-primary px-4" :disabled="isLoading">
+                                <span v-if="isLoading" class="spinner-border spinner-border-sm me-1"></span>
+                                @{{ formRole.role_id ? "Mettre à jour" : "Enregistrer le rôle" }}
                             </button>
                         </div>
                     </form>
@@ -201,8 +159,19 @@
         </div>
         @endcanany
     </template>
-    </div>
+</div>
 @endsection
+
+@push('styles')
+<style>
+    .table-custom thead th { background-color: #f8f9fa; text-transform: uppercase; font-size: 11px; letter-spacing: 0.5px; font-weight: 700; padding: 12px 15px; border-bottom: 2px solid #dee2e6; color: #475569; }
+    .table-custom tbody td { padding: 12px 15px; vertical-align: middle; font-size: 13.5px; border-bottom: 1px solid #f1f5f9; }
+    .bg-light-soft { background-color: #f8fafc; }
+    .btn-label-primary { background: #e7e7ff; color: #696cff; border: none; }
+    .btn-label-danger { background: #ffe5e5; color: #ff3e1d; border: none; }
+    .bg-soft-primary { background-color: rgba(63, 122, 253, 0.1); }
+</style>
+@endpush
 
 @push("scripts")
     <script type="module" src="{{ asset("assets/js/scripts/user.js") }}"></script>

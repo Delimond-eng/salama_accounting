@@ -54,7 +54,7 @@
         <!-- KPI Soldes -->
         <div class="row g-4 mb-4" v-if="data">
             <div class="col-md-4">
-                <div class="card border-0 shadow-sm bg-label-secondary border-start border-primary border-3">
+                <div class="card border-0 shadow-sm bg-white border-start border-primary border-3">
                     <div class="card-body p-3">
                         <p class="text-muted fs-11 fw-bold text-uppercase mb-1">Ouverture au @{{ filtres.date_debut }}</p>
                         <h4 class="mb-0 fw-bold">@{{ fmt(data.soldes.ouverture_jour) }} <small class="fs-12">@{{ data.devise_affichage }}</small></h4>
@@ -70,7 +70,7 @@
                 </div>
             </div>
             <div class="col-md-4">
-                <div class="card border-0 shadow-sm bg-primary border-start border-white border-3">
+                <div class="card border-0 shadow-sm bg-primary border-start border-info border-3">
                     <div class="card-body p-3">
                         <p class="text-white-50 fs-11 fw-bold text-uppercase mb-1">Solde Actuel (@{{ data.soldes.date_actuel }})</p>
                         <h4 class="mb-0 fw-bold text-white">@{{ fmt(data.soldes.actuel) }} <small class="fs-12">@{{ data.devise_affichage }}</small></h4>

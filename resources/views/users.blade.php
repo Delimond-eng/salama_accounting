@@ -62,7 +62,6 @@
                                         </div>
                                         <div class="d-flex flex-column">
                                             <span class="fw-bold text-dark">@{{ u.name }}</span>
-                                            <small class="text-muted">ID: #@{{ u.id }}</small>
                                         </div>
                                     </div>
                                 </td>
@@ -146,6 +145,59 @@
                 </div>
             </div>
         </div>
+
+        <!-- Modal Accès/Droits -->
+        <div class="modal fade" id="access_users" tabindex="-1">
+            <div class="modal-dialog modal-dialog-centered modal-lg">
+                <div class="modal-content border-0 shadow-lg">
+                    <div class="modal-header bg-info py-3">
+                        <h5 class="modal-title text-white fw-bold">Habilitations de l'utilisateur</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <form @submit.prevent="addAccess">
+                        <div class="modal-body p-4">
+                            <div class="alert bg-label-info border-0 mb-4">
+                                <p class="mb-0 small">Définissez des permissions spécifiques pour cet utilisateur. Ces droits s'ajoutent à ceux déjà hérités par son rôle principal.</p>
+                            </div>
+
+                            <div class="table-responsive border rounded-3 bg-light-soft">
+                                <table class="table table-sm mb-0">
+                                    <thead class="bg-white">
+                                        <tr>
+                                            <th class="ps-3 py-2">Module / Entité</th>
+                                            <th v-for="col in permissionColumns" :key="col" class="text-center py-2">@{{ columnLabels[col] || col }}</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr v-for="module in allActions" :key="module.entity">
+                                            <td class="ps-3 py-2 fw-medium text-dark fs-13">@{{ module.label }}</td>
+                                            <td v-for="col in permissionColumns" :key="col" class="text-center py-2">
+                                                <div class="form-check form-check-md d-inline-block" v-if="moduleHasAction(module, col)">
+                                                    <input
+                                                        class="form-check-input"
+                                                        type="checkbox"
+                                                        :value="`${module.entity}.${col}`"
+                                                        v-model="form.permissions"
+                                                    >
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="modal-footer bg-light border-0">
+                            <button type="button" class="btn btn-white border px-4" data-bs-dismiss="modal">Annuler</button>
+                            <button type="submit" class="btn btn-info text-white px-4" :disabled="isLoading">
+                                <span v-if="isLoading" class="spinner-border spinner-border-sm me-1"></span>
+                                Mettre à jour les accès
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
     </template>
 </div>
 @endsection
@@ -157,9 +209,14 @@
     .btn-label-primary { background: #e7e7ff; color: #696cff; border: none; }
     .btn-label-danger { background: #ffe5e5; color: #ff3e1d; border: none; }
     .bg-label-primary { background-color: #e7e7ff; color: #696cff; }
+    .bg-label-info { background-color: #d7f5fc; color: #03c3ec; }
+    .bg-light-soft { background-color: #f8fafc; }
 </style>
 @endpush
 
 @push('scripts')
+<script>
+    window.__CURRENT_USER_ID__ = @json(Auth::id());
+</script>
 <script type="module" src="{{ asset('assets/js/scripts/user.js') }}"></script>
 @endpush

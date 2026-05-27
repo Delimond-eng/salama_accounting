@@ -1,5 +1,8 @@
 <!-- Topbar Start -->
 <header class="navbar-header" id="HeaderNotifications" v-cloak>
+    <!-- Top Loading Bar -->
+    <div class="top-loading-bar" v-if="isLoading"></div>
+
     <div class="page-container topbar-menu">
         <div class="d-flex align-items-center gap-2">
 
@@ -27,6 +30,16 @@
                 <div class="input-icon position-relative me-2">
                     <input type="text" class="form-control" placeholder="Rechercher…">
                     <span class="input-icon-addon d-inline-flex p-0 header-search-icon"><i class="ti ti-command"></i></span>
+                </div>
+
+                <!-- Global Software Loader -->
+                <div v-if="isLoading" class="ms-3 d-flex align-items-center global-loader-wrap">
+                    <div class="spinner-svg-container">
+                        <svg viewBox="0 0 50 50" class="spinner-svg">
+                            <circle class="path" cx="25" cy="25" r="20" fill="none" stroke-width="5"></circle>
+                        </svg>
+                    </div>
+                    <span class="ms-2 fs-12 text-primary fw-bold text-uppercase letter-spacing-1 animate-pulse">Traitement...</span>
                 </div>
             </div>
         </div>
@@ -145,6 +158,36 @@
     </div>
 </header>
 <!-- Topbar End -->
+
+<style>
+    .top-loading-bar {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 3px;
+        background: linear-gradient(90deg, transparent, #3f7afd, #00BFFF, transparent);
+        background-size: 200% 100%;
+        animation: loading-bar-move 1.5s infinite linear;
+        z-index: 9999;
+    }
+    @keyframes loading-bar-move {
+        0% { background-position: 200% 0; }
+        100% { background-position: -200% 0; }
+    }
+    .spinner-svg-container { width: 22px; height: 22px; }
+    .spinner-svg { animation: rotate 2s linear infinite; width: 100%; height: 100%; }
+    .spinner-svg .path { stroke: #3f7afd; stroke-linecap: round; animation: dash 1.5s ease-in-out infinite; }
+    @keyframes rotate { 100% { transform: rotate(360deg); } }
+    @keyframes dash {
+        0% { stroke-dasharray: 1, 150; stroke-dashoffset: 0; }
+        50% { stroke-dasharray: 90, 150; stroke-dashoffset: -35; }
+        100% { stroke-dasharray: 90, 150; stroke-dashoffset: -124; }
+    }
+    .letter-spacing-1 { letter-spacing: 1px; }
+    @keyframes pulse-opacity { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+    .animate-pulse { animation: pulse-opacity 1.5s infinite ease-in-out; }
+</style>
 
 <!-- Search Modal -->
 <div class="modal fade" id="searchModal">
