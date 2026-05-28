@@ -57,7 +57,7 @@
                         </select>
                     </div>
                     <div class="card-body p-4">
-                        <div class="alert bg-label-info border-0 mb-4">
+                        <div class="alert bg-label-info border-1 border-info mb-4">
                             <div class="d-flex">
                                 <i class="ti ti-info-circle fs-24 me-2"></i>
                                 <div>

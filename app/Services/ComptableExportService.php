@@ -22,116 +22,44 @@ class ComptableExportService
         $numCols = count($headers);
         $lastCol = Coordinate::stringFromColumnIndex($numCols);
 
+        // Header Style: Society Left, Meta Right
         if ($societe) {
-            $sheet->mergeCells("A{$rowIdx}:{$lastCol}{$rowIdx}");
             $sheet->setCellValue('A' . $rowIdx, strtoupper($societe->raison_sociale));
             $sheet->getStyle('A' . $rowIdx)->applyFromArray([
-                'font' => ['bold' => true, 'size' => 22, 'color' => ['rgb' => '800000']],
-                'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER]
+                'font' => ['bold' => true, 'size' => 16, 'color' => ['rgb' => '800000']],
+                'alignment' => ['horizontal' => Alignment::HORIZONTAL_LEFT]
+            ]);
+
+            // Meta on the right (same row)
+            $sheet->setCellValue($lastCol . $rowIdx, strtoupper($title ?? 'EXPORT'));
+            $sheet->getStyle($lastCol . $rowIdx)->applyFromArray([
+                'font' => ['bold' => true, 'size' => 14],
+                'alignment' => ['horizontal' => Alignment::HORIZONTAL_RIGHT]
             ]);
             $rowIdx++;
 
-            $sheet->mergeCells("A{$rowIdx}:{$lastCol}{$rowIdx}");
-            $sheet->setCellValue('A' . $rowIdx, ($societe->sigle ? $societe->sigle . ' | ' : '') . $societe->adresse . ' ' . $societe->ville);
-            $sheet->getStyle('A' . $rowIdx)->applyFromArray([
-                'font' => ['size' => 11, 'italic' => true],
-                'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER]
-            ]);
+            $sheet->setCellValue('A' . $rowIdx, ($societe->sigle ? $societe->sigle . ' | ' : '') . $societe->adresse);
+            $sheet->getStyle('A' . $rowIdx)->getFont()->setItalic(true);
+
+            // Date on the right
+            $sheet->setCellValue($lastCol . $rowIdx, "Généré le: " . now()->format('d/m/Y H:i'));
+            $sheet->getStyle($lastCol . $rowIdx)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
             $rowIdx++;
 
-            if ($societe->rccm) {
-                $sheet->mergeCells("A{$rowIdx}:{$lastCol}{$rowIdx}");
-                $sheet->setCellValue('A' . $rowIdx, "RCCM: {$societe->rccm} | ID Nat: {$societe->num_contribuable}");
-                $sheet->getStyle('A' . $rowIdx)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
-                $rowIdx++;
-            }
-            $rowIdx++;
-        }
-
-        foreach ($meta as $label => $value) {
-            $sheet->mergeCells("A{$rowIdx}:{$lastCol}{$rowIdx}");
-            $sheet->setCellValue('A' . $rowIdx, "{$label} : {$value}");
-            $sheet->getStyle('A' . $rowIdx)->applyFromArray([
-                'font' => ['bold' => true, 'size' => 12],
-                'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER]
-            ]);
-            $rowIdx++;
-        }
-
-        if ($title) {
-            $rowIdx++;
-            $sheet->mergeCells("A{$rowIdx}:{$lastCol}{$rowIdx}");
-            $sheet->setCellValue('A'.$rowIdx, strtoupper($title));
-            $sheet->getStyle('A'.$rowIdx)->applyFromArray([
-                'font' => ['bold' => true, 'size' => 16],
-                'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER]
-            ]);
+            $sheet->setCellValue('A' . $rowIdx, "RCCM: {$societe->rccm} | ID Nat: {$societe->num_contribuable}");
             $rowIdx += 2;
         }
 
-        $this->writeTableToSheet($sheet, $headers, $rows, $rowIdx);
-
-        return response()->streamDownload(function () use ($spreadsheet) {
-            $writer = new Xlsx($spreadsheet);
-            $writer->save('php://output');
-        }, $this->safeFilename($filename, 'xlsx'), [
-            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-        ]);
-    }
-
-    public function downloadExcelMulti(array $sections, string $filename, ?Societe $societe = null, array $meta = []): StreamedResponse
-    {
-        $spreadsheet = new Spreadsheet();
-        $sheet = $spreadsheet->getActiveSheet();
-        $rowIdx = 1;
-
-        $maxCols = 1;
-        foreach($sections as $s) {
-            $maxCols = max($maxCols, count($s['headers']));
-        }
-        $lastCol = Coordinate::stringFromColumnIndex($maxCols);
-
-        if ($societe) {
-            $sheet->mergeCells("A{$rowIdx}:{$lastCol}{$rowIdx}");
-            $sheet->setCellValue('A' . $rowIdx, strtoupper($societe->raison_sociale));
-            $sheet->getStyle('A' . $rowIdx)->applyFromArray([
-                'font' => ['bold' => true, 'size' => 26, 'color' => ['rgb' => '800000']],
-                'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER]
-            ]);
-            $rowIdx++;
-
-            $sheet->mergeCells("A{$rowIdx}:{$lastCol}{$rowIdx}");
-            $sheet->setCellValue('A' . $rowIdx, ($societe->sigle ? $societe->sigle . ' | ' : '') . $societe->adresse . ' ' . $societe->ville);
-            $sheet->getStyle('A' . $rowIdx)->applyFromArray([
-                'font' => ['size' => 12],
-                'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER]
-            ]);
-            $rowIdx++;
-        }
-
+        // Additional Meta
         foreach ($meta as $label => $value) {
-            $sheet->mergeCells("A{$rowIdx}:{$lastCol}{$rowIdx}");
-            $sheet->setCellValue('A' . $rowIdx, strtoupper($label) . " : " . $value);
-            $sheet->getStyle('A' . $rowIdx)->applyFromArray([
-                'font' => ['bold' => true, 'size' => 15],
-                'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER]
-            ]);
+            $sheet->setCellValue('A' . $rowIdx, "{$label} :");
+            $sheet->setCellValue('B' . $rowIdx, $value);
+            $sheet->getStyle('A' . $rowIdx)->getFont()->setBold(true);
             $rowIdx++;
         }
-        $rowIdx += 4;
+        $rowIdx++;
 
-        foreach ($sections as $section) {
-            $sheet->setCellValue('A' . $rowIdx, strtoupper($section['title']));
-            $sheet->getStyle('A' . $rowIdx)->getFont()->setBold(true)->setSize(14)->setColor(new \PhpOffice\PhpSpreadsheet\Style\Color('800000'));
-            $rowIdx += 1;
-
-            if (!empty($section['headers'])) {
-                $this->writeTableToSheet($sheet, $section['headers'], $section['rows'], $rowIdx);
-                $rowIdx += 3;
-            } else {
-                $rowIdx += 2;
-            }
-        }
+        $this->writeTableToSheet($sheet, $headers, $rows, $rowIdx);
 
         return response()->streamDownload(function () use ($spreadsheet) {
             $writer = new Xlsx($spreadsheet);
@@ -158,9 +86,12 @@ class ComptableExportService
             'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
             'fill' => [
                 'fillType' => Fill::FILL_SOLID,
-                'startColor' => ['rgb' => '800000']
+                'startColor' => ['rgb' => '800000'] // Retour au Rouge Foncé
             ],
-            'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER]
+            'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER],
+            'borders' => [
+                'allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['rgb' => '600000']]
+            ]
         ]);
 
         $rowIdx++;
@@ -169,44 +100,39 @@ class ComptableExportService
             $isTotalRow = false;
             $isSectionRow = false;
 
-            $rowValues = array_slice($row, 0, $numCols);
-
-            foreach ($rowValues as $cell) {
+            foreach (array_slice($row, 0, $numCols) as $cell) {
                 $cleanValue = (string)$cell;
                 if (str_starts_with($cleanValue, '### ')) {
                     $isSectionRow = true;
                     $cleanValue = substr($cleanValue, 4);
                 }
-                if (str_starts_with($cleanValue, '=== ')) {
+                if (str_starts_with($cleanValue, '=== ') || str_contains(strtoupper($cleanValue), 'TOTAL')) {
                     $isTotalRow = true;
                     $cleanValue = substr($cleanValue, 4);
                 }
 
                 $sheet->setCellValue($col . $rowIdx, $cleanValue);
-
                 if (is_numeric(str_replace([' ', ','], ['', '.'], $cleanValue)) && strlen($cleanValue) > 0) {
                     $sheet->getStyle($col . $rowIdx)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
                 }
                 $col++;
             }
 
-            $currentRowRange = 'A' . $rowIdx . ':' . $lastCol . $rowIdx;
             if ($isTotalRow) {
-                $sheet->getStyle($currentRowRange)->applyFromArray([
+                $sheet->getStyle('A' . $rowIdx . ':' . $lastCol . $rowIdx)->applyFromArray([
                     'font' => ['bold' => true],
-                    'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => 'FDF2F2']],
+                    'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => 'FFF9F9']],
                     'borders' => [
                         'top' => ['borderStyle' => Border::BORDER_MEDIUM, 'color' => ['rgb' => '800000']],
-                        'bottom' => ['borderStyle' => Border::BORDER_MEDIUM, 'color' => ['rgb' => '800000']],
+                        'bottom' => ['borderStyle' => Border::BORDER_DOUBLE, 'color' => ['rgb' => '800000']],
                     ]
                 ]);
             } elseif ($isSectionRow) {
-                $sheet->getStyle($currentRowRange)->applyFromArray([
-                    'font' => ['bold' => true],
+                $sheet->getStyle('A' . $rowIdx . ':' . $lastCol . $rowIdx)->applyFromArray([
+                    'font' => ['bold' => true, 'color' => ['rgb' => '800000']],
                     'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => 'F1F1F1']],
                 ]);
             }
-
             $rowIdx++;
         }
 
@@ -246,18 +172,11 @@ class ComptableExportService
             fprintf($out, chr(0xEF).chr(0xBB).chr(0xBF));
             fputcsv($out, $headers, ';');
             foreach ($rows as $row) {
-                $cleanRow = array_map(function($v) {
-                    $v = (string)$v;
-                    if (str_starts_with($v, '### ')) return substr($v, 4);
-                    if (str_starts_with($v, '=== ')) return substr($v, 4);
-                    return $v;
-                }, $row);
+                $cleanRow = array_map(fn($v) => preg_replace('/^(### |=== )/', '', (string)$v), $row);
                 fputcsv($out, $cleanRow, ';');
             }
             fclose($out);
-        }, $this->safeFilename($filename, 'csv'), [
-            'Content-Type' => 'text/csv; charset=UTF-8',
-        ]);
+        }, $this->safeFilename($filename, 'csv'), ['Content-Type' => 'text/csv; charset=UTF-8']);
     }
 
     public function respond(string $format, array $headers, array $rows, string $filename, string $title, array $meta = [], ?Societe $societe = null): StreamedResponse|\Illuminate\Http\Response {
@@ -265,7 +184,7 @@ class ComptableExportService
             'excel', 'xlsx' => $this->downloadExcel($headers, $rows, $filename, $title, $societe, $meta),
             'pdf' => $this->downloadPdf($headers, $rows, $filename, $title, $meta, $societe),
             'csv' => $this->downloadCsv($headers, $rows, $filename),
-            default => abort(422, 'Format d\'export non supporté.'),
+            default => abort(422, 'Format non supporté.'),
         };
     }
 

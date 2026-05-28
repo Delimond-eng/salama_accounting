@@ -40,6 +40,8 @@
                                 continue;
                             }
 
+                            $isDisabled = $mod['disabled'] ?? false;
+
                             // 1. Actif si c'est la page d'accueil du module ou le tableau de bord racine
                             $isActive = (request()->routeIs('accounting.modules.show') && request()->route('module') === $key)
                                         || ($key === 'dashboard' && request()->routeIs('dashboard*'));
@@ -56,12 +58,12 @@
                                 }
                             }
 
-                            $href = $key === 'dashboard'
+                            $href = $isDisabled ? 'javascript:void(0);' : ($key === 'dashboard'
                                 ? route('dashboard')
-                                : route('accounting.modules.show', ['module' => $key]);
+                                : route('accounting.modules.show', ['module' => $key]));
                         @endphp
-                        <li class="{{ $isActive ? 'active' : '' }}">
-                            <a href="{{ $href }}" >
+                        <li class="{{ $isActive ? 'active' : '' }} {{ $isDisabled ? 'disabled' : '' }}">
+                            <a href="{{ $href }}" @if($isDisabled) style="opacity: 0.5; cursor: not-allowed;" title="Bientôt disponible" @endif>
                                 <i class="ti {{ $mod['icon'] }}"></i>
                                 <span>{{ $mod['number'] }} {{ $mod['title'] }}</span>
                             </a>

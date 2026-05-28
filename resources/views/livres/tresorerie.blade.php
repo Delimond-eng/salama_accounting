@@ -62,7 +62,7 @@
                 </div>
             </div>
             <div class="col-md-4">
-                <div class="card border-0 shadow-sm bg-label-info border-start border-info border-3">
+                <div class="card border-0 shadow bg-info-subtle border-start border-info border-3">
                     <div class="card-body p-3">
                         <p class="text-muted fs-11 fw-bold text-uppercase mb-1">Clôture au @{{ filtres.date_fin }}</p>
                         <h4 class="mb-0 fw-bold">@{{ fmt(data.soldes.final_periode) }} <small class="fs-12">@{{ data.devise_affichage }}</small></h4>
@@ -70,7 +70,7 @@
                 </div>
             </div>
             <div class="col-md-4">
-                <div class="card border-0 shadow-sm bg-primary border-start border-info border-3">
+                <div class="card border-0 shadow-sm bg-info-gradient border-start border-info border-3">
                     <div class="card-body p-3">
                         <p class="text-white-50 fs-11 fw-bold text-uppercase mb-1">Solde Actuel (@{{ data.soldes.date_actuel }})</p>
                         <h4 class="mb-0 fw-bold text-white">@{{ fmt(data.soldes.actuel) }} <small class="fs-12">@{{ data.devise_affichage }}</small></h4>
@@ -118,7 +118,7 @@
                                 <td>
                                     <div class="d-flex flex-column">
                                         <span class="fw-medium">@{{ l.libelle }}</span>
-                                        <small class="text-muted" v-if="l.partenaire && l.partenaire !== l.libelle">
+                                        <small class="text-info fs-10" v-if="l.partenaire && l.partenaire !== l.libelle">
                                             <i class="ti ti-user me-1"></i>@{{ l.partenaire }}
                                         </small>
                                     </div>
@@ -134,7 +134,7 @@
                                 </td>
                             </tr>
                         </tbody>
-                        <tfoot class="table-light text-dark fw-bold" v-if="data.lignes.length">
+                        <tfoot class=" text-info fw-bold" v-if="data.lignes.length">
                             <tr>
                                 <td colspan="4" class="text-end px-4 text-uppercase">Totaux Période</td>
                                 <td class="text-end">@{{ fmt(totaux.debit) }}</td>

@@ -48,7 +48,6 @@
                 </div>
             </div>
 
-<<<<<<< HEAD
             <!-- Table Grand Livre Général -->
             <div class="card border-0 shadow-sm" v-if="vueMode === 'general' && dataGeneral">
                 <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center">
@@ -168,85 +167,6 @@
             </div>
         </div>
     </div>
-=======
-    <div class="card border-0 rounded-0" v-if="vueMode === 'general' && dataGeneral">
-        <div class="card-header"><h5 class="mb-0">Grand livre général</h5></div>
-        <div class="card-body p-0">
-            <div class="table-responsive">
-                <table class="table table-nowrap mb-0 table-bordered">
-                    <thead class="table-light">
-                        <tr>
-                            <th>Compte / Date</th>
-                            <th>Partenaire</th>
-                            <th>Devise</th>
-                            <th class="text-end">Débit</th>
-                            <th class="text-end">Crédit</th>
-                            <th class="text-end">Solde</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr v-for="(r, i) in dataGeneral.lignes" :key="'g'+i" class="fw-medium">
-                            <td>@{{ r.libelle_complet }}</td>
-                            <td></td>
-                            <td>@{{ r.devise_libelle }}</td>
-                            <td class="text-end">@{{ fmtMontantDevise(r.debit, r.devise_saisie) }}</td>
-                            <td class="text-end">@{{ fmtMontantDevise(r.credit, r.devise_saisie) }}</td>
-                            <td class="text-end">@{{ fmtMontantDevise(r.solde, r.devise_saisie) }}</td>
-                        </tr>
-                        <tr class="table-light text-dark fw-bold" v-if="dataGeneral.totaux">
-                            <td colspan="3">Total grand livre</td>
-                            <td class="text-end">@{{ fmtMontantDevise(dataGeneral.totaux.debit, dataGeneral.devise_affichage) }}</td>
-                            <td class="text-end">@{{ fmtMontantDevise(dataGeneral.totaux.credit, dataGeneral.devise_affichage) }}</td>
-                            <td class="text-end">@{{ fmtMontantDevise(dataGeneral.totaux.solde, dataGeneral.devise_affichage) }}</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-
-    <div class="card border-0 rounded-0" v-if="vueMode === 'compte' && dataCompte">
-        <div class="card-header">
-            <h5 class="mb-0">@{{ dataCompte.compte?.num_compte }} — @{{ dataCompte.compte?.libelle }}</h5>
-            <span class="text-muted fs-12">Solde ouverture : @{{ fmtMontantDevise(dataCompte.solde_ouverture, dataCompte.devise_affichage) }} · Clôture : @{{ fmtMontantDevise(dataCompte.solde_cloture, dataCompte.devise_affichage) }}</span>
-        </div>
-        <div class="card-body p-0">
-            <div class="table-responsive">
-                <table class="table table-nowrap table-bordered mb-0">
-                    <thead class="table-light">
-                        <tr>
-                            <th>Date</th><th>Partenaire</th><th>Devise</th>
-                            <th class="text-end">Débit</th><th class="text-end">Crédit</th><th class="text-end">Solde</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr class="table-secondary fw-medium">
-                            <td colspan="3">Solde d'ouverture</td>
-                            <td class="text-end">—</td><td class="text-end">—</td>
-                            <td class="text-end">@{{ fmtMontantDevise(dataCompte.solde_ouverture, dataCompte.devise_affichage) }}</td>
-                        </tr>
-                        <tr v-for="(l, i) in dataCompte.lignes" :key="i">
-                            <td class="text-nowrap">@{{ fmtDateTime(l.date_enregistrement) }}</td>
-                            <td>@{{ l.partenaire || '—' }}</td>
-                            <td>@{{ l.devise_saisie }}</td>
-                            <td class="text-end">@{{ fmtMontantDevise(l.debit, l.devise_saisie) }}</td>
-                            <td class="text-end">@{{ fmtMontantDevise(l.credit, l.devise_saisie) }}</td>
-                            <td class="text-end fw-medium">@{{ fmtMontantDevise(l.solde, dataCompte.devise_affichage) }}</td>
-                        </tr>
-                    </tbody>
-                    <tfoot class="table-light text-dark fw-bold" v-if="dataCompte.lignes.length">
-                         <tr>
-                            <td colspan="3">SOLDE DE CLÔTURE</td>
-                            <td class="text-end">—</td><td class="text-end">—</td>
-                            <td class="text-end">@{{ fmtMontantDevise(dataCompte.solde_cloture, dataCompte.devise_affichage) }}</td>
-                        </tr>
-                    </tfoot>
-                </table>
-            </div>
-        </div>
-    </div>
-
->>>>>>> 356d4919f7208489f8fadf9a5b1244abeb82c9b0
     </template>
 </div>
 @endsection

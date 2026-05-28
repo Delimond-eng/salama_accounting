@@ -3,11 +3,17 @@
         <div class="row g-3 align-items-center">
             <div class="col-md-2">
                 <label class="form-label text-muted fs-12 mb-1">Du</label>
-                <input type="date" class="form-control form-control-sm" v-model="filtres.date_debut" @change="loadList">
+                <div class="input-group input-group-sm">
+                    <span class="input-group-text bg-light border-end-0"><i class="ti ti-calendar fs-14"></i></span>
+                    <input type="date" class="form-control border-start-0 ps-0" v-model="filtres.date_debut" @change="loadList">
+                </div>
             </div>
             <div class="col-md-2">
                 <label class="form-label text-muted fs-12 mb-1">Au</label>
-                <input type="date" class="form-control form-control-sm" v-model="filtres.date_fin" @change="loadList">
+                <div class="input-group input-group-sm">
+                    <span class="input-group-text bg-light border-end-0"><i class="ti ti-calendar fs-14"></i></span>
+                    <input type="date" class="form-control border-start-0 ps-0" v-model="filtres.date_fin" @change="loadList">
+                </div>
             </div>
             <div class="col-md-2">
                 <label class="form-label text-muted fs-12 mb-1">Recherche</label>
@@ -37,10 +43,6 @@
                     <span class="input-group-text bg-light fs-11">CDF</span>
                 </div>
             </div>
-
-            {{--  <div class="col-auto ms-auto">
-                @include('components.export-buttons')
-            </div>  --}}
         </div>
     </div>
 </div>

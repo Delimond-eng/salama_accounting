@@ -40,10 +40,9 @@
                     </div>
                 </div>
             </div>
-<<<<<<< HEAD
 
             <!-- Card Informations -->
-            <div class="card border-0 shadow-sm">
+            <div class="card border-0 shadow-sm mb-4">
                 <div class="card-header bg-white border-bottom py-3">
                     <h5 class="mb-0 fw-bold text-primary"><i class="ti ti-info-circle me-2"></i>Fiche d'identification</h5>
                 </div>
@@ -51,45 +50,45 @@
                     <form @submit.prevent="saveSociete">
                         <div class="row g-3">
                             <div class="col-md-4">
-                                <label class="form-label fw-bold">Code interne</label>
+                                <label class="form-label fw-bold small">Code interne</label>
                                 <input class="form-control border-2 font-monospace" v-model="formSociete.code" required placeholder="ex: COMPTA-01">
                             </div>
                             <div class="col-md-8">
-                                <label class="form-label fw-bold">Raison sociale <span class="text-danger">*</span></label>
+                                <label class="form-label fw-bold small">Raison sociale <span class="text-danger">*</span></label>
                                 <input class="form-control border-2" v-model="formSociete.raison_sociale" required placeholder="Nom officiel de l'entreprise">
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label fw-bold">Forme juridique</label>
+                                <label class="form-label fw-bold small">Forme juridique</label>
                                 <input class="form-control border-2" v-model="formSociete.forme_juridique" placeholder="ex: SARL, SA, Ets...">
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label fw-bold">Sigle / Nom commercial</label>
+                                <label class="form-label fw-bold small">Sigle / Nom commercial</label>
                                 <input class="form-control border-2" v-model="formSociete.sigle">
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label fw-bold">Devise de tenue de compte</label>
+                                <label class="form-label fw-bold small">Devise de tenue de compte</label>
                                 <select class="form-select border-2" v-model="formSociete.devise_principale" required>
                                     <option v-for="d in devises" :key="d.code_iso" :value="d.code_iso">@{{ d.code_iso }} — @{{ d.libelle }}</option>
                                 </select>
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label fw-bold">Régime fiscal</label>
-                                <input class="form-control border-2" v-model="formSociete.regime_fiscal" placeholder="ex: Réel, Simplifié...">
+                                <label class="form-label fw-bold small">Régime fiscal</label>
+                                <input class="form-control border-2" v-model="formSociete.regime_fiscal" placeholder="ex: Réel, Simplifié, RNI, RSI…">
                             </div>
                             <div class="col-12">
-                                <label class="form-label fw-bold">Siège social / Adresse</label>
+                                <label class="form-label fw-bold small">Siège social / Adresse</label>
                                 <textarea class="form-control border-2" rows="2" v-model="formSociete.adresse" placeholder="Adresse complète..."></textarea>
                             </div>
                             <div class="col-md-4">
-                                <label class="form-label fw-bold">Ville</label>
+                                <label class="form-label fw-bold small">Ville</label>
                                 <input class="form-control border-2" v-model="formSociete.ville">
                             </div>
                             <div class="col-md-4">
-                                <label class="form-label fw-bold">Pays</label>
+                                <label class="form-label fw-bold small">Pays</label>
                                 <input class="form-control border-2" v-model="formSociete.pays">
                             </div>
                             <div class="col-md-4">
-                                <label class="form-label fw-bold">Statut</label>
+                                <label class="form-label fw-bold small">Statut</label>
                                 <select class="form-select border-2" v-model="formSociete.statut">
                                     <option value="active">Active</option>
                                     <option value="inactive">Inactive</option>
@@ -97,84 +96,78 @@
                                 </select>
                             </div>
                             <div class="col-md-4">
-                                <label class="form-label fw-bold">Téléphone</label>
+                                <label class="form-label fw-bold small">Téléphone</label>
                                 <input class="form-control border-2" v-model="formSociete.telephone">
                             </div>
                             <div class="col-md-4">
-                                <label class="form-label fw-bold">Email contact</label>
+                                <label class="form-label fw-bold small">Email contact</label>
                                 <input type="email" class="form-control border-2" v-model="formSociete.email">
                             </div>
                             <div class="col-md-4">
-                                <label class="form-label fw-bold">N° RCCM / ID Nat</label>
+                                <label class="form-label fw-bold small">N° RCCM</label>
                                 <input class="form-control border-2" v-model="formSociete.rccm">
                             </div>
-                            <div class="col-12 mt-4">
-                                <button type="submit" class="btn btn-primary px-4" :disabled="isLoading">
-                                    <i class="ti ti-device-floppy me-1"></i>Enregistrer les modifications
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold small">N° Impôt (NIF)</label>
+                                <input class="form-control border-2" v-model="formSociete.num_contribuable" placeholder="Numéro d'impôt">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold small">Identification nationale</label>
+                                <input class="form-control border-2" v-model="formSociete.identification_nationale">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold small">N° CNPS</label>
+                                <input class="form-control border-2" v-model="formSociete.num_cnps">
+                            </div>
+
+                            <div class="col-12 mt-3">
+                                <hr class="my-3">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <h6 class="mb-0 fw-bold text-info"><i class="ti ti-building-bank me-2"></i>Coordonnées bancaires</h6>
+                                    <button type="button" class="btn btn-sm btn-outline-primary" @click="ajouterBanque">
+                                        <i class="ti ti-plus me-1"></i> Ajouter une banque
+                                    </button>
+                                </div>
+
+                                <div v-if="!banques.length" class="text-muted fs-12 mb-3 bg-light p-3 rounded text-center border-dashed">
+                                    Aucun compte bancaire configuré. Ajoutez-en un pour l'afficher sur vos documents.
+                                </div>
+
+                                <div v-for="(b, i) in banques" :key="i" class="row g-2 align-items-end mb-3 border rounded p-3 bg-light-soft position-relative">
+                                    <div class="col-md-4">
+                                        <label class="form-label small fw-bold">Nom de la banque</label>
+                                        <input class="form-control form-control-sm border-2" v-model="b.banque" placeholder="Ex. Rawbank, Equity BCDC…">
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label small fw-bold">N° de compte</label>
+                                        <input class="form-control form-control-sm border-2" v-model="b.numero_compte">
+                                    </div>
+                                    <div class="col-md-2">
+                                        <label class="form-label small fw-bold">Devise</label>
+                                        <select class="form-select form-select-sm border-2" v-model="b.devise">
+                                            <option value="CDF">CDF</option>
+                                            <option value="USD">USD</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-2 d-flex gap-2">
+                                        <div class="form-check mb-2">
+                                            <input class="form-check-input" type="checkbox" :id="'bdef_'+i" v-model="b.est_defaut" @change="definirBanqueDefaut(i)">
+                                            <label class="form-check-label fs-11" :for="'bdef_'+i">Défaut</label>
+                                        </div>
+                                        <button type="button" class="btn btn-sm btn-outline-danger border-0" @click="banques.splice(i,1)" title="Supprimer">
+                                            <i class="ti ti-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-12 mt-4 pt-2 border-top">
+                                <button type="submit" class="btn btn-primary px-5 shadow-sm" :disabled="isLoading">
+                                    <i class="ti ti-device-floppy me-2" v-if="!isLoading"></i>
+                                    <span class="spinner-border spinner-border-sm me-2" v-else></span>
+                                    Enregistrer la configuration de la société
                                 </button>
                             </div>
-=======
-            <div class="card border-0 rounded-0">
-                <div class="card-header"><h5 class="mb-0 fs-16">Informations société</h5></div>
-                <div class="card-body">
-                    <form @submit.prevent="saveSociete" class="row g-3">
-                        <div class="col-md-4"><label class="form-label">Code</label><input class="form-control" v-model="formSociete.code" required></div>
-                        <div class="col-md-8"><label class="form-label">Raison sociale</label><input class="form-control" v-model="formSociete.raison_sociale" required></div>
-                        <div class="col-md-4"><label class="form-label">Forme juridique</label><input class="form-control" v-model="formSociete.forme_juridique"></div>
-                        <div class="col-md-4"><label class="form-label">Sigle</label><input class="form-control" v-model="formSociete.sigle"></div>
-                        <div class="col-md-4">
-                            <label class="form-label">Devise principale</label>
-                            <select class="form-select" v-model="formSociete.devise_principale" required>
-                                <option v-for="d in devises" :key="d.code_iso" :value="d.code_iso">@{{ d.code_iso }}</option>
-                            </select>
-                        </div>
-                        <div class="col-12"><label class="form-label">Adresse</label><textarea class="form-control" rows="2" v-model="formSociete.adresse"></textarea></div>
-                        <div class="col-md-4"><label class="form-label">Ville</label><input class="form-control" v-model="formSociete.ville"></div>
-                        <div class="col-md-4"><label class="form-label">Pays</label><input class="form-control" v-model="formSociete.pays"></div>
-                        <div class="col-md-4">
-                            <label class="form-label">Statut</label>
-                            <select class="form-select" v-model="formSociete.statut">
-                                <option value="active">Active</option>
-                                <option value="inactive">Inactive</option>
-                                <option value="suspendue">Suspendue</option>
-                            </select>
-                        </div>
-                        <div class="col-md-4"><label class="form-label">Téléphone</label><input class="form-control" v-model="formSociete.telephone"></div>
-                        <div class="col-md-4"><label class="form-label">Email</label><input type="email" class="form-control" v-model="formSociete.email"></div>
-                        <div class="col-md-4"><label class="form-label">RCCM</label><input class="form-control" v-model="formSociete.rccm"></div>
-                        <div class="col-md-4"><label class="form-label">N° Impôt (NIF)</label><input class="form-control" v-model="formSociete.num_contribuable" placeholder="Numéro d'impôt"></div>
-                        <div class="col-md-4"><label class="form-label">Identification nationale</label><input class="form-control" v-model="formSociete.identification_nationale"></div>
-                        <div class="col-md-4"><label class="form-label">N° CNPS</label><input class="form-control" v-model="formSociete.num_cnps"></div>
-                        <div class="col-md-4"><label class="form-label">Régime fiscal</label><input class="form-control" v-model="formSociete.regime_fiscal" placeholder="RNI, RSI…"></div>
-                        <div class="col-12">
-                            <hr class="my-2">
-                            <div class="d-flex justify-content-between align-items-center mb-2">
-                                <h6 class="mb-0">Comptes bancaires</h6>
-                                <button type="button" class="btn btn-sm btn-outline-primary" @click="ajouterBanque"><i class="ti ti-plus"></i> Ajouter une banque</button>
-                            </div>
-                            <div v-if="!banques.length" class="text-muted fs-13 mb-2">Aucun compte bancaire — ajoutez au moins une banque pour l'afficher sur les factures.</div>
-                            <div v-for="(b, i) in banques" :key="i" class="row g-2 align-items-end mb-2 border rounded p-2 bg-light">
-                                <div class="col-md-4"><label class="form-label">Banque</label><input class="form-control" v-model="b.banque" placeholder="Ex. Rawbank, Equity BCDC…"></div>
-                                <div class="col-md-4"><label class="form-label">N° de compte</label><input class="form-control" v-model="b.numero_compte"></div>
-                                <div class="col-md-2">
-                                    <label class="form-label">Devise</label>
-                                    <select class="form-select" v-model="b.devise">
-                                        <option value="CDF">CDF</option>
-                                        <option value="USD">USD</option>
-                                    </select>
-                                </div>
-                                <div class="col-md-2 d-flex gap-2">
-                                    <div class="form-check mt-4">
-                                        <input class="form-check-input" type="checkbox" :id="'bdef_'+i" v-model="b.est_defaut" @change="definirBanqueDefaut(i)">
-                                        <label class="form-check-label" :for="'bdef_'+i">Défaut</label>
-                                    </div>
-                                    <button type="button" class="btn btn-sm btn-outline-danger mt-3" @click="banques.splice(i,1)"><i class="ti ti-trash"></i></button>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-12">
-                            <button type="submit" class="btn btn-primary" :disabled="isLoading">Enregistrer la société</button>
->>>>>>> 356d4919f7208489f8fadf9a5b1244abeb82c9b0
                         </div>
                     </form>
                 </div>

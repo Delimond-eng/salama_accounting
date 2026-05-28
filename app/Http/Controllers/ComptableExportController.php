@@ -11,6 +11,7 @@ use App\Models\PlanComptable;
 use App\Models\Societe;
 use App\Models\Tiers;
 use App\Models\DeclarationFiscale;
+use App\Services\AnalytiqueComptableService;
 use App\Services\ComptableExportService;
 use App\Services\EtatsFinanciersService;
 use App\Services\FiscaliteService;
@@ -27,7 +28,8 @@ class ComptableExportController extends Controller
         protected LivresComptablesService $livres,
         protected EtatsFinanciersService $etats,
         protected FiscaliteService $fiscalite,
-        protected SaisieComptableService $saisie
+        protected SaisieComptableService $saisie,
+        protected AnalytiqueComptableService $analytique
     ) {}
 
     public function livres(Request $request, string $type, string $format)
@@ -88,6 +90,104 @@ class ComptableExportController extends Controller
         }
 
         return $this->export->respond($format, $headers, $rows, 'etat_'.$type, 'État — '.$type, $meta, $ctx['societe']);
+    }
+
+    public function analytique(Request $request, string $type, string $format)
+    {
+        $societeId = SocieteContext::requireId();
+        $societe = Societe::findOrFail($societeId);
+        $exercice = $this->livres->exerciceCourant($societeId);
+
+        $paramsDevise = [
+            'devise_affichage' => $request->get('devise_affichage'),
+            'mode_conversion' => $request->get('mode_conversion'),
+            'scope_devise' => $request->get('scope_devise'),
+        ];
+
+        $f = [
+            'date_debut' => $request->get('date_debut', $exercice?->date_debut?->format('Y-m-d')),
+            'date_fin' => $request->get('date_fin', $exercice?->date_fin?->format('Y-m-d')),
+            'axe_id' => $request->integer('axe_id') ?: null,
+            'section_id' => $request->integer('section_id') ?: null,
+            'journal_id' => $request->integer('journal_id') ?: null,
+        ];
+
+        if (!$exercice) abort(422, 'Aucun exercice courant.');
+
+        [$headers, $rows, $title] = match ($type) {
+            'balance' => $this->rowsAnalytiqueBalance($societeId, $exercice->id, $f, $paramsDevise),
+            'grand-livre' => $this->rowsAnalytiqueGrandLivre($societeId, $exercice->id, $f, $paramsDevise),
+            'rentabilite' => $this->rowsAnalytiqueRentabilite($societeId, $exercice->id, $f, $paramsDevise),
+            'centres-cout' => $this->rowsAnalytiqueCentresCout($societeId, $exercice->id, $f, $paramsDevise),
+            default => abort(404),
+        };
+
+        $meta = [
+            'Période' => $f['date_debut'] . ' au ' . $f['date_fin'],
+            'Exercice' => $exercice->libelle,
+        ];
+
+        return $this->export->respond($format, $headers, $rows, "analytique_{$type}", $title, $meta, $societe);
+    }
+
+    protected function rowsAnalytiqueBalance(int $societeId, int $exerciceId, array $f, array $params): array
+    {
+        $data = $this->analytique->balanceAnalytique($societeId, $exerciceId, $f['date_debut'], $f['date_fin'], $f['axe_id'], $f['section_id'], $f['journal_id'], $params);
+        $headers = ['Axe', 'Code', 'Libellé', 'Débit', 'Crédit', 'Solde'];
+        $rows = [];
+        foreach ($data['items'] as $item) {
+            $rows[] = [
+                $item['axe_libelle'], $item['section_code'], $item['section_libelle'],
+                $this->export->formatNum($item['debit']), $this->export->formatNum($item['credit']), $this->export->formatNum($item['solde'])
+            ];
+        }
+        $rows[] = ['=== TOTAL GÉNÉRAL', '', '', $this->export->formatNum($data['totaux']['debit']), $this->export->formatNum($data['totaux']['credit']), $this->export->formatNum($data['totaux']['debit'] - $data['totaux']['credit'])];
+        return [$headers, $rows, 'Balance Analytique'];
+    }
+
+    protected function rowsAnalytiqueGrandLivre(int $societeId, int $exerciceId, array $f, array $params): array
+    {
+        $data = $this->analytique->grandLivreAnalytique($societeId, $exerciceId, $f['date_debut'], $f['date_fin'], $f['section_id'], $f['journal_id'], $params);
+        $headers = ['Date', 'Pièce', 'Journal', 'Compte', 'Axe', 'Section', 'Libellé', 'Débit', 'Crédit'];
+        $rows = [];
+        foreach ($data['lignes'] as $l) {
+            $rows[] = [
+                $l->date_ecriture, $l->num_piece, $l->journal_code, $l->num_compte,
+                $l->axe_code, $l->section_libelle, $l->libelle_ligne ?: $l->libelle_ecriture,
+                $this->export->formatNum($l->debit), $this->export->formatNum($l->credit)
+            ];
+        }
+        return [$headers, $rows, 'Grand Livre Analytique'];
+    }
+
+    protected function rowsAnalytiqueRentabilite(int $societeId, int $exerciceId, array $f, array $params): array
+    {
+        $data = $this->analytique->rentabiliteProjets($societeId, $exerciceId, $f['date_debut'], $f['date_fin'], $f['axe_id'], $params);
+        $headers = ['Axe', 'Projet / Section', 'Charges', 'Produits', 'Résultat Net', 'Marge %'];
+        $rows = [];
+        foreach ($data['projets'] as $p) {
+            $marge = $p['produits'] > 0 ? ($p['resultat'] / $p['produits'] * 100) : 0;
+            $rows[] = [
+                $p['axe_libelle'], $p['libelle'],
+                $this->export->formatNum($p['charges']), $this->export->formatNum($p['produits']),
+                $this->export->formatNum($p['resultat']), number_format($marge, 1) . ' %'
+            ];
+        }
+        return [$headers, $rows, 'Rentabilité Analytique'];
+    }
+
+    protected function rowsAnalytiqueCentresCout(int $societeId, int $exerciceId, array $f, array $params): array
+    {
+        $data = $this->analytique->depensesParAxe($societeId, $exerciceId, $f['date_debut'], $f['date_fin'], $f['axe_id'], $params);
+        $headers = ['Axe', 'Section', 'Dépenses / Charges'];
+        $rows = [];
+        foreach ($data['items'] as $item) {
+            $rows[] = [
+                $item['axe_libelle'], $item['section_libelle'],
+                $this->export->formatNum($item['depenses'])
+            ];
+        }
+        return [$headers, $rows, 'Analyse des Centres de Coût'];
     }
 
     protected function formatEtatsRows(string $type, array $data): array

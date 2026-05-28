@@ -11,7 +11,7 @@
                 <h5 class="mb-0 fw-bold text-primary"><i class="ti ti-arrow-forward-up me-2"></i>Génération du Report à Nouveau (RAN)</h5>
             </div>
             <div class="card-body p-4">
-                <div class="alert bg-label-primary border-0 mb-4">
+                <div class="alert bg-label-primary border-1 border-primary mb-4">
                     <div class="d-flex">
                         <i class="ti ti-info-circle fs-24 me-2"></i>
                         <div>

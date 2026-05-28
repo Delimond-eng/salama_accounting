@@ -15,7 +15,7 @@
                 <p class="text-muted mb-0 small"><i class="ti ti-calendar-event me-1"></i>@{{ filtres.date_debut }} au @{{ filtres.date_fin }}</p>
             </div>
             <div class="text-end">
-                <span class="badge bg-soft-info text-info fs-13 px-3 py-2">Total : @{{ fmt(data.total) }} @{{ data.devise }}</span>
+                <span class="badge bg-soft-info text-info fs-13 p-3">Total : @{{ fmt(data.total) }} @{{ data.devise }}</span>
             </div>
         </div>
         <div class="card-body p-0">

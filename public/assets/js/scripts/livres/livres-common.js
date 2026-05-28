@@ -22,6 +22,7 @@ export const livresMixin = {
             tauxUsd: 1,
             dateTaux: null,
             error: null,
+            message: null,
             isLoading: false,
             journalId: null,
             exportBase: `/accounting/export/livres/${window.__LIVRES_PAGE__ || "balance"}`,

@@ -255,6 +255,8 @@ Route::middleware(['auth', 'accounting.permission'])->group(function () {
                 ->whereIn('format', ['pdf', 'excel', 'xlsx', 'csv'])->name('parametres');
             Route::get('/admin/{type}/{format}', [ComptableExportController::class, 'admin'])
                 ->whereIn('format', ['pdf', 'excel', 'xlsx', 'csv'])->name('admin');
+            Route::get('/analytique/{type}/{format}', [ComptableExportController::class, 'analytique'])
+                ->whereIn('format', ['pdf', 'excel', 'xlsx', 'csv'])->name('analytique');
         });
 
         Route::prefix('parametres')->name('parametres.')->group(function () {

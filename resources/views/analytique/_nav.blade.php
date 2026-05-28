@@ -1,21 +1,58 @@
-@php $active = $active ?? 'balance'; @endphp
-<div class="d-flex align-items-center justify-content-between gap-2 mb-3 flex-wrap">
+@php
+    $navItems = [
+        'dashboard' => ['route' => 'accounting.analytique.dashboard', 'label' => 'Tableau de bord', 'icon' => 'ti-chart-pie'],
+        'axes' => ['route' => 'accounting.analytique.axes', 'label' => 'Axes & comptes', 'icon' => 'ti-sitemap'],
+        'balance' => ['route' => 'accounting.analytique.balance', 'label' => 'Balance', 'icon' => 'ti-scale'],
+        'grand-livre' => ['route' => 'accounting.analytique.grand-livre', 'label' => 'Grand livre', 'icon' => 'ti-book-2'],
+        'rentabilite' => ['route' => 'accounting.analytique.rentabilite', 'label' => 'Rentabilité', 'icon' => 'ti-trending-up'],
+        'centres-cout' => ['route' => 'accounting.analytique.centres-cout', 'label' => 'Centres de coût', 'icon' => 'ti-building'],
+    ];
+    $active = $active ?? 'balance';
+@endphp
+
+<div class="d-flex align-items-center justify-content-between gap-2 mb-4 flex-wrap">
     <div>
-        <h4 class="mb-1">{{ $title ?? 'Analytique' }}</h4>
+        <h4 class="mb-1">{{ $title ?? 'Comptabilité analytique' }}</h4>
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb mb-0 p-0">
                 <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Accueil</a></li>
                 <li class="breadcrumb-item"><a href="{{ route('accounting.modules.show', ['module' => 'analytique']) }}">Analytique</a></li>
-                <li class="breadcrumb-item active">{{ $title ?? '' }}</li>
+                <li class="breadcrumb-item active">{{ $breadcrumb ?? $title ?? '' }}</li>
             </ol>
         </nav>
     </div>
+    <div class="gap-2 d-flex align-items-center flex-wrap">
+        <div class="d-flex align-items-center gap-2 me-2" v-if="exercice">
+            <span class="badge bg-soft-info text-info">@{{ exercice.libelle }}</span>
+        </div>
+
+        @include('components.export-buttons')
+
+        <a href="javascript:void(0);" class="btn btn-icon btn-outline-light shadow"
+           @click="loadData" :disabled="isLoading" data-bs-toggle="tooltip" title="Actualiser">
+            <i class="ti ti-refresh" :class="{'ti-spin': isLoading}"></i>
+        </a>
+        <a href="javascript:void(0);" class="btn btn-icon btn-outline-light shadow" id="collapse-header">
+            <i class="ti ti-transition-top"></i>
+        </a>
+    </div>
 </div>
-<ul class="nav nav-tabs nav-tabs-bottom mb-3 flex-wrap">
-    <li class="nav-item"><a class="nav-link {{ $active === 'dashboard' ? 'active' : '' }}" href="{{ route('accounting.analytique.dashboard') }}"><i class="ti ti-chart-pie me-1"></i>Dashboard</a></li>
-    <li class="nav-item"><a class="nav-link {{ $active === 'axes' ? 'active' : '' }}" href="{{ route('accounting.analytique.axes') }}"><i class="ti ti-sitemap me-1"></i>Axes & comptes</a></li>
-    <li class="nav-item"><a class="nav-link {{ $active === 'balance' ? 'active' : '' }}" href="{{ route('accounting.analytique.balance') }}"><i class="ti ti-scale me-1"></i>Balance</a></li>
-    <li class="nav-item"><a class="nav-link {{ $active === 'grand-livre' ? 'active' : '' }}" href="{{ route('accounting.analytique.grand-livre') }}"><i class="ti ti-book-2 me-1"></i>Grand livre</a></li>
-    <li class="nav-item"><a class="nav-link {{ $active === 'rentabilite' ? 'active' : '' }}" href="{{ route('accounting.analytique.rentabilite') }}"><i class="ti ti-trending-up me-1"></i>Rentabilité</a></li>
-    <li class="nav-item"><a class="nav-link {{ $active === 'centres-cout' ? 'active' : '' }}" href="{{ route('accounting.analytique.centres-cout') }}"><i class="ti ti-building me-1"></i>Centres de coût</a></li>
+
+<ul class="nav nav-tabs nav-tabs-solid nav-tabs-rounded mb-4 flex-wrap">
+    @foreach ($navItems as $key => $item)
+        <li class="nav-item">
+            <a class="nav-link {{ $active === $key ? 'active' : '' }}" href="{{ route($item['route']) }}">
+                <i class="ti {{ $item['icon'] }} me-1"></i>{{ $item['label'] }}
+            </a>
+        </li>
+    @endforeach
 </ul>
+
+<div v-if="error" class="alert alert-danger alert-dismissible fade show border-0 shadow-sm">
+    <ul class="mb-0" v-if="Array.isArray(error)"><li v-for="(e,i) in error" :key="i">@{{ e }}</li></ul>
+    <span v-else>@{{ error }}</span>
+    <button type="button" class="btn-close" @click="error=null"></button>
+</div>
+<div v-if="message" class="alert alert-success alert-dismissible fade show border-0 shadow-sm">
+    <i class="ti ti-circle-check me-2"></i>@{{ message }}<button type="button" class="btn-close" @click="message=null"></button>
+</div>

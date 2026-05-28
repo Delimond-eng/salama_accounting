@@ -47,7 +47,7 @@
                                 <td>
                                     <div class="d-flex flex-column">
                                         <span class="fw-medium">@{{ l.libelle }}</span>
-                                        <small class="text-muted" v-if="l.partenaire && l.partenaire !== l.libelle">
+                                        <small class="text-info fs-10" v-if="l.partenaire && l.partenaire !== l.libelle">
                                             <i class="ti ti-user me-1"></i>@{{ l.partenaire }}
                                         </small>
                                     </div>

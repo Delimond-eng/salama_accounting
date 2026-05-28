@@ -39,13 +39,13 @@
                             <circle class="path" cx="25" cy="25" r="20" fill="none" stroke-width="5"></circle>
                         </svg>
                     </div>
-                    <span class="ms-2 fs-12 text-primary fw-bold text-uppercase letter-spacing-1 animate-pulse">Traitement...</span>
+                    <span class="ms-2 fs-12 text-primary fw-bold letter-spacing-1 animate-pulse">Chargement...</span>
                 </div>
             </div>
         </div>
 
         <div class="d-flex align-items-center">
-            @include('components.devise-bar')
+            {{--  @include('components.devise-bar')  --}}
             <div class="header-item">
                 <div class="dropdown me-2">
                     <a href="javascript:void(0);" class="btn topbar-link btnFullscreen"><i class="ti ti-maximize"></i></a>

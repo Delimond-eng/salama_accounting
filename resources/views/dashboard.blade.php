@@ -66,7 +66,7 @@
         {{-- Alertes BS --}}
         <div v-if="data && data.alertes && data.alertes.items.length" class="mb-4">
             <div v-for="(alerte, i) in data.alertes.items" :key="i"
-                 class="alert alert-dismissible fade show d-flex align-items-center mb-2 shadow-sm border-start border-4"
+                 class="alert alert-dismissible fade show d-flex align-items-center mb-2 shadow-sm border-start border-1"
                  :class="'alert-' + alerte.niveau + ' border-' + alerte.niveau">
                 <i class="ti fs-18 me-2" :class="alerte.niveau === 'danger' ? 'ti-alert-octagon' : 'ti-info-circle'"></i>
                 <div class="flex-fill fs-13">
@@ -390,7 +390,7 @@
                                     <tbody>
                                         <template v-for="(act, i) in data.activite_recente">
                                             <tr v-if="i === 0 || act.date !== data.activite_recente[i-1].date">
-                                                <td colspan="4" class="bg-light ps-3 py-1 fs-10 fw-bold text-uppercase text-muted border-top border-bottom">
+                                                <td colspan="4" class="bg-info-subtle ps-3 py-1 fs-10 fw-bold text-capitalize text-info">
                                                     <i class="ti ti-calendar me-1"></i> @{{ humanizeDate(act.date) }}
                                                 </td>
                                             </tr>

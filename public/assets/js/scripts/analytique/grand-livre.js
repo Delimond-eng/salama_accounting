@@ -5,5 +5,6 @@ new Vue({
     mixins: [analytiqueMixin],
     created() {
         this.dataUrl = "/accounting/analytique/grand-livre/data";
+        this.exportBase = "/accounting/export/analytique/grand-livre";
     },
 });

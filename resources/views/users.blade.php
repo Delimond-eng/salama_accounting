@@ -11,7 +11,7 @@
             <ul class="mb-0 ps-3">
                 <li v-for="(err, i) in errorList" :key="i">@{{ err }}</li>
             </ul>
-            <button type="button" class="btn-close" @click="errorList = []"></button>
+            <button type="button" class="btn-close" @click="error = null"></button>
         </div>
         <div v-if="message" class="alert alert-success alert-dismissible fade show border-0 shadow-sm" role="alert">
             <i class="ti ti-circle-check me-2"></i>@{{ message }}
@@ -32,7 +32,7 @@
             </div>
             <div class="gap-2 d-flex align-items-center flex-wrap">
                 @include('components.export-buttons')
-                <a href="javascript:void(0);" class="btn btn-icon btn-outline-light shadow" @click="loadUsers" :disabled="isLoading">
+                <a href="javascript:void(0);" class="btn btn-icon btn-outline-light shadow" @click="viewAllUsers" :disabled="isLoading">
                     <i class="ti ti-refresh" :class="{'ti-spin': isLoading}"></i>
                 </a>
             </div>
@@ -55,18 +55,18 @@
                             <h6 class="mb-3 fw-bold small text-uppercase">Filtres</h6>
                             <div class="mb-3">
                                 <label class="form-label small">Rôle système</label>
-                                <select class="form-select form-select-sm" v-model="filtreRole">
+                                <select class="form-select form-select-sm" v-model="searchRole">
                                     <option value="">Tous les rôles</option>
-                                    <option v-for="role in allRoles" :value="role.name">@{{ role.label || roleLabel(role.name) }}</option>
+                                    <option v-for="role in allRoles" :key="role.id" :value="role.name">@{{ role.label || roleLabel(role.name) }}</option>
                                 </select>
                             </div>
                             <div class="d-grid">
-                                <button type="button" class="btn btn-primary btn-sm" @click="filtreRole = ''">Réinitialiser</button>
+                                <button type="button" class="btn btn-primary btn-sm" @click="searchRole = ''">Réinitialiser</button>
                             </div>
                         </div>
                     </div>
                     @can('users.create')
-                    <button type="button" class="btn btn-primary btn-sm px-3" @click="openCreateUser">
+                    <button type="button" class="btn btn-primary btn-sm px-3" @click="openForm">
                         <i class="ti ti-plus me-1"></i>Nouvel utilisateur
                     </button>
                     @endcan
@@ -105,15 +105,18 @@
                                     </div>
                                 </td>
                                 <td>
-                                    <span class="badge badge-soft-info">@{{ u.role_label }}</span>
+                                    <span class="badge badge-soft-info me-1" v-for="r in u.roles" :key="r.id">@{{ r.label || roleLabel(r.name) }}</span>
+                                    <span v-if="!u.roles || !u.roles.length" class="text-muted small">Aucun rôle</span>
                                 </td>
                                 <td class="text-center">
-                                    <span class="badge rounded-pill bg-soft-success text-success">Actif</span>
+                                    <span class="badge rounded-pill" :class="u.actif ? 'bg-soft-success text-success' : 'bg-soft-secondary text-secondary'">
+                                        @{{ u.actif ? 'Actif' : 'Inactif' }}
+                                    </span>
                                 </td>
                                 <td class="text-end">
                                     <div class="d-flex gap-1 justify-content-end">
                                         @can('users.update')
-                                        <button type="button" class="btn btn-icon btn-sm btn-label-warning" @click="getAccess(u)" title="Gérer les accès">
+                                        <button type="button" class="btn btn-icon btn-sm btn-label-warning" @click="manageAccess(u)" title="Habilitations">
                                             <i class="ti ti-shield-lock"></i>
                                         </button>
                                         <button type="button" class="btn btn-icon btn-sm btn-label-primary" @click="editUser(u)" title="Modifier">
@@ -136,14 +139,14 @@
 
         <!-- Modal create/edit User -->
         @canany(['users.create','users.update'])
-        <div class="modal fade" id="add_users" tabindex="-1">
+        <div class="modal fade" id="modal_user" tabindex="-1">
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content border-0 shadow-lg">
                     <div class="modal-header bg-primary py-3">
                         <h5 class="modal-title text-white fw-bold">@{{ form.user_id ? 'Modifier l\'utilisateur' : 'Nouvel utilisateur' }}</h5>
                         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                     </div>
-                    <form @submit.prevent="createUser">
+                    <form @submit.prevent="saveUser">
                         <div class="modal-body p-4">
                             <div class="row g-3">
                                 <div class="col-12">
@@ -156,15 +159,21 @@
                                 </div>
                                 <div class="col-12">
                                     <label class="form-label fw-bold">Rôle système <span class="text-danger">*</span></label>
-                                    <select class="form-select border-2" v-model="form.role" required>
+                                    <select class="form-select border-2" v-model="form.role_id" required>
                                         <option value="" hidden>Sélectionner un rôle</option>
-                                        <option v-for="role in allRoles" :value="role.name">@{{ role.label || roleLabel(role.name) }}</option>
+                                        <option v-for="role in allRoles" :key="role.id" :value="role.id">@{{ role.label || roleLabel(role.name) }}</option>
                                     </select>
                                 </div>
                                 <div class="col-12">
                                     <label class="form-label fw-bold">Mot de passe @{{ form.user_id ? '(Optionnel)' : '*' }}</label>
                                     <input type="password" class="form-control border-2" v-model="form.password" :required="!form.user_id">
                                     <div class="form-text small" v-if="form.user_id">Laissez vide pour conserver le mot de passe actuel.</div>
+                                </div>
+                                <div class="col-12">
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" v-model="form.actif" id="user_actif">
+                                        <label class="form-check-label fw-medium" for="user_actif">Utilisateur actif</label>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -252,6 +261,9 @@
     .bg-label-info { background-color: #d7f5fc; color: #03c3ec; }
     .bg-light-soft { background-color: #f8fafc; }
     .search-box { min-width: 280px; }
+    .bg-soft-success { background-color: #dcfce7; color: #15803d; }
+    .bg-soft-secondary { background-color: #f1f5f9; color: #475569; }
+    .bg-soft-info { background-color: #e0f2fe; color: #0369a1; }
 </style>
 @endpush
 

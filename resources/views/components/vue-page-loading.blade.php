@@ -1,4 +1,4 @@
-<div class="vue-page-loading d-flex flex-column align-items-center justify-content-start pt-5">
+<div class="vue-page-loading d-flex flex-column align-items-center justify-content-start pt-5" style="height: max-content">
     <div class="software-spinner-container mb-4">
         <svg width="48" height="48" viewBox="0 0 50 50" class="software-svg-spinner">
             <circle class="bg" cx="25" cy="25" r="20" fill="none" stroke="#f1f3f4" stroke-width="5"></circle>
@@ -6,7 +6,7 @@
         </svg>
     </div>
     <div class="loader-text text-center">
-        <h6 class="fw-bold text-uppercase text-dark mb-1" style="letter-spacing: 2px; font-size: 12px;">Traitement des données</h6>
+        <h5 class="fw-bold text-dark mb-1" style="letter-spacing: 2px; font-size: 18px;">Chargement de la page...</h5>
         <div class="d-flex align-items-center justify-content-center gap-2">
             <span class="dot-animation"></span>
             <p class="text-muted small mb-0">Veuillez patienter pendant le chargement...</p>
@@ -23,7 +23,7 @@
         border-radius: 12px;
         transition: opacity 0.3s ease;
     }
-    
+
     .software-svg-spinner {
         animation: rotate-software 2s linear infinite;
     }

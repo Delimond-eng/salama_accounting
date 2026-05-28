@@ -1,20 +1,28 @@
 import { get } from "../modules/http.js";
 
+/**
+ * Gère les notifications et l'en-tête global.
+ * Note: loaded, options et prefs sont inclus pour éviter les avertissements Vue
+ * lors du rendu du composant DeviseBar imbriqué dans cet élément.
+ */
 new Vue({
     el: "#HeaderNotifications",
     data() {
         return {
             alertes: [],
             count: 0,
-            isLoading: false
+            isLoading: false,
+            // Propriétés nécessaires pour le template imbriqué DeviseBar
+            loaded: true,
+            options: { devises: [] },
+            prefs: {},
+            libelle: ''
         };
     },
     mounted() {
         this.loadNotifications();
-        // Rafraîchissement automatique toutes les 5 minutes
         setInterval(() => this.loadNotifications(), 300000);
 
-        // Écouteur global pour afficher le loader quand une page charge
         window.addEventListener('page-loading-start', () => { this.isLoading = true; });
         window.addEventListener('page-loading-stop', () => { this.isLoading = false; });
     },
@@ -41,6 +49,8 @@ new Vue({
                 info: "badge-soft-info",
                 success: "badge-soft-success",
             }[niveau] || "badge-soft-secondary";
-        }
+        },
+        // Méthode fantôme pour éviter les erreurs si appelée via le template imbriqué
+        save() {}
     }
 });

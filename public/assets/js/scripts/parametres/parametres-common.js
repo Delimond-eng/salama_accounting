@@ -14,6 +14,7 @@ export const parametresMixin = {
             error: null,
             message: null,
             isLoading: false,
+            loaded: false,
         };
     },
 
@@ -38,9 +39,12 @@ export const parametresMixin = {
         },
 
         async changeSociete() {
-            const { data } = await postJson("/accounting/parametres/societe/select", {
-                societe_id: this.societeId,
-            });
+            const { data } = await postJson(
+                "/accounting/parametres/societe/select",
+                {
+                    societe_id: this.societeId,
+                },
+            );
             if (!this.handleResponse(data)) {
                 return;
             }

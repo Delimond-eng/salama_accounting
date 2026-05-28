@@ -20,6 +20,8 @@ class Societe extends Model
 
     protected $casts = ['parametres' => 'array'];
 
+    protected $appends = ['logo_url'];
+
     public function exercices(): HasMany
     {
         return $this->hasMany(Exercice::class)->orderByDesc('annee');
@@ -47,18 +49,19 @@ class Societe extends Model
 
     public function getLogoUrlAttribute(): ?string
     {
-        if (! $this->logo_path) {
+        $path = trim($this->logo_path ?? '');
+        if (!$path) {
             return null;
         }
 
-        if (str_starts_with($this->logo_path, 'http://') || str_starts_with($this->logo_path, 'https://')) {
-            return $this->logo_path;
+        if (str_starts_with($path, 'http://') || str_starts_with($path, 'https://')) {
+            return $path;
         }
 
-        if (str_starts_with($this->logo_path, 'logos/')) {
-            return asset($this->logo_path);
+        if (str_starts_with($path, 'logos/')) {
+            return asset($path);
         }
 
-        return asset('storage/'.$this->logo_path);
+        return asset('storage/'.$path);
     }
 }

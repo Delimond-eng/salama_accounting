@@ -14,11 +14,11 @@
                 <h4 class="mb-0 text-primary fw-bold">Calendrier fiscal</h4>
                 <p class="text-muted mb-0 small"><i class="ti ti-info-circle me-1"></i>Dates limites de dépôt et de paiement</p>
             </div>
-            <div class="text-end">
+            {{--  <div class="text-end">
                 <button type="button" class="btn btn-sm btn-outline-primary" @click="loadData" :disabled="isLoading">
                     <i class="ti ti-refresh me-1" :class="{'ti-spin': isLoading}"></i>Actualiser
                 </button>
-            </div>
+            </div>  --}}
         </div>
         <div class="card-body p-0">
             <div class="table-responsive">

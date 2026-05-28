@@ -161,7 +161,7 @@ return [
         ],
         'analytique' => [
             'permission' => 'analytique.view',
-            'number' => '③b',
+            'number' => '③',
             'title' => 'Comptabilité analytique',
             'subtitle' => 'Axes, centres de coûts et rentabilité',
             'icon' => 'ti-chart-dots-3',
@@ -258,6 +258,7 @@ return [
             ],
         ],
         'facturation' => [
+            'disabled' => true,
             'permission' => 'facturation.view',
             'number' => '⑤',
             'title' => 'Facturation & trésorerie',
@@ -481,6 +482,7 @@ return [
             ],
         ],
         'taches' => [
+            'disabled' => true,
             'permission' => 'taches.view',
             'number' => '⑨',
             'title' => 'Gestion des tâches',

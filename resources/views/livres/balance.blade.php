@@ -52,11 +52,7 @@
                             <td class="text-end fw-bold bg-light-soft">@{{ fmt(r.solde_fin_crediteur) }}</td>
                         </tr>
                     </tbody>
-<<<<<<< HEAD
                     <tfoot class="bg-primary text-white fw-bold" v-if="totaux && lignes.length">
-=======
-                    <tfoot class="table-light text-dark fw-bold" v-if="totaux">
->>>>>>> 356d4919f7208489f8fadf9a5b1244abeb82c9b0
                         <tr>
                             <td colspan="2" class="text-end px-3">TOTAL GÉNÉRAL (@{{ filtres.devise_affichage }})</td>
                             <td class="text-end">@{{ fmt(totaux.solde_debut_debiteur) }}</td>

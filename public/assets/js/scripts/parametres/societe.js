@@ -1,4 +1,4 @@
-import { get, post, postJson } from "../../modules/http.js";
+import {get, post, postJson } from "../../modules/http.js";
 import { parametresMixin } from "./parametres-common.js";
 
 new Vue({
@@ -12,6 +12,8 @@ new Vue({
             formExercice: this.emptyExercice(),
             logoPreview: null,
             logoFile: null,
+            loaded: false,
+            isLoading: false,
             banques: [],
         };
     },
@@ -68,7 +70,7 @@ new Vue({
                     this.devises = data.devises || [];
                     this.exercices = data.exercices || [];
                     if (data.societe) {
-                        this.formSociete = { ...data.societe };
+                        this.formSociete = {...data.societe };
                         this.banques = (data.societe.banques || []).map((b) => ({
                             banque: b.banque,
                             numero_compte: b.numero_compte,
@@ -77,6 +79,7 @@ new Vue({
                         }));
                         this.logoPreview = data.societe.logo_url || null;
                     }
+                    this.loaded = true;
                 }
             } finally {
                 this.isLoading = false;
@@ -84,8 +87,8 @@ new Vue({
         },
 
         onLogoSelected(e) {
-            const file = e.target.files?.[0];
-            this.logoFile = file || null;
+            const file = (e.target.files && e.target.files.length > 0) ? e.target.files[0] : null;
+            this.logoFile = file;
             if (file) {
                 this.logoPreview = URL.createObjectURL(file);
             }
@@ -113,7 +116,7 @@ new Vue({
         },
 
         definirBanqueDefaut(index) {
-            if (!this.banques[index]?.est_defaut) return;
+            if (!this.banques[index] || !this.banques[index].est_defaut) return;
             this.banques.forEach((b, i) => {
                 if (i !== index) b.est_defaut = false;
             });
@@ -121,12 +124,12 @@ new Vue({
 
         async saveSociete() {
             this.isLoading = true;
-            const payload = { ...this.formSociete, banques: this.banques };
+            const payload = {...this.formSociete, banques: this.banques };
             const { data } = await postJson("/accounting/parametres/societe/save", payload);
             this.isLoading = false;
             if (!this.handleResponse(data)) return;
             if (data.societe) {
-                this.formSociete = { ...data.societe };
+                this.formSociete = {...data.societe };
                 this.banques = (data.societe.banques || []).map((b) => ({
                     banque: b.banque,
                     numero_compte: b.numero_compte,
@@ -144,7 +147,7 @@ new Vue({
         },
 
         editExercice(ex) {
-            this.formExercice = { ...ex };
+            this.formExercice = {...ex };
             new bootstrap.Modal(document.getElementById("modal_exercice")).show();
         },
 
@@ -153,7 +156,9 @@ new Vue({
             const { data } = await postJson("/accounting/parametres/exercice/save", this.formExercice);
             this.isLoading = false;
             if (!this.handleResponse(data)) return;
-            bootstrap.Modal.getInstance(document.getElementById("modal_exercice"))?.hide();
+            const modalEl = document.getElementById("modal_exercice");
+            const modal = bootstrap.Modal.getInstance(modalEl);
+            if (modal) modal.hide();
             this.loadData();
             await this.loadContext();
         },
