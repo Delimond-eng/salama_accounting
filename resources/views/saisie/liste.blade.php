@@ -45,9 +45,10 @@
                             <td><span class="badge" :class="badgeStatut(e.statut)">@{{ e.statut }}</span></td>
                             <td>
                                 <div class="d-flex gap-1 justify-content-end">
-                                    <a :href="'/accounting/saisie/' + page + '/ecriture/' + e.id" class="btn btn-sm btn-outline-light"><i class="ti ti-edit"></i></a>
-                                    <button v-if="e.statut==='brouillon'" type="button" class="btn btn-sm btn-outline-success" @click="valider(e)"><i class="ti ti-check"></i></button>
-                                    <button v-if="e.statut==='brouillon'" type="button" class="btn btn-sm btn-outline-danger" @click="supprimer(e)"><i class="ti ti-trash"></i></button>
+                                    <a :href="'/accounting/saisie/' + page + '/ecriture/' + e.id" class="btn btn-sm btn-outline-light" title="Modifier"><i class="ti ti-edit"></i></a>
+                                    <button type="button" class="btn btn-sm btn-outline-info" @click="dupliquer(e)" title="Dupliquer"><i class="ti ti-copy"></i></button>
+                                    <button v-if="e.statut==='brouillon'" type="button" class="btn btn-sm btn-outline-success" @click="valider(e)" title="Valider"><i class="ti ti-check"></i></button>
+                                    <button v-if="e.statut==='brouillon'" type="button" class="btn btn-sm btn-outline-danger" @click="supprimer(e)" title="Supprimer"><i class="ti ti-trash"></i></button>
                                 </div>
                             </td>
                         </tr>

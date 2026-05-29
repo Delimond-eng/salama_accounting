@@ -40,6 +40,10 @@ new Vue({
             }
         },
 
+        dupliquer(e) {
+            window.location.href = `${this.createUrl}?copy=${e.id}`;
+        },
+
         async valider(e) {
             if (!confirm(`Valider l'écriture ${e.num_piece} ?`)) return;
             const { data } = await postJson(`/accounting/saisie/ecritures/${e.id}/validate`, {});

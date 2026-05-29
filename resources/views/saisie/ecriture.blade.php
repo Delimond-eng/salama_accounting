@@ -6,7 +6,7 @@
     </template>
     <template v-else>
     @include('saisie._nav', ['active' => $page, 'title' => $title, 'breadcrumb' => $title])
-    
+
     <div v-if="warnings.length" class="alert alert-warning alert-dismissible fade show">
         <strong>Avertissements (écriture enregistrée)</strong>
         <ul class="mb-0 mt-1">
@@ -25,7 +25,8 @@
                 <div class="row g-3">
                     <div class="col-md-3">
                         <label class="form-label">Journal</label>
-                        <select class="form-select" v-model.number="entete.journal_id" required :disabled="journalVerrouille" @change="appliquerDeviseJournal">
+                        <select class="form-select" v-select2 v-model.number="entete.journal_id" required :disabled="journalVerrouille" @change="appliquerDeviseJournal" placeholder="Choisir un journal">
+                            <option></option>
                             <option v-for="j in journaux" :key="j.id" :value="j.id">@{{ j.code }} — @{{ j.libelle }}@{{ (j.devise_defaut && j.devise_defaut !== devisePrincipale) ? ' (' + j.devise_defaut + ')' : '' }}</option>
                         </select>
                     </div>
@@ -65,16 +66,26 @@
             </div>
         </div>
 
-        <div class="card border-0 rounded-0 mb-3">
+        <div class="card border-0 rounded-0 mb-3" style="z-index: 10;">
             <div class="card-header d-flex justify-content-between align-items-center py-3">
-                <h5 class="mb-0 fw-bold text-uppercase fs-14">Lignes d'écriture <span class="badge bg-label-secondary ms-1">@{{ lignes.length }}</span></h5>
+                <div>
+                    <h5 class="mb-0 fw-bold text-uppercase fs-14">Lignes d'écriture <span class="badge bg-label-secondary ms-1">@{{ lignes.length }}</span></h5>
+                    <small class="text-muted">
+                        <span class="fw-bold text-primary">Guide de saisie :</span>
+                        <span class="text-info">①</span> Sélectionnez le compte
+                        <i class="ti ti-chevron-right fs-10 mx-1"></i> <span class="text-info">②</span> tiers (si applicable)
+                        <i class="ti ti-chevron-right fs-10 mx-1"></i> <span class="text-info">③</span> saisir libellé
+                        <i class="ti ti-chevron-right fs-10 mx-1"></i> <span class="text-info">④</span> analytique (obligatoire pour classes 6 & 7)
+                        <i class="ti ti-chevron-right fs-10 mx-1"></i> <span class="text-info">⑤</span> montant débit ou crédit.
+                    </small>
+                </div>
                 <div class="d-flex gap-2">
                     <button type="button" class="btn btn-xs btn-outline-secondary" @click="appliquerTemplate"><i class="ti ti-template me-1"></i>Modèle</button>
                     <button type="button" class="btn btn-xs btn-primary" @click="ajouterLigne"><i class="ti ti-plus me-1"></i>Ligne</button>
                 </div>
             </div>
             <div class="card-body p-0">
-                <div class="table-responsive">
+                <div class="table-responsive" style="overflow: visible !important;">
                     <table class="table table-bordered mb-0">
                         <thead class="table-light">
                             <tr>
@@ -89,8 +100,8 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr v-for="(l, idx) in lignes" :key="idx">
-                                <td>
+                            <tr v-for="(l, idx) in lignes" :key="l.id_vue">
+                                <td style="overflow: visible !important;">
                                     <div class="compte-select-wrap position-relative">
                                         <input type="text" class="form-control form-control-sm"
                                             :value="compteDisplayText(idx)"
@@ -112,18 +123,21 @@
                                     </div>
                                 </td>
                                 <td>
-                                    <select class="form-select form-select-sm" v-model.number="l.tiers_id">
-                                        <option :value="null">—</option>
+                                    <select class="form-select form-select-sm" v-select2 v-model.number="l.tiers_id" placeholder="Choisir un tiers">
+                                        <option></option>
                                         <option v-for="t in tiersOptions" :key="t.id" :value="t.id">@{{ t.code }} @{{ t.nom }}</option>
                                     </select>
                                 </td>
                                 <td><input type="text" class="form-control form-control-sm" v-model="l.libelle"></td>
                                 <td v-if="showColonneAnalytique">
                                     <select v-if="sectionsListe.length" class="form-select form-select-sm"
+                                        v-select2
                                         v-model.number="l.section_analytique_id"
                                         @change="onSectionSelectChange(idx)"
-                                        :class="{'border-danger': analytiqueObligatoireJournal && !l.section_analytique_id && (l.debit>0||l.credit>0)}">
-                                        <option value="">— Choisir le compte analytique —</option>
+                                        placeholder="Choisir l'analytique"
+                                        :disabled="!isAnalytiqueEligible(l.num_compte)"
+                                        :class="{'border-danger': analytiqueObligatoireJournal && !l.section_analytique_id && isAnalytiqueEligible(l.num_compte)}">
+                                        <option></option>
                                         <optgroup v-for="axe in axesAnalytiques" :key="axe.id" :label="axe.code + ' — ' + axe.libelle">
                                             <option v-for="s in (axe.sections || [])" :key="s.id" :value="s.id">
                                                 @{{ s.code }} — @{{ s.libelle }}
@@ -137,7 +151,8 @@
                                             @focus="onSectionSearchFocus(idx)"
                                             @blur="onSectionSearchBlur(idx)"
                                             placeholder="Rechercher un analytique…"
-                                            autocomplete="off">
+                                            autocomplete="off"
+                                            :disabled="!isAnalytiqueEligible(l.num_compte)">
                                         <ul v-show="sectionUiOpen(idx)" class="dropdown-menu show w-100 shadow-sm" style="max-height:180px;overflow:auto">
                                             <li v-if="sectionUiLoading(idx)"><span class="dropdown-item text-muted">Recherche…</span></li>
                                             <li v-else-if="!sectionUiResults(idx).length"><span class="dropdown-item text-muted">Aucun résultat</span></li>
@@ -187,12 +202,58 @@
     .btn-xs { padding: 0.2rem 0.4rem; font-size: 0.75rem; }
     .btn-label-secondary { background: #f1f3f4; color: #5f6368; border: none; }
     .btn-label-secondary:hover { background: #e8eaed; color: #3c4043; }
+
+    /* Correction robuste pour Select2 */
+    .select2-container--default .select2-selection--single {
+        border: 1px solid #dbdade !important;
+        height: 31px !important;
+        display: flex !important;
+        align-items: center !important;
+        background-color: #fff !important;
+        font-size: 0.8125rem;
+    }
+
+    .select2-container--default .select2-selection--single .select2-selection__rendered {
+        line-height: 31px !important;
+        padding-left: 10px !important;
+        padding-right: 25px !important;
+        color: #333 !important;
+        width: 100% !important;
+        text-align: left !important;
+    }
+
+    /* Z-index global pour les dropdowns */
+    .select2-container--open { z-index: 10001 !important; }
+
+    /* Autocomplete personnalisé (Comptes) */
+    .compte-select-dropdown {
+        position: absolute !important;
+        z-index: 10000 !important;
+        background: #fff;
+        border: 1px solid #dbdade;
+        border-radius: 0.375rem;
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+        max-height: 300px;
+        overflow-y: auto;
+        width: 400px !important; /* Plus large pour la lisibilité */
+    }
+
+    .compte-select-dropdown .dropdown-item:hover {
+        background-color: #f8f9fa;
+    }
+
+    /* Style spécifique pour analytique disabled */
+    .select2-container--default.select2-container--disabled .select2-selection--single {
+        background-color: #f8f9fa !important;
+        cursor: not-allowed;
+    }
 </style>
 @endsection
 @push('scripts')
 <script>
     window.__SAISIE_PAGE__ = @json($page);
     window.__ECRITURE_ID__ = @json($ecritureId);
+    window.__DUPLICATE_ID__ = @json($duplicateId);
 </script>
 <script type="module" src="{{ asset('assets/js/scripts/saisie/ecriture.js') }}"></script>
 @endpush

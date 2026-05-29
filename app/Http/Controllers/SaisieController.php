@@ -26,11 +26,19 @@ class SaisieController extends Controller
         return view('saisie.liste', $this->saisie->pageMeta($page));
     }
 
+    /**
+     * Affiche le formulaire de saisie (nouvelle, édition ou duplication)
+     * Note : On ne type-pas Request ici car les routes dans web.php appellent cette méthode manuellement.
+     */
     public function ecriture(string $page = 'nouvelle', ?int $id = null): View
     {
         return view('saisie.ecriture', array_merge(
             $this->saisie->pageMeta($page),
-            ['ecritureId' => $id]
+            [
+                'ecritureId' => $id,
+                // Utilisation du helper global pour éviter l'erreur de type dans les closures de web.php
+                'duplicateId' => request()->query('copy')
+            ]
         ));
     }
 
@@ -159,13 +167,23 @@ class SaisieController extends Controller
         $societeId = SocieteContext::requireId();
         $search = trim((string) $request->get('q', ''));
 
-        $comptes = PlanComptable::query()
+        $query = PlanComptable::query()
             ->parSociete($societeId)
-            ->actif()
-            ->when($search !== '', fn ($q) => $q->where(fn ($s) => $s
-                ->where('num_compte', 'like', "%{$search}%")
-                ->orWhere('libelle', 'like', "%{$search}%")))
-            ->orderBy('num_compte')
+            ->actif();
+
+        if ($search !== '') {
+            $query->where(function ($q) use ($search) {
+                $q->where('num_compte', 'like', "%{$search}%")
+                  ->orWhere('libelle', 'like', "%{$search}%");
+            });
+
+            // Priorité aux comptes commençant par la recherche
+            $query->orderByRaw("CASE
+                WHEN num_compte LIKE ? THEN 1
+                ELSE 2 END", [$search . '%']);
+        }
+
+        $comptes = $query->orderBy('num_compte')
             ->limit(30)
             ->get(['id', 'num_compte', 'libelle', 'est_compte_tiers', 'classe', 'exige_analytique']);
 

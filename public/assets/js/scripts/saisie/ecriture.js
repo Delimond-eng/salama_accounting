@@ -3,12 +3,44 @@ import { compteSelectMixin } from "../../modules/compte-select-mixin.js";
 import { analytiqueSelectMixin } from "../../modules/analytique-select-mixin.js";
 import { saisieMixin } from "./saisie-common.js";
 
+// Directive Select2 optimisée pour Vue.js
+Vue.directive('select2', {
+    inserted: function (el) {
+        const $el = $(el);
+        $el.select2({
+            width: '100%',
+            placeholder: $el.attr('placeholder') || 'Sélectionner...',
+            allowClear: true,
+            language: {
+                searching: () => "Recherche...",
+                noResults: () => "Aucun résultat"
+            }
+        }).on('change', function () {
+            el.dispatchEvent(new Event('change', { bubbles: true }));
+        });
+
+        $el.on('select2:open', function() {
+            setTimeout(() => {
+                const searchField = document.querySelector('.select2-container--open .select2-search__field');
+                if (searchField) searchField.focus();
+            }, 0);
+        });
+    },
+    componentUpdated: function (el) {
+        $(el).trigger('change.select2');
+    },
+    unbind: function (el) {
+        $(el).off().select2('destroy');
+    }
+});
+
 new Vue({
     el: "#App",
     mixins: [saisieMixin, compteSelectMixin, analytiqueSelectMixin],
     data() {
         return {
             ecritureId: window.__ECRITURE_ID__ || null,
+            duplicateId: window.__DUPLICATE_ID__ || null,
             multiDevise: false,
             journalVerrouille: false,
             template: [],
@@ -39,6 +71,18 @@ new Vue({
             const j = (this.journaux || []).find((x) => x.id === this.entete.journal_id);
             this.analytiqueObligatoireJournal = !!j?.analytique_obligatoire;
         },
+        // Propagation automatique du libellé général aux lignes
+        "entete.libelle"(newVal, oldVal) {
+            this.lignes.forEach(l => {
+                // On met à jour si la ligne est vide ou si elle avait la valeur précédente (non modifiée manuellement)
+                if (!l.libelle || l.libelle === (oldVal || "")) {
+                    l.libelle = newVal;
+                }
+            });
+        },
+        tiersOptions() { this.refreshSelect2(); },
+        axesAnalytiques() { this.refreshSelect2(); },
+        journaux() { this.refreshSelect2(); }
     },
 
     computed: {
@@ -71,11 +115,19 @@ new Vue({
     },
 
     methods: {
+        refreshSelect2() {
+            this.$nextTick(() => {
+                $('select[v-select2]').trigger('change.select2');
+            });
+        },
         async initPage() {
             await this.loadTiers();
             this.initEntete();
+
             if (this.ecritureId) {
                 await this.loadEcriture(this.ecritureId);
+            } else if (this.duplicateId) {
+                await this.loadEcriture(this.duplicateId, true);
             } else {
                 this.appliquerTemplate();
             }
@@ -91,19 +143,19 @@ new Vue({
             this.appliquerDeviseJournal();
         },
 
-        async loadEcriture(id) {
+        async loadEcriture(id, isDuplicate = false) {
             const { data } = await get(`/accounting/saisie/ecritures/${id}`);
             if (data.status !== "success") return;
             const e = data.ecriture;
             this.entete = {
-                id: e.id,
+                id: isDuplicate ? null : e.id,
                 exercice_id: e.exercice_id,
                 journal_id: e.journal_id,
-                date_ecriture: e.date_ecriture?.substring?.(0, 10) || e.date_ecriture,
-                date_echeance: e.date_echeance?.substring?.(0, 10) || null,
+                date_ecriture: isDuplicate ? new Date().toISOString().slice(0, 10) : (e.date_ecriture?.substring?.(0, 10) || e.date_ecriture),
+                date_echeance: isDuplicate ? null : (e.date_echeance?.substring?.(0, 10) || null),
                 libelle: e.libelle,
-                reference_facture: e.reference_facture,
-                reference_externe: e.reference_externe,
+                reference_facture: isDuplicate ? "" : e.reference_facture,
+                reference_externe: isDuplicate ? "" : e.reference_externe,
                 devise: e.devise,
                 taux_change: e.taux_change,
                 type_ecriture: e.type_ecriture,
@@ -111,6 +163,7 @@ new Vue({
             this.lignes = (e.lignes || []).map((l) => {
                 const sec = l.section_analytique || l.sectionAnalytique;
                 const row = {
+                    id_vue: Math.random().toString(36).substring(7),
                     num_compte: l.num_compte,
                     libelle: l.libelle,
                     debit: l.debit,
@@ -126,7 +179,11 @@ new Vue({
                 }
                 return row;
             });
-            this.lignes.forEach((_, i) => this.onSectionSelectChange(i));
+            if (isDuplicate) {
+                this.$nextTick(() => {
+                   this.lignes.forEach((_, i) => this.onSectionSelectChange(i));
+                });
+            }
         },
 
         async loadTiers() {
@@ -134,23 +191,49 @@ new Vue({
             if (data.status === "success") this.tiersOptions = data.tiers || [];
         },
 
+        isAnalytiqueEligible(numCompte) {
+            if (!numCompte) return false;
+            const c = String(numCompte).charAt(0);
+            return c === '6' || c === '7';
+        },
+
+        selectCompteOption(key, compte) {
+            this.setCompteNumero(key, compte.num_compte, compte.libelle);
+            if (typeof key === "number" && this.lignes[key]) {
+                const ligne = this.lignes[key];
+                if (!this.isAnalytiqueEligible(ligne.num_compte)) {
+                    ligne.section_analytique_id = null;
+                    ligne._section = null;
+                    ligne._section_label = "";
+                }
+            }
+        },
+
         appliquerTemplate() {
             const base = { section_analytique_id: null, _section: null, _section_label: "" };
             if (this.template?.length) {
-                this.lignes = this.template.map((l) => ({ ...l, ...base, debit: 0, credit: 0 }));
+                this.lignes = this.template.map((l) => ({
+                    ...l, ...base,
+                    libelle: l.libelle || this.entete.libelle,
+                    debit: 0,
+                    credit: 0,
+                    id_vue: Math.random().toString(36).substring(7)
+                }));
             } else {
                 this.lignes = [
-                    { num_compte: "", libelle: "", debit: 0, credit: 0, tiers_id: null, ...base },
-                    { num_compte: "", libelle: "", debit: 0, credit: 0, tiers_id: null, ...base },
+                    { id_vue: 'l1', num_compte: "", libelle: this.entete.libelle, debit: 0, credit: 0, tiers_id: null, ...base },
+                    { id_vue: 'l2', num_compte: "", libelle: this.entete.libelle, debit: 0, credit: 0, tiers_id: null, ...base },
                 ];
             }
             if (this.entete.libelle === "" && this.journal) {
                 this.entete.libelle = "Écriture " + this.journal.libelle;
+                this.lignes.forEach(l => l.libelle = this.entete.libelle);
             }
         },
 
         ajouterLigne() {
             this.lignes.push({
+                id_vue: Math.random().toString(36).substring(7),
                 num_compte: "",
                 libelle: this.entete.libelle,
                 debit: 0,
@@ -191,11 +274,6 @@ new Vue({
 
         lignesPayload() {
             return this.lignes.map((l) => {
-                const rawId = l.section_analytique_id;
-                let sectionId = null;
-                if (rawId !== null && rawId !== undefined && rawId !== "" && !Number.isNaN(Number(rawId))) {
-                    sectionId = parseInt(rawId, 10);
-                }
                 return {
                     num_compte: (l.num_compte || "").trim(),
                     libelle: l.libelle,
@@ -204,7 +282,7 @@ new Vue({
                     tiers_id: l.tiers_id || null,
                     montant_devise: l.montant_devise,
                     taux_change: l.taux_change,
-                    section_analytique_id: sectionId,
+                    section_analytique_id: l.section_analytique_id,
                 };
             });
         },
@@ -222,10 +300,8 @@ new Vue({
             });
             this.isLoading = false;
             if (!this.handleResponse(data)) return;
-            if (data.ecriture?.id) {
-                if (!this.warnings?.length) {
-                    window.location.href = this.listeUrl;
-                }
+            if (data.ecriture?.id && !this.warnings?.length) {
+                window.location.href = this.listeUrl;
             }
         },
     },
