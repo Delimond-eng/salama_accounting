@@ -16,9 +16,9 @@
             </div>
             <div class="d-flex gap-2 align-items-center flex-wrap">
                 <div class="search-box">
-                    <div class="input-group input-group-sm border rounded-2 px-2 bg-light">
-                        <span class="input-group-text bg-transparent border-0 p-0 me-2"><i class="ti ti-search text-muted"></i></span>
-                        <input type="text" class="form-control bg-transparent border-0 ps-0" placeholder="Rechercher code, nom..." v-model="search" @input="debounceSearch">
+                    <div class="input-group input-group-sm">
+                        <span class="input-group-text bg-transparent"><i class="ti ti-search text-muted"></i></span>
+                        <input type="text" class="form-control" placeholder="Rechercher code, nom..." v-model="search" @input="debounceSearch">
                     </div>
                 </div>
                 <select class="form-select form-select-sm w-auto border-2" v-model="filtreType" @change="loadData">

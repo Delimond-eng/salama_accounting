@@ -43,7 +43,7 @@
                             <button type="submit" class="btn btn-primary w-100 d-flex align-items-center justify-content-center" :disabled="loading">
                                 <span v-if="loading" class="spinner-border spinner-border-sm text-white me-2" role="status" aria-hidden="true"></span>
                                 <span v-if="loading">Connexion...</span>
-                                <span v-else>Sign In</span>
+                                <span v-else>Connecter</span>
                             </button>
                         </div>
                     </div>

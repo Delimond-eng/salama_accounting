@@ -1,4 +1,4 @@
-import { get, postJson } from "../../modules/http.js";
+import { get, post, postJson } from "../../modules/http.js";
 import { parametresMixin } from "./parametres-common.js";
 
 let searchTimer = null;
@@ -14,6 +14,11 @@ new Vue({
             filtreClasse: null,
             form: this.emptyForm(),
             exportBase: "/accounting/export/parametres/plan-comptable",
+
+            // Import state
+            importFile: null,
+            isDragging: false,
+            isImporting: false,
         };
     },
 
@@ -96,6 +101,59 @@ new Vue({
             bootstrap.Modal.getInstance(document.getElementById("modal_compte"))?.hide();
             this.loadData();
         },
+
+        // --- Import Methods ---
+        openImportModal() {
+            this.importFile = null;
+            this.isImporting = false;
+            new bootstrap.Modal(document.getElementById("modal_import")).show();
+        },
+
+        handleDrop(e) {
+            this.isDragging = false;
+            const file = e.dataTransfer.files[0];
+            this.validateAndSetFile(file);
+        },
+
+        handleFileSelect(e) {
+            const file = e.target.files[0];
+            this.validateAndSetFile(file);
+        },
+
+        validateAndSetFile(file) {
+            if (!file) return;
+            const ext = file.name.split('.').pop().toLowerCase();
+            if (!['xlsx', 'xls'].includes(ext)) {
+                Swal.fire('Format invalide', 'Veuillez sélectionner un fichier Excel (.xlsx ou .xls)', 'error');
+                return;
+            }
+            this.importFile = file;
+        },
+
+        async processImport() {
+            if (!this.importFile) return;
+
+            this.isImporting = true;
+            const formData = new FormData();
+            formData.append('file', this.importFile);
+
+            try {
+                const { data } = await post("/accounting/parametres/plan-comptable/import", formData);
+
+                if (data.status === "success") {
+                    Swal.fire('Importation réussie', data.message, 'success');
+                    bootstrap.Modal.getInstance(document.getElementById("modal_import"))?.hide();
+                    this.loadData();
+                } else {
+                    this.handleResponse(data);
+                }
+            } catch (error) {
+                Swal.fire('Erreur', "Une erreur est survenue lors de l'importation.", 'error');
+            } finally {
+                this.isImporting = false;
+            }
+        },
+        // --- End Import Methods ---
 
         indentClass(num) {
             const len = String(num).length;

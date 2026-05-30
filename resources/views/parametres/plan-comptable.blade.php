@@ -38,14 +38,17 @@
             <div class="card border-0 shadow-sm">
                 <div class="card-header bg-white border-bottom d-flex align-items-center justify-content-between py-3 flex-wrap gap-3">
                     <div class="search-box">
-                        <div class="input-group input-group-sm border rounded-2 px-2 bg-light">
-                            <span class="input-group-text bg-transparent border-0 p-0 me-2"><i class="ti ti-search text-muted"></i></span>
-                            <input type="text" class="form-control bg-transparent border-0 ps-0" placeholder="Rechercher un compte..." v-model="search" @input="debounceSearch">
+                        <div class="input-group input-group-sm rounded-2 px-2">
+                            <span class="input-group-text bg-transparent border-0 pe-2"><i class="ti ti-search text-muted"></i></span>
+                            <input type="text" class="form-control" placeholder="Rechercher un compte..." v-model="search" @input="debounceSearch">
                         </div>
                     </div>
                     <div class="d-flex gap-2 align-items-center">
                         @include('components.export-buttons')
-                        <button type="button" class="btn btn-primary btn-sm px-3" @click="openForm()">
+                        <button type="button" class="btn btn-outline-warning px-2 shadow" @click="openImportModal()">
+                            <i class="ti ti-file-excel me-1"></i>Importer
+                        </button>
+                        <button type="button" class="btn btn-primary px-3" @click="openForm()">
                             <i class="ti ti-plus me-1"></i>Nouveau compte
                         </button>
                     </div>
@@ -152,6 +155,58 @@
             </div>
         </div>
     </div>
+
+    <!-- Modal d'importation -->
+    <div class="modal fade" id="modal_import" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header bg-dark py-3">
+                    <h5 class="modal-title text-white fw-bold"><i class="ti ti-file-import me-2"></i>Importer le plan comptable</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div class="alert alert-info border-0 bg-light-info text-info small mb-4">
+                        <i class="ti ti-info-circle me-1"></i>
+                        Le fichier Excel doit contenir les colonnes <strong>NUMERO</strong> et <strong>INTITULE</strong>.<br>
+                        Le système détectera automatiquement la classe et créera des fiches tiers pour les comptes de la classe 4.
+                    </div>
+
+                    <div class="upload-zone border-2 border-dashed rounded-3 p-5 text-center position-relative"
+                         :class="{'border-primary bg-light-primary': isDragging}"
+                         @dragover.prevent="isDragging = true"
+                         @dragleave.prevent="isDragging = false"
+                         @drop.prevent="handleDrop">
+                        <input type="file" ref="fileInput" class="position-absolute top-0 start-0 w-100 h-100 opacity-0 cursor-pointer"
+                               accept=".xlsx, .xls" @change="handleFileSelect">
+
+                        <div v-if="!importFile">
+                            <i class="ti ti-cloud-upload fs-1 text-muted mb-3"></i>
+                            <h6 class="fw-bold mb-1">Cliquez ou glissez-déposez le fichier Excel</h6>
+                            <p class="text-muted small mb-0">Format accepté : .xlsx, .xls</p>
+                        </div>
+                        <div v-else class="text-primary">
+                            <i class="ti ti-file-spreadsheet fs-1 mb-3"></i>
+                            <h6 class="fw-bold mb-1">@{{ importFile.name }}</h6>
+                            <p class="small mb-0 text-success">Fichier prêt pour l'importation</p>
+                        </div>
+                    </div>
+
+                    <div v-if="isImporting" class="mt-4">
+                        <div class="progress progress-sm mb-2">
+                            <div class="progress-bar progress-bar-animated progress-bar-striped" role="progressbar" style="width: 100%"></div>
+                        </div>
+                        <p class="text-center small text-muted mb-0">Traitement en cours, veuillez patienter...</p>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light border-top-0 p-3">
+                    <button type="button" class="btn btn-white px-4 border" data-bs-dismiss="modal" :disabled="isImporting">Annuler</button>
+                    <button type="button" class="btn btn-primary px-4" @click="processImport" :disabled="!importFile || isImporting">
+                        Lancer l'importation
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
     </template>
 </div>
 @endsection
@@ -183,6 +238,10 @@
     .btn-label-primary:hover { background: #696cff; color: #fff; }
     .text-light-soft { color: #cbd5e1; }
     .bg-label-secondary { background-color: #ebeef0; color: #8592a3; }
+
+    .upload-zone { transition: all 0.3s; background: #fdfdfd; }
+    .bg-light-primary { background-color: rgba(63, 122, 253, 0.05) !important; }
+    .bg-light-info { background-color: #e7f7ff !important; }
 </style>
 @endpush
 

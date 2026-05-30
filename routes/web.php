@@ -271,6 +271,7 @@ Route::middleware(['auth', 'accounting.permission'])->group(function () {
 
             Route::get('/plan-comptable/all', [ParametresController::class, 'planComptableAll'])->name('plan-comptable.all');
             Route::post('/plan-comptable/save', [ParametresController::class, 'planComptableSave'])->name('plan-comptable.save');
+            Route::post('/plan-comptable/import', [ParametresController::class, 'planComptableImport'])->name('plan-comptable.import');
 
             Route::get('/journaux/all', [ParametresController::class, 'journauxAll'])->name('journaux.all');
             Route::post('/journaux/save', [ParametresController::class, 'journauxSave'])->name('journaux.save');

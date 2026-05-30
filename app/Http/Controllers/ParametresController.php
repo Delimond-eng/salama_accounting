@@ -15,7 +15,7 @@ use App\Support\SocieteContext;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
+use PhpOffice\PhpSpreadsheet\IOFactory;
 use Illuminate\View\View;
 
 class ParametresController extends Controller
@@ -127,6 +127,96 @@ class ParametresController extends Controller
             return response()->json(['status' => 'success', 'message' => 'Compte enregistré.', 'compte' => $compte->fresh()]);
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json(['errors' => $e->validator->errors()->all()], 422);
+        }
+    }
+
+    public function planComptableImport(Request $request): JsonResponse
+    {
+        $request->validate(['file' => 'required|file|mimes:xlsx,xls,csv']);
+
+        $societeId = SocieteContext::requireId();
+        $file = $request->file('file');
+
+        try {
+            $spreadsheet = IOFactory::load($file->getRealPath());
+            $sheet = $spreadsheet->getActiveSheet();
+            $rows = $sheet->toArray();
+
+            if (empty($rows) || count($rows) < 2) {
+                return response()->json(['errors' => ['Le fichier est vide ou mal formaté.']], 422);
+            }
+
+            $header = array_map('strtoupper', array_map('trim', $rows[0]));
+            $idxNumero = array_search('NUMERO', $header);
+            $idxIntitule = array_search('INTITULE', $header);
+
+            if ($idxNumero === false || $idxIntitule === false) {
+                return response()->json(['errors' => ['Colonnes "NUMERO" et "INTITULE" obligatoires.']], 422);
+            }
+
+            $countCompte = 0;
+            $countTiers = 0;
+
+            DB::beginTransaction();
+
+            foreach (array_slice($rows, 1) as $row) {
+                $num = trim((string)($row[$idxNumero] ?? ''));
+                $libelle = trim((string)($row[$idxIntitule] ?? ''));
+
+                if ($num === '' || $libelle === '') continue;
+
+                $classe = (int)substr($num, 0, 1);
+                if ($classe < 1 || $classe > 9) continue;
+
+                $estTiersPossible = ($classe === 4);
+
+                $payload = $this->planPayload([
+                    'num_compte' => $num,
+                    'libelle' => $libelle,
+                    'classe' => $classe,
+                    'est_compte_tiers' => $estTiersPossible,
+                    'est_rapprochable' => in_array($classe, [4, 5]),
+                ], $societeId);
+
+                $compte = PlanComptable::updateOrCreate(
+                    ['societe_id' => $societeId, 'num_compte' => $num],
+                    $payload
+                );
+                $countCompte++;
+
+                // Création du tiers SEULEMENT pour la classe 4 (Tiers)
+                if ($estTiersPossible) {
+                    $typeTiers = 'autre';
+                    if (str_starts_with($num, '411')) $typeTiers = 'client';
+                    elseif (str_starts_with($num, '401')) $typeTiers = 'fournisseur';
+                    elseif (str_starts_with($num, '42')) $typeTiers = 'salarie';
+                    elseif (str_starts_with($num, '43')) $typeTiers = 'organisme_social';
+                    elseif (str_starts_with($num, '44')) $typeTiers = 'administration';
+                    elseif (str_starts_with($num, '46')) $typeTiers = 'autre';
+
+                    Tiers::updateOrCreate(
+                        ['societe_id' => $societeId, 'code' => 'T-' . $num],
+                        [
+                            'nom' => $libelle,
+                            'type' => $typeTiers,
+                            'num_compte_collectif' => $num,
+                            'actif' => true
+                        ]
+                    );
+                    $countTiers++;
+                }
+            }
+
+            DB::commit();
+
+            return response()->json([
+                'status' => 'success',
+                'message' => "Importation terminée : $countCompte comptes créés/mis à jour et $countTiers fiches tiers générées."
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json(['errors' => ['Erreur lors du traitement : ' . $e->getMessage()]], 500);
         }
     }
 
