@@ -142,9 +142,12 @@ new Vue({
 
         async saveConfig() {
             this.isLoading = true;
+            this.error = null;
             try {
                 await postJson("/accounting/analytique/config/save", { analytique_axes_restreints: this.axesRestreints });
                 await this.loadAxes();
+            } catch (e) {
+                this.error = ["Erreur lors de la mise à jour de la configuration."];
             } finally {
                 this.isLoading = false;
             }
