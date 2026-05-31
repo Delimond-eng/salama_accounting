@@ -130,6 +130,37 @@ class ComptableExportController extends Controller
         return $this->export->respond($format, $headers, $rows, "analytique_{$type}", $title, $meta, $societe);
     }
 
+    public function admin(Request $request, string $type, string $format)
+    {
+        return match ($type) {
+            'users' => $this->exportUsers($request, $format),
+            'roles' => $this->exportRoles($format),
+            'audit-logs' => $this->exportAuditLogs($request, $format),
+            default => abort(404),
+        };
+    }
+
+    protected function exportAuditLogs(Request $request, string $format)
+    {
+        $societeId = SocieteContext::id();
+        $headers = ['Date / Heure', 'Utilisateur', 'Action', 'Référence', 'Description'];
+
+        $rows = AuditLog::with('user:id,name')
+            ->when($societeId, fn($q) => $q->where('societe_id', $societeId))
+            ->orderByDesc('created_at')
+            ->limit(2000)
+            ->get()
+            ->map(fn ($l) => [
+                $l->created_at->format('d/m/Y H:i'),
+                $l->user?->name ?? 'Système',
+                $l->action,
+                $l->reference,
+                $l->description
+            ])->all();
+
+        return $this->export->respond($format, $headers, $rows, 'audit_logs', 'Journal d\'audit', []);
+    }
+
     protected function rowsAnalytiqueBalance(int $societeId, int $exerciceId, array $f, array $params): array
     {
         $data = $this->analytique->balanceAnalytique($societeId, $exerciceId, $f['date_debut'], $f['date_fin'], $f['axe_id'], $f['section_id'], $f['journal_id'], $params);
@@ -446,6 +477,20 @@ class ComptableExportController extends Controller
         };
     }
 
+    protected function exportUsers(Request $request, string $format)
+    {
+        $headers = ['Nom', 'Email'];
+        $rows = User::orderBy('name')->get()->map(fn ($u) => [$u->name, $u->email])->all();
+        return $this->export->respond($format, $headers, $rows, 'utilisateurs', 'Liste des utilisateurs', []);
+    }
+
+    protected function exportRoles(string $format)
+    {
+        $headers = ['Rôle'];
+        $rows = Role::orderBy('name')->get()->map(fn ($r) => [$r->name])->all();
+        return $this->export->respond($format, $headers, $rows, 'roles', 'Rôles', []);
+    }
+
     protected function rowsGrandLivre(int $societeId, array $f, Request $request): array
     {
         $numCompte = $request->get('num_compte');
@@ -554,26 +599,5 @@ class ComptableExportController extends Controller
         $headers = ['Code', 'Libellé', 'Type'];
         $rows = Journal::where('societe_id', $societeId)->orderBy('code')->get()->map(fn ($j) => [$j->code, $j->libelle, $j->type])->all();
         return $this->export->respond($format, $headers, $rows, 'journaux', 'Journaux', [], $societe);
-    }
-
-    protected function exportUsers(Request $request, string $format)
-    {
-        $headers = ['Nom', 'Email'];
-        $rows = User::orderBy('name')->get()->map(fn ($u) => [$u->name, $u->email])->all();
-        return $this->export->respond($format, $headers, $rows, 'utilisateurs', 'Liste des utilisateurs', []);
-    }
-
-    protected function exportRoles(string $format)
-    {
-        $headers = ['Rôle'];
-        $rows = Role::orderBy('name')->get()->map(fn ($r) => [$r->name])->all();
-        return $this->export->respond($format, $headers, $rows, 'roles', 'Rôles', []);
-    }
-
-    protected function exportAuditLogs(Request $request, string $format)
-    {
-        $headers = ['Date', 'Utilisateur', 'Action', 'Entité'];
-        $rows = AuditLog::with('user:id,name')->orderByDesc('created_at')->limit(1000)->get()->map(fn ($l) => [$l->created_at->format('d/m/Y H:i'), $l->user?->name ?? 'Système', $l->action, $l->entity_type])->all();
-        return $this->export->respond($format, $headers, $rows, 'audit_logs', 'Journal d\'audit', []);
     }
 }

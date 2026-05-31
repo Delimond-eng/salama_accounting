@@ -17,8 +17,10 @@ new Vue({
 
             // Import state
             importFile: null,
+            importClasse: 1,
             isDragging: false,
             isImporting: false,
+            isParsing: false,
         };
     },
 
@@ -106,6 +108,7 @@ new Vue({
         openImportModal() {
             this.importFile = null;
             this.isImporting = false;
+            this.isParsing = false;
             new bootstrap.Modal(document.getElementById("modal_import")).show();
         },
 
@@ -120,7 +123,7 @@ new Vue({
             this.validateAndSetFile(file);
         },
 
-        validateAndSetFile(file) {
+        async validateAndSetFile(file) {
             if (!file) return;
             const ext = file.name.split('.').pop().toLowerCase();
             if (!['xlsx', 'xls'].includes(ext)) {
@@ -128,6 +131,39 @@ new Vue({
                 return;
             }
             this.importFile = file;
+
+            // Logic to detect class from the first digit of the first account number
+            this.isParsing = true;
+            try {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    const firstSheetName = workbook.SheetNames[0];
+                    const worksheet = workbook.Sheets[firstSheetName];
+                    const json = XLSX.utils.sheet_to_json(worksheet);
+
+                    if (json.length > 0) {
+                        // Find column that looks like NUMERO
+                        const firstRow = json[0];
+                        const numeroKey = Object.keys(firstRow).find(k => k.toUpperCase().includes('NUMERO'));
+                        if (numeroKey) {
+                            const numero = String(firstRow[numeroKey]).trim();
+                            if (numero.length > 0) {
+                                const firstDigit = parseInt(numero.charAt(0));
+                                if (firstDigit >= 1 && firstDigit <= 9) {
+                                    this.importClasse = firstDigit;
+                                }
+                            }
+                        }
+                    }
+                    this.isParsing = false;
+                };
+                reader.readAsArrayBuffer(file);
+            } catch (err) {
+                console.error("Excel parsing error", err);
+                this.isParsing = false;
+            }
         },
 
         async processImport() {
@@ -136,6 +172,7 @@ new Vue({
             this.isImporting = true;
             const formData = new FormData();
             formData.append('file', this.importFile);
+            formData.append('classe', this.importClasse);
 
             try {
                 const { data } = await post("/accounting/parametres/plan-comptable/import", formData);

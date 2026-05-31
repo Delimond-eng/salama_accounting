@@ -168,55 +168,52 @@ class ParametresController extends Controller
                 $classe = (int)substr($num, 0, 1);
                 if ($classe < 1 || $classe > 9) continue;
 
-                $estTiersPossible = ($classe === 4);
-
+                // On force le suivi tiers pour les comptes importés
                 $payload = $this->planPayload([
                     'num_compte' => $num,
                     'libelle' => $libelle,
                     'classe' => $classe,
-                    'est_compte_tiers' => $estTiersPossible,
+                    'est_compte_tiers' => true,
                     'est_rapprochable' => in_array($classe, [4, 5]),
                 ], $societeId);
 
+                // Create Or Update Compte
                 $compte = PlanComptable::updateOrCreate(
                     ['societe_id' => $societeId, 'num_compte' => $num],
                     $payload
                 );
                 $countCompte++;
 
-                // Création du tiers SEULEMENT pour la classe 4 (Tiers)
-                if ($estTiersPossible) {
-                    $typeTiers = 'autre';
-                    if (str_starts_with($num, '411')) $typeTiers = 'client';
-                    elseif (str_starts_with($num, '401')) $typeTiers = 'fournisseur';
-                    elseif (str_starts_with($num, '42')) $typeTiers = 'salarie';
-                    elseif (str_starts_with($num, '43')) $typeTiers = 'organisme_social';
-                    elseif (str_starts_with($num, '44')) $typeTiers = 'administration';
-                    elseif (str_starts_with($num, '46')) $typeTiers = 'autre';
+                // Création systématique du Tiers pour chaque compte importé
+                $typeTiers = 'autre';
+                if (str_starts_with($num, '411')) $typeTiers = 'client';
+                elseif (str_starts_with($num, '401')) $typeTiers = 'fournisseur';
+                elseif (str_starts_with($num, '42')) $typeTiers = 'salarie';
+                elseif (str_starts_with($num, '43')) $typeTiers = 'organisme_social';
+                elseif (str_starts_with($num, '44')) $typeTiers = 'administration';
 
-                    Tiers::updateOrCreate(
-                        ['societe_id' => $societeId, 'code' => 'T-' . $num],
-                        [
-                            'nom' => $libelle,
-                            'type' => $typeTiers,
-                            'num_compte_collectif' => $num,
-                            'actif' => true
-                        ]
-                    );
-                    $countTiers++;
-                }
+                Tiers::updateOrCreate(
+                    ['societe_id' => $societeId, 'code' => 'T-' . $num],
+                    [
+                        'nom' => $libelle,
+                        'type' => $typeTiers,
+                        'num_compte_collectif' => $num,
+                        'actif' => true
+                    ]
+                );
+                $countTiers++;
             }
 
             DB::commit();
 
             return response()->json([
                 'status' => 'success',
-                'message' => "Importation terminée : $countCompte comptes créés/mis à jour et $countTiers fiches tiers générées."
+                'message' => "Importation réussie : $countCompte comptes et $countTiers fiches tiers synchronisés."
             ]);
 
         } catch (\Exception $e) {
             DB::rollBack();
-            return response()->json(['errors' => ['Erreur lors du traitement : ' . $e->getMessage()]], 500);
+            return response()->json(['errors' => ['Erreur : ' . $e->getMessage()]], 500);
         }
     }
 

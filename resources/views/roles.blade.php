@@ -40,16 +40,16 @@
                         <h5 class="mb-0 fw-bold text-primary">Matrice des droits d'accès</h5>
                     </div>
                     <div class="col-auto">
-                        <div class="input-group input-group-sm bg-light rounded-2 px-2">
-                            <span class="input-group-text bg-transparent border-0"><i class="ti ti-search text-muted"></i></span>
-                            <input type="text" class="form-control bg-transparent border-0" placeholder="Rechercher un rôle..." v-model="searchRole">
+                        <div class="input-group input-group-sm rounded-2 px-2">
+                            <span class="input-group-text"><i class="ti ti-search text-muted"></i></span>
+                            <input type="text" class="form-control" placeholder="Rechercher un rôle..." v-model="searchRole">
                         </div>
                     </div>
                 </div>
             </div>
             <div class="card-body p-0">
                 <div class="table-responsive">
-                    <table class="table table-hover table-bordered table-custom mb-0">
+                    <table class="table table-hover table-bordered table-custom mb-0" id="roles-table">
                         <thead>
                             <tr>
                                 <th>Libellé du Rôle</th>
@@ -57,11 +57,10 @@
                                 <th>Création</th>
                                 <th>Dernière Maj.</th>
                                 <th class="text-center">Statut</th>
-                                <th class="text-end">Actions</th>
+                                <th class="text-end no-sort">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <tr v-if="isLoading"><td colspan="6" class="text-center py-5"><span class="spinner-border spinner-border-sm me-2"></span>Chargement…</td></tr>
                             <tr v-for="data in filteredRoles" :key="data.id">
                                 <td>
                                     <div class="d-flex align-items-center">
@@ -75,20 +74,13 @@
                                 <td class="text-muted fs-12">@{{ formatDateTime(data.created_at) }}</td>
                                 <td class="text-muted fs-12">@{{ formatDateTime(data.updated_at) }}</td>
                                 <td class="text-center">
-                                    <span class="badge rounded-pill bg-soft-success text-success px-3">
-                                        Actif
-                                    </span>
+                                    <span class="badge rounded-pill bg-soft-success text-success px-3">Actif</span>
                                 </td>
                                 <td class="text-end">
                                     <div class="d-flex gap-1 justify-content-end">
                                         @can('roles.update')
                                         <button type="button" class="btn btn-icon btn-sm btn-label-primary" @click="editRole(data)" :disabled="isProtectedRole(data.name)">
                                             <i class="ti ti-edit"></i>
-                                        </button>
-                                        @endcan
-                                        @can('roles.delete')
-                                        <button type="button" class="btn btn-icon btn-sm btn-label-danger" @click="confirmDelete(data)" :disabled="isProtectedRole(data.name)">
-                                            <i class="ti ti-trash"></i>
                                         </button>
                                         @endcan
                                     </div>
@@ -145,7 +137,6 @@
                                 </div>
                             </div>
                         </div>
-
                         <div class="modal-footer bg-light border-0">
                             <button type="button" class="btn btn-white border px-4" data-bs-dismiss="modal">Annuler</button>
                             <button type="submit" class="btn btn-primary px-4" :disabled="isLoading">
@@ -170,6 +161,7 @@
     .btn-label-primary { background: #e7e7ff; color: #696cff; border: none; }
     .btn-label-danger { background: #ffe5e5; color: #ff3e1d; border: none; }
     .bg-soft-primary { background-color: rgba(63, 122, 253, 0.1); }
+    .dataTables_filter { display: none; }
 </style>
 @endpush
 

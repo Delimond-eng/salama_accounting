@@ -71,11 +71,13 @@
         </div>
     </div>
 
-    {{-- Modals conservés car fonctionnels, juste un peu de style BS5 --}}
     <div class="modal fade" id="modal_axe" tabindex="-1"><div class="modal-dialog modal-dialog-centered"><div class="modal-content border-0 shadow">
         <form @submit.prevent="saveAxe">
             <div class="modal-header bg-light border-0"><h5 class="modal-title fw-bold">@{{ formAxe.id ? 'Modifier' : 'Nouvel' }} axe analytique</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
             <div class="modal-body p-4">
+                <div v-if="errorList.length" class="alert alert-danger p-2 small mb-3">
+                    <ul class="mb-0"><li v-for="err in errorList">@{{ err }}</li></ul>
+                </div>
                 <div class="row g-3">
                     <div class="col-md-4"><label class="form-label text-muted fs-12 mb-1">Code</label><input class="form-control" v-model="formAxe.code" required placeholder="ex: PRJ"></div>
                     <div class="col-md-8"><label class="form-label text-muted fs-12 mb-1">Libellé</label><input class="form-control" v-model="formAxe.libelle" required placeholder="ex: Projets"></div>
@@ -83,7 +85,13 @@
                     <div class="col-12"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" v-model="formAxe.actif" id="axe_act"><label class="form-check-label" for="axe_act">Axe actif</label></div></div>
                 </div>
             </div>
-            <div class="modal-footer border-0"><button type="button" class="btn btn-white border px-4" data-bs-dismiss="modal">Annuler</button><button type="submit" class="btn btn-primary px-4">Enregistrer</button></div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-white border px-4" data-bs-dismiss="modal">Annuler</button>
+                <button type="submit" class="btn btn-primary px-4" :disabled="isSaving">
+                    <span v-if="isSaving" class="spinner-border spinner-border-sm me-1"></span>
+                    Enregistrer
+                </button>
+            </div>
         </form>
     </div></div></div>
 
@@ -91,6 +99,9 @@
         <form @submit.prevent="saveSection">
             <div class="modal-header bg-light border-0"><h5 class="modal-title fw-bold">Compte analytique</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
             <div class="modal-body p-4">
+                <div v-if="errorList.length" class="alert alert-danger p-2 small mb-3">
+                    <ul class="mb-0"><li v-for="err in errorList">@{{ err }}</li></ul>
+                </div>
                 <div class="row g-3">
                     <div class="col-md-4"><label class="form-label text-muted fs-12 mb-1">Code</label><input class="form-control" v-model="formSection.code" required></div>
                     <div class="col-md-8"><label class="form-label text-muted fs-12 mb-1">Libellé</label><input class="form-control" v-model="formSection.libelle" required></div>
@@ -98,7 +109,13 @@
                     <div class="col-12"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" v-model="formSection.actif" id="sec_act"><label class="form-check-label" for="sec_act">Compte actif</label></div></div>
                 </div>
             </div>
-            <div class="modal-footer border-0"><button type="button" class="btn btn-white border px-4" data-bs-dismiss="modal">Annuler</button><button type="submit" class="btn btn-primary px-4">Enregistrer</button></div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-white border px-4" data-bs-dismiss="modal">Annuler</button>
+                <button type="submit" class="btn btn-primary px-4" :disabled="isSaving">
+                    <span v-if="isSaving" class="spinner-border spinner-border-sm me-1"></span>
+                    Enregistrer
+                </button>
+            </div>
         </form>
     </div></div></div>
     </template>
@@ -118,7 +135,7 @@
         color: #475569;
     }
     .table-custom tbody td {
-        padding: 12px 15px;
+        padding: 10px 15px;
         vertical-align: middle;
         font-size: 13.5px;
         border-bottom: 1px solid #f1f5f9;

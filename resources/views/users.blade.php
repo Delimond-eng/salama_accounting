@@ -41,30 +41,12 @@
         <div class="card border-0 shadow-sm mb-4">
             <div class="card-header bg-white border-bottom d-flex align-items-center justify-content-between py-3 flex-wrap gap-3">
                 <div class="search-box">
-                    <div class="input-group input-group-sm border rounded-2 px-2 bg-light">
-                        <span class="input-group-text bg-transparent border-0 p-0 me-2"><i class="ti ti-search text-muted"></i></span>
-                        <input type="text" class="form-control bg-transparent border-0 ps-0" placeholder="Rechercher un utilisateur..." v-model="search">
+                    <div class="input-group input-group-sm rounded-2 px-2">
+                        <span class="input-group-text"><i class="ti ti-search text-muted"></i></span>
+                        <input type="text" class="form-control" placeholder="Rechercher un utilisateur..." v-model="search">
                     </div>
                 </div>
                 <div class="d-flex gap-2 align-items-center">
-                    <div class="dropdown">
-                        <a href="javascript:void(0);" class="btn btn-outline-light btn-sm shadow-sm dropdown-toggle" data-bs-toggle="dropdown" data-bs-auto-close="outside">
-                            <i class="ti ti-filter me-1"></i>Filtrer
-                        </a>
-                        <div class="dropdown-menu dropdown-menu-end p-3" style="min-width: 250px;">
-                            <h6 class="mb-3 fw-bold small text-uppercase">Filtres</h6>
-                            <div class="mb-3">
-                                <label class="form-label small">Rôle système</label>
-                                <select class="form-select form-select-sm" v-model="searchRole">
-                                    <option value="">Tous les rôles</option>
-                                    <option v-for="role in allRoles" :key="role.id" :value="role.name">@{{ role.label || roleLabel(role.name) }}</option>
-                                </select>
-                            </div>
-                            <div class="d-grid">
-                                <button type="button" class="btn btn-primary btn-sm" @click="searchRole = ''">Réinitialiser</button>
-                            </div>
-                        </div>
-                    </div>
                     @can('users.create')
                     <button type="button" class="btn btn-primary btn-sm px-3" @click="openForm">
                         <i class="ti ti-plus me-1"></i>Nouvel utilisateur
@@ -99,14 +81,9 @@
                                         </div>
                                     </div>
                                 </td>
-                                <td>
-                                    <div class="d-flex flex-column">
-                                        <span class="text-dark">@{{ u.email }}</span>
-                                    </div>
-                                </td>
+                                <td>@{{ u.email }}</td>
                                 <td>
                                     <span class="badge badge-soft-info me-1" v-for="r in u.roles" :key="r.id">@{{ r.label || roleLabel(r.name) }}</span>
-                                    <span v-if="!u.roles || !u.roles.length" class="text-muted small">Aucun rôle</span>
                                 </td>
                                 <td class="text-center">
                                     <span class="badge rounded-pill" :class="u.actif ? 'bg-soft-success text-success' : 'bg-soft-secondary text-secondary'">
@@ -121,11 +98,6 @@
                                         </button>
                                         <button type="button" class="btn btn-icon btn-sm btn-label-primary" @click="editUser(u)" title="Modifier">
                                             <i class="ti ti-edit"></i>
-                                        </button>
-                                        @endcan
-                                        @can('users.delete')
-                                        <button v-if="u.id !== currentUserId" type="button" class="btn btn-icon btn-sm btn-label-danger" title="Supprimer">
-                                            <i class="ti ti-trash"></i>
                                         </button>
                                         @endcan
                                     </div>

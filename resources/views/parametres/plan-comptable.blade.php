@@ -38,17 +38,17 @@
             <div class="card border-0 shadow-sm">
                 <div class="card-header bg-white border-bottom d-flex align-items-center justify-content-between py-3 flex-wrap gap-3">
                     <div class="search-box">
-                        <div class="input-group input-group-sm rounded-2 px-2">
-                            <span class="input-group-text bg-transparent border-0 pe-2"><i class="ti ti-search text-muted"></i></span>
-                            <input type="text" class="form-control" placeholder="Rechercher un compte..." v-model="search" @input="debounceSearch">
+                        <div class="input-group input-group-sm border rounded-2 px-2 bg-light">
+                            <span class="input-group-text bg-transparent border-0 p-0 me-2"><i class="ti ti-search text-muted"></i></span>
+                            <input type="text" class="form-control bg-transparent border-0 ps-0" placeholder="Rechercher un compte..." v-model="search" @input="debounceSearch">
                         </div>
                     </div>
                     <div class="d-flex gap-2 align-items-center">
                         @include('components.export-buttons')
-                        <button type="button" class="btn btn-outline-warning px-2 shadow" @click="openImportModal()">
-                            <i class="ti ti-file-excel me-1"></i>Importer
+                        <button type="button" class="btn btn-outline-primary btn-sm px-3" @click="openImportModal()">
+                            <i class="ti ti-file-import me-1"></i>Importer
                         </button>
-                        <button type="button" class="btn btn-primary px-3" @click="openForm()">
+                        <button type="button" class="btn btn-primary btn-sm px-3" @click="openForm()">
                             <i class="ti ti-plus me-1"></i>Nouveau compte
                         </button>
                     </div>
@@ -167,8 +167,15 @@
                 <div class="modal-body p-4">
                     <div class="alert alert-info border-0 bg-light-info text-info small mb-4">
                         <i class="ti ti-info-circle me-1"></i>
-                        Le fichier Excel doit contenir les colonnes <strong>NUMERO</strong> et <strong>INTITULE</strong>.<br>
-                        Le système détectera automatiquement la classe et créera des fiches tiers pour les comptes de la classe 4.
+                        Le fichier Excel doit contenir les colonnes <strong>NUMERO</strong> et <strong>INTITULE</strong>.
+                        Un tiers sera automatiquement créé pour chaque compte de la classe 4.
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">Classe à importer</label>
+                        <select class="form-select border-2" v-model="importClasse" :disabled="isParsing">
+                            <option v-for="n in 9" :key="n" :value="n">Classe @{{ n }}</option>
+                        </select>
                     </div>
 
                     <div class="upload-zone border-2 border-dashed rounded-3 p-5 text-center position-relative"
@@ -200,7 +207,7 @@
                 </div>
                 <div class="modal-footer bg-light border-top-0 p-3">
                     <button type="button" class="btn btn-white px-4 border" data-bs-dismiss="modal" :disabled="isImporting">Annuler</button>
-                    <button type="button" class="btn btn-primary px-4" @click="processImport" :disabled="!importFile || isImporting">
+                    <button type="button" class="btn btn-primary px-4" @click="processImport" :disabled="!importFile || isImporting || isParsing">
                         Lancer l'importation
                     </button>
                 </div>
@@ -239,12 +246,13 @@
     .text-light-soft { color: #cbd5e1; }
     .bg-label-secondary { background-color: #ebeef0; color: #8592a3; }
 
-    .upload-zone { transition: all 0.3s; background: #fdfdfd; }
+    .upload-zone { transition: all 0.3s; background: #fdfdfd; cursor: pointer; }
     .bg-light-primary { background-color: rgba(63, 122, 253, 0.05) !important; }
     .bg-light-info { background-color: #e7f7ff !important; }
 </style>
 @endpush
 
 @push('scripts')
+<script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
 <script type="module" src="{{ asset('assets/js/scripts/parametres/plan-comptable.js') }}"></script>
 @endpush
