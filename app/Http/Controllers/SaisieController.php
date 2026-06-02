@@ -28,7 +28,6 @@ class SaisieController extends Controller
 
     /**
      * Affiche le formulaire de saisie (nouvelle, édition ou duplication)
-     * Note : On ne type-pas Request ici car les routes dans web.php appellent cette méthode manuellement.
      */
     public function ecriture(string $page = 'nouvelle', ?int $id = null): View
     {
@@ -36,7 +35,6 @@ class SaisieController extends Controller
             $this->saisie->pageMeta($page),
             [
                 'ecritureId' => $id,
-                // Utilisation du helper global pour éviter l'erreur de type dans les closures de web.php
                 'duplicateId' => request()->query('copy')
             ]
         ));
@@ -87,6 +85,8 @@ class SaisieController extends Controller
             'taux_usd' => $this->saisie->tauxPourDevise($societeId, 'USD', $today),
             'analytique_obligatoire' => (bool) ($journal?->analytique_obligatoire ?? false),
             'axes_analytiques' => $this->analytique->axesActifs($societeId),
+            // On renvoie TOUS les tiers sans limite
+            'tiers' => Tiers::where('societe_id', $societeId)->orderBy('nom')->get(['id', 'code', 'nom', 'type', 'num_compte_collectif']),
         ]);
     }
 
@@ -167,9 +167,7 @@ class SaisieController extends Controller
         $societeId = SocieteContext::requireId();
         $search = trim((string) $request->get('q', ''));
 
-        $query = PlanComptable::query()
-            ->parSociete($societeId)
-            ->actif();
+        $query = PlanComptable::query()->parSociete($societeId)->actif();
 
         if ($search !== '') {
             $query->where(function ($q) use ($search) {
@@ -177,14 +175,12 @@ class SaisieController extends Controller
                   ->orWhere('libelle', 'like', "%{$search}%");
             });
 
-            // Priorité aux comptes commençant par la recherche
-            $query->orderByRaw("CASE
-                WHEN num_compte LIKE ? THEN 1
-                ELSE 2 END", [$search . '%']);
+            $query->orderByRaw("CASE WHEN num_compte LIKE ? THEN 1 ELSE 2 END", [$search . '%']);
         }
 
+        // On garde une limite pour l'autocomplétion des comptes (confort utilisateur)
         $comptes = $query->orderBy('num_compte')
-            ->limit(30)
+            ->limit(100)
             ->get(['id', 'num_compte', 'libelle', 'est_compte_tiers', 'classe', 'exige_analytique']);
 
         return response()->json(['status' => 'success', 'comptes' => $comptes]);
@@ -195,11 +191,11 @@ class SaisieController extends Controller
         $societeId = SocieteContext::requireId();
         $search = trim((string) $request->get('q', ''));
 
-        $tiers = Tiers::where('societe_id', $societeId)->actif()
+        $tiers = Tiers::where('societe_id', $societeId)
             ->when($search !== '', fn ($q) => $q->where(fn ($s) => $s
                 ->where('code', 'like', "%{$search}%")
                 ->orWhere('nom', 'like', "%{$search}%")))
-            ->orderBy('nom')->limit(30)
+            ->orderBy('nom')
             ->get(['id', 'code', 'nom', 'type', 'num_compte_collectif']);
 
         return response()->json(['status' => 'success', 'tiers' => $tiers]);

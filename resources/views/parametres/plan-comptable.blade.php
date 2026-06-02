@@ -38,9 +38,9 @@
             <div class="card border-0 shadow-sm">
                 <div class="card-header bg-white border-bottom d-flex align-items-center justify-content-between py-3 flex-wrap gap-3">
                     <div class="search-box">
-                        <div class="input-group input-group-sm border rounded-2 px-2 bg-light">
-                            <span class="input-group-text bg-transparent border-0 p-0 me-2"><i class="ti ti-search text-muted"></i></span>
-                            <input type="text" class="form-control bg-transparent border-0 ps-0" placeholder="Rechercher un compte..." v-model="search" @input="debounceSearch">
+                        <div class="input-group input-group-sm">
+                            <span class="input-group-text"><i class="ti ti-search text-muted"></i></span>
+                            <input type="text" class="form-control" placeholder="Rechercher un compte..." v-model="search" @input="debounceSearch">
                         </div>
                     </div>
                     <div class="d-flex gap-2 align-items-center">

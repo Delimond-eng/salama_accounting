@@ -3,7 +3,7 @@ import { compteSelectMixin } from "../../modules/compte-select-mixin.js";
 import { analytiqueSelectMixin } from "../../modules/analytique-select-mixin.js";
 import { saisieMixin } from "./saisie-common.js";
 
-// Directive Select2 optimisée pour Vue.js
+// Directive Select2 simple et robuste pour Vue.js
 Vue.directive('select2', {
     inserted: function (el) {
         const $el = $(el);
@@ -11,6 +11,7 @@ Vue.directive('select2', {
             width: '100%',
             placeholder: $el.attr('placeholder') || 'Sélectionner...',
             allowClear: true,
+            dropdownParent: $(el).parent(), // Aide à la gestion du focus et du z-index
             language: {
                 searching: () => "Recherche...",
                 noResults: () => "Aucun résultat"
@@ -18,15 +19,9 @@ Vue.directive('select2', {
         }).on('change', function () {
             el.dispatchEvent(new Event('change', { bubbles: true }));
         });
-
-        $el.on('select2:open', function() {
-            setTimeout(() => {
-                const searchField = document.querySelector('.select2-container--open .select2-search__field');
-                if (searchField) searchField.focus();
-            }, 0);
-        });
     },
     componentUpdated: function (el) {
+        // Force la mise à jour visuelle de Select2 quand Vue met à jour le DOM
         $(el).trigger('change.select2');
     },
     unbind: function (el) {
@@ -44,7 +39,7 @@ new Vue({
             multiDevise: false,
             journalVerrouille: false,
             template: [],
-            tiersOptions: [],
+            tiersOptions: [], // Contiendra tous les tiers
             entete: {
                 id: null,
                 exercice_id: null,
@@ -71,18 +66,15 @@ new Vue({
             const j = (this.journaux || []).find((x) => x.id === this.entete.journal_id);
             this.analytiqueObligatoireJournal = !!j?.analytique_obligatoire;
         },
-        // Propagation automatique du libellé général aux lignes
         "entete.libelle"(newVal, oldVal) {
             this.lignes.forEach(l => {
-                // On met à jour si la ligne est vide ou si elle avait la valeur précédente (non modifiée manuellement)
                 if (!l.libelle || l.libelle === (oldVal || "")) {
                     l.libelle = newVal;
                 }
             });
         },
-        tiersOptions() { this.refreshSelect2(); },
-        axesAnalytiques() { this.refreshSelect2(); },
-        journaux() { this.refreshSelect2(); }
+        // Quand les tiers sont chargés, on rafraîchit Select2
+        tiersOptions() { this.refreshSelect2(); }
     },
 
     computed: {
@@ -121,7 +113,12 @@ new Vue({
             });
         },
         async initPage() {
-            await this.loadTiers();
+            // metadata() dans saisie-common appelle /metadata qui renvoie maintenant tous les tiers
+            const data = await this.loadMetadata();
+            if (data.status === "success" && data.tiers) {
+                this.tiersOptions = data.tiers;
+            }
+
             this.initEntete();
 
             if (this.ecritureId) {
@@ -160,6 +157,7 @@ new Vue({
                 taux_change: e.taux_change,
                 type_ecriture: e.type_ecriture,
             };
+
             this.lignes = (e.lignes || []).map((l) => {
                 const sec = l.section_analytique || l.sectionAnalytique;
                 const row = {
@@ -179,16 +177,12 @@ new Vue({
                 }
                 return row;
             });
+
             if (isDuplicate) {
                 this.$nextTick(() => {
                    this.lignes.forEach((_, i) => this.onSectionSelectChange(i));
                 });
             }
-        },
-
-        async loadTiers() {
-            const { data } = await get("/accounting/saisie/tiers/search?q=");
-            if (data.status === "success") this.tiersOptions = data.tiers || [];
         },
 
         isAnalytiqueEligible(numCompte) {
