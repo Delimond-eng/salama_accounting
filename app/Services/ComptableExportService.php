@@ -199,7 +199,10 @@ class ComptableExportService
     {
         return match ($format) {
             'excel', 'xlsx' => $this->downloadExcel($headers, $rows, $filename, $title, $societe, $meta),
-            'pdf' => Pdf::loadView('pdf.comptable-table', compact('headers', 'rows', 'title', 'societe', 'meta'))->setPaper('a4', 'landscape')->download($this->safeFilename($filename, 'pdf')),
+            'pdf' => Pdf::loadView('pdf.comptable-table', array_merge(
+                compact('headers', 'rows', 'title', 'societe', 'meta'),
+                ['generated_at' => now()->format('d/m/Y H:i')]
+            ))->setPaper('a4', 'landscape')->download($this->safeFilename($filename, 'pdf')),
             'csv' => $this->downloadCsv($headers, $rows, $filename),
             default => abort(422),
         };
