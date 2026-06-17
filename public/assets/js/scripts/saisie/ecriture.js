@@ -57,6 +57,11 @@ new Vue({
             analytiqueObligatoireJournal: false,
             axesAnalytiques: [],
             comptesCache: {},
+
+            // Formulaires de création rapide
+            formCompte: { num_compte: "", libelle: "", classe: 4, est_compte_tiers: false },
+            formTiers: { code: "", nom: "", type: "client" },
+            formAnalytique: { axe_analytique_id: null, code: "", libelle: "" },
         };
     },
 
@@ -265,6 +270,66 @@ new Vue({
             );
             if (data.status === "success") this.entete.taux_change = data.taux;
         },
+
+        // --- Création rapide ---
+        openQuickCompte() {
+            this.formCompte = { num_compte: "", libelle: "", classe: 4, est_compte_tiers: false };
+            this.formTiers = { code: "", nom: "", type: "client" };
+            new bootstrap.Modal(document.getElementById("modal_quick_compte")).show();
+        },
+
+        async saveQuickCompte() {
+            this.isLoading = true;
+            try {
+                const { data } = await postJson("/accounting/parametres/plan-comptable/save", this.formCompte);
+                if (data.status === "success") {
+                    if (this.formCompte.est_compte_tiers) {
+                        const tiersData = {
+                            ...this.formTiers,
+                            nom: this.formTiers.nom || this.formCompte.libelle,
+                            tiers_collectif: data.compte.num_compte,
+                            actif: true
+                        };
+                        await postJson("/accounting/parametres/tiers/save", tiersData);
+                        const meta = await this.loadMetadata();
+                        if (meta.tiers) this.tiersOptions = meta.tiers;
+                    }
+                    Swal.fire("Succès", "Compte créé avec succès", "success");
+                    bootstrap.Modal.getInstance(document.getElementById("modal_quick_compte")).hide();
+                } else {
+                    this.handleResponse(data);
+                }
+            } finally {
+                this.isLoading = false;
+            }
+        },
+
+        openQuickAnalytique() {
+            if (!this.axesAnalytiques.length) {
+                Swal.fire("Erreur", "Aucun axe analytique configuré", "error");
+                return;
+            }
+            this.formAnalytique = { axe_analytique_id: this.axesAnalytiques[0].id, code: "", libelle: "" };
+            new bootstrap.Modal(document.getElementById("modal_quick_analytique")).show();
+        },
+
+        async saveQuickAnalytique() {
+            this.isLoading = true;
+            try {
+                // Route correcte définie dans web.php
+                const { data } = await postJson("/accounting/analytique/sections/save", this.formAnalytique);
+                if (data.status === "success") {
+                    Swal.fire("Succès", "Compte analytique créé", "success");
+                    bootstrap.Modal.getInstance(document.getElementById("modal_quick_analytique")).hide();
+                    await this.loadMetadata();
+                } else {
+                    this.handleResponse(data);
+                }
+            } finally {
+                this.isLoading = false;
+            }
+        },
+        // --- Fin Création rapide ---
 
         lignesPayload() {
             return this.lignes.map((l) => {

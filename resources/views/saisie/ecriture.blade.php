@@ -89,10 +89,10 @@
                     <table class="table table-bordered mb-0">
                         <thead class="table-light">
                             <tr>
-                                <th style="width:12%">Compte</th>
+                                <th style="width:12%">Compte <button type="button" class="btn btn-xs btn-primary ms-2" @click="openQuickCompte()"><i class="ti ti-plus"></i></button></th>
                                 <th style="width:18%">Tiers</th>
                                 <th>Libellé</th>
-                                <th v-if="showColonneAnalytique" style="width:16%">Analytique</th>
+                                <th v-if="showColonneAnalytique" style="width:16%">Analytique <button type="button" class="btn btn-xs btn-primary ms-2" @click="openQuickAnalytique()"><i class="ti ti-plus"></i></button></th>
                                 <th class="text-end" style="width:12%">Débit</th>
                                 <th class="text-end" style="width:12%">Crédit</th>
                                 <th v-if="multiDevise && !journalDeviseEtrangere" class="text-end" style="width:10%">M. devise</th>
@@ -195,6 +195,112 @@
             <button type="button" class="btn btn-primary" :disabled="isLoading || !equilibre" @click="save(true)">Valider l'écriture</button>
         </div>
     </form>
+
+    <!-- Modal Création Rapide Compte + Tiers -->
+    <div class="modal fade" id="modal_quick_compte" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header bg-primary py-3">
+                    <h5 class="modal-title text-white fw-bold">Création rapide de compte</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <form @submit.prevent="saveQuickCompte">
+                    <div class="modal-body p-4">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold small">Numéro de compte *</label>
+                                <input type="text" class="form-control" v-model="formCompte.num_compte" required placeholder="ex: 411101">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold small">Classe *</label>
+                                <select class="form-select" v-model.number="formCompte.classe" required>
+                                    <option v-for="n in 9" :key="n" :value="n">Classe @{{ n }}</option>
+                                </select>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label fw-bold small">Intitulé du compte *</label>
+                                <input type="text" class="form-control" v-model="formCompte.libelle" required placeholder="Libellé complet">
+                            </div>
+                            <div class="col-12">
+                                <div class="form-check form-switch mb-2">
+                                    <input class="form-check-input" type="checkbox" v-model="formCompte.est_compte_tiers" id="q_chk_tiers">
+                                    <label class="form-check-label fw-bold" for="q_chk_tiers">Ce compte nécessite un suivi tiers</label>
+                                </div>
+                            </div>
+                            <template v-if="formCompte.est_compte_tiers">
+                                <div class="col-12"><hr class="my-2"></div>
+                                <div class="col-12"><h6 class="text-primary fw-bold mb-2">Informations du Tiers</h6></div>
+                                <div class="col-md-5">
+                                    <label class="form-label fw-bold small">Code Tiers *</label>
+                                    <input type="text" class="form-control text-uppercase" v-model="formTiers.code" :required="formCompte.est_compte_tiers">
+                                </div>
+                                <div class="col-md-7">
+                                    <label class="form-label fw-bold small">Type de tiers *</label>
+                                    <select class="form-select" v-model="formTiers.type" :required="formCompte.est_compte_tiers">
+                                        <option value="client">Client</option>
+                                        <option value="fournisseur">Fournisseur</option>
+                                        <option value="salarie">Salarié</option>
+                                        <option value="autre">Autre</option>
+                                    </select>
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label fw-bold small">Nom du tiers (si différent du compte)</label>
+                                    <input type="text" class="form-control" v-model="formTiers.nom">
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                    <div class="modal-footer bg-light">
+                        <button type="button" class="btn btn-white border" data-bs-dismiss="modal" :disabled="isLoading">Annuler</button>
+                        <button type="submit" class="btn btn-primary px-4" :disabled="isLoading">
+                            <span v-if="isLoading" class="spinner-border spinner-border-sm me-1"></span>
+                            Enregistrer
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Création Rapide Analytique -->
+    <div class="modal fade" id="modal_quick_analytique" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header bg-dark py-3">
+                    <h5 class="modal-title text-white fw-bold">Nouveau compte analytique</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <form @submit.prevent="saveQuickAnalytique">
+                    <div class="modal-body p-4">
+                        <div class="row g-3">
+                            <div class="col-12">
+                                <label class="form-label fw-bold small">Axe analytique *</label>
+                                <select class="form-select" v-model="formAnalytique.axe_analytique_id" required>
+                                    <option v-for="axe in axesAnalytiques" :key="axe.id" :value="axe.id">@{{ axe.code }} — @{{ axe.libelle }}</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold small">Code *</label>
+                                <input type="text" class="form-control" v-model="formAnalytique.code" required placeholder="ex: PRJ01">
+                            </div>
+                            <div class="col-md-8">
+                                <label class="form-label fw-bold small">Libellé du compte *</label>
+                                <input type="text" class="form-control" v-model="formAnalytique.libelle" required>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer bg-light">
+                        <button type="button" class="btn btn-white border" data-bs-dismiss="modal" :disabled="isLoading">Annuler</button>
+                        <button type="submit" class="btn btn-primary px-4" :disabled="isLoading">
+                            <span v-if="isLoading" class="spinner-border spinner-border-sm me-1"></span>
+                            Créer le compte
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
     </template>
 </div>
 

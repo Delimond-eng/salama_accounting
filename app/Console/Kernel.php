@@ -8,19 +8,27 @@ use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 class Kernel extends ConsoleKernel
 {
     /**
-     * Define the application's command schedule.
+     * The Artisan commands provided by your application.
+     *
+     * @var array
+     */
+    protected $commands = [
+        Commands\SendDatabaseBackup::class,
+    ];
+
+    /**
+     * Define the application's schedule.
      *
      * @param  \Illuminate\Console\Scheduling\Schedule  $schedule
      * @return void
      */
     protected function schedule(Schedule $schedule)
     {
-
         $schedule->command('planning:generate-horaire')->sundays()->at('23:00')->timezone('Africa/Kinshasa');
 
         $schedule->command('backup:send')->dailyAt('00:00')
-        ->timezone("Africa/Kinshasa")
-        ->withoutOverlapping();
+            ->timezone("Africa/Kinshasa")
+            ->withoutOverlapping();
     }
 
     /**
