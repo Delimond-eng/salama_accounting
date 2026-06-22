@@ -15,7 +15,7 @@ return [
     'saisie' => [
         'entity' => 'saisie',
         'label' => 'Saisie comptable',
-        'actions' => ['view', 'create', 'update', 'validate', 'delete'],
+        'actions' => ['view', 'create', 'update', 'validate', 'unvalidate', 'delete'],
     ],
 
     'livres' => [

@@ -25,6 +25,7 @@ class HomeController extends Controller
         try {
             $societeId = SocieteContext::requireId();
             $filtres = array_filter([
+                'mode_devise' => $request->get('mode_devise'),
                 'devise_affichage' => $request->get('devise_affichage'),
                 'scope_devise' => $request->get('scope_devise'),
                 'mode_conversion' => $request->get('mode_conversion'),

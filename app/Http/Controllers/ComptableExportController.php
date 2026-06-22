@@ -72,8 +72,8 @@ class ComptableExportController extends Controller
 
         $exN1 = $ctx['exerciceN1'] instanceof Exercice ? $ctx['exerciceN1'] : null;
         $data = match ($type) {
-            'bilan' => $this->etats->bilan($societeId, $ctx['exercice'], $ctx['dateArrete'], $ctx['devise'], $ctx['mode'], $exN1),
-            'compte-resultat' => $this->etats->compteResultat($societeId, $ctx['exercice'], $ctx['dateArrete'], $ctx['devise'], $ctx['mode'], $exN1),
+            'bilan' => $this->etats->bilan($societeId, $ctx['exercice'], $ctx['dateArrete'], $ctx['devise'], $ctx['mode'], $exN1, $ctx['scope'] ?? 'consolide'),
+            'compte-resultat' => $this->etats->compteResultat($societeId, $ctx['exercice'], $ctx['dateArrete'], $ctx['devise'], $ctx['mode'], $exN1, $ctx['scope'] ?? 'consolide'),
             'flux-tresorerie' => $this->etats->fluxTresorerie($societeId, $ctx['exercice'], $ctx['dateArrete'], $ctx['devise'], $ctx['mode'], $exN1),
             'variation-kp' => $this->etats->variationCapitauxPropres($societeId, $ctx['exercice'], $ctx['dateArrete'], $ctx['devise'], $ctx['mode'], $exN1),
             'comparatif' => $this->etats->comparatif($societeId, $ctx['exercice'], $ctx['dateArrete'], $ctx['devise'], $ctx['mode']),
@@ -99,6 +99,7 @@ class ComptableExportController extends Controller
         $exercice = $this->livres->exerciceCourant($societeId);
 
         $paramsDevise = [
+            'mode_devise' => $request->get('mode_devise'),
             'devise_affichage' => $request->get('devise_affichage'),
             'mode_conversion' => $request->get('mode_conversion'),
             'scope_devise' => $request->get('scope_devise'),
@@ -280,12 +281,12 @@ class ComptableExportController extends Controller
         $sections = [];
 
         // 1. Bilan
-        $bilan = $this->etats->bilan($societeId, $ctx['exercice'], $ctx['dateArrete'], $ctx['devise'], $ctx['mode'], $exN1);
+        $bilan = $this->etats->bilan($societeId, $ctx['exercice'], $ctx['dateArrete'], $ctx['devise'], $ctx['mode'], $exN1, $ctx['scope'] ?? 'consolide');
         [$h, $r] = $this->formatEtatsRows('bilan', $bilan);
         $sections[] = ['title' => 'BILAN ACTIF / PASSIF', 'headers' => $h, 'rows' => $r];
 
         // 2. Compte de résultat
-        $cr = $this->etats->compteResultat($societeId, $ctx['exercice'], $ctx['dateArrete'], $ctx['devise'], $ctx['mode'], $exN1);
+        $cr = $this->etats->compteResultat($societeId, $ctx['exercice'], $ctx['dateArrete'], $ctx['devise'], $ctx['mode'], $exN1, $ctx['scope'] ?? 'consolide');
         [$h, $r] = $this->formatEtatsRows('compte-resultat', $cr);
         $sections[] = ['title' => 'COMPTE DE RÉSULTAT', 'headers' => $h, 'rows' => $r];
 
@@ -495,13 +496,13 @@ class ComptableExportController extends Controller
     {
         $numCompte = $request->get('num_compte');
         if (!$numCompte) {
-            $data = $this->livres->grandLivreGeneral($societeId, $f['exercice']->id, $f['dateDebut'], $f['dateFin'], $f['deviseAffichage'], $f['modeConversion']);
+            $data = $this->livres->grandLivreGeneral($societeId, $f['exercice']->id, $f['dateDebut'], $f['dateFin'], $f['deviseAffichage'], $f['modeConversion'], $f['scopeDevise'] ?? 'consolide');
             $headers = ['Compte', 'Libellé', 'Débit', 'Crédit', 'Solde'];
             $rows = collect($data['lignes'] ?? [])->map(fn ($r) => [$r['num_compte'], $r['libelle'], $this->export->formatNum($r['debit']), $this->export->formatNum($r['credit']), $this->export->formatNum($r['solde'])])->all();
             if (isset($data['totaux'])) $rows[] = ['=== TOTAL GÉNÉRAL', '', $this->export->formatNum($data['totaux']['debit']), $this->export->formatNum($data['totaux']['credit']), $this->export->formatNum($data['totaux']['solde'])];
             return [$headers, $rows];
         }
-        $data = $this->livres->grandLivre($societeId, $f['exercice']->id, $numCompte, $f['dateDebut'], $f['dateFin'], $f['deviseAffichage'], $f['modeConversion']);
+        $data = $this->livres->grandLivre($societeId, $f['exercice']->id, $numCompte, $f['dateDebut'], $f['dateFin'], $f['deviseAffichage'], $f['modeConversion'], $f['scopeDevise'] ?? 'consolide');
         $headers = ['Date', 'Pièce', 'Libellé', 'Débit', 'Crédit', 'Solde'];
         $rows = collect($data['lignes'] ?? [])->map(fn ($l) => [$l['date_ecriture'] ?? '', $l['num_piece'] ?? '', $l['libelle'] ?? '', $this->export->formatNum($l['debit'] ?? 0), $this->export->formatNum($l['credit'] ?? 0), $this->export->formatNum($l['solde'] ?? 0)])->all();
         $rows[] = ['=== SOLDE DE CLÔTURE', '', '', '', '', $this->export->formatNum($data['solde_cloture'] ?? 0)];
@@ -512,12 +513,12 @@ class ComptableExportController extends Controller
     {
         $numCompte = $request->get('num_compte');
         if (!$numCompte) {
-            $data = $this->livres->syntheseTresorerie($societeId, $f['exercice']->id, $type, $f['dateFin'], $f['deviseAffichage'], $f['modeConversion']);
+            $data = $this->livres->syntheseTresorerie($societeId, $f['exercice']->id, $type, $f['dateFin'], $f['deviseAffichage'], $f['modeConversion'], $f['scopeDevise'] ?? 'consolide');
             $headers = ['Num Compte', 'Libellé', 'Solde Actuel'];
             $rows = collect($data)->map(fn ($r) => [$r['num_compte'], $r['libelle'], $this->export->formatNum($r['solde_actuel'])])->all();
             return [$headers, $rows];
         }
-        $data = $this->livres->livreTresorerie($societeId, $f['exercice']->id, $numCompte, $f['dateDebut'], $f['dateFin'], $f['deviseAffichage'], $f['modeConversion'], $type);
+        $data = $this->livres->livreTresorerie($societeId, $f['exercice']->id, $numCompte, $f['dateDebut'], $f['dateFin'], $f['deviseAffichage'], $f['modeConversion'], $type, $f['scopeDevise'] ?? 'consolide');
         $headers = ['Date', 'Pièce', 'Journal', 'Libellé', 'Partenaire', 'Débit', 'Crédit', 'Solde'];
         $rows = [['Solde d\'ouverture', '', '', '', '', '', '', $this->export->formatNum($data['soldes']['ouverture_jour'] ?? 0)]];
         foreach ($data['lignes'] ?? [] as $l) {
@@ -529,7 +530,7 @@ class ComptableExportController extends Controller
 
     protected function rowsBalance(int $societeId, array $f, Request $request): array
     {
-        $data = $this->livres->balanceGenerale($societeId, $f['exercice']->id, $f['dateDebut'], $f['dateFin'], $f['deviseAffichage'], $f['modeConversion'], $request->integer('classe') ?: null);
+        $data = $this->livres->balanceGenerale($societeId, $f['exercice']->id, $f['dateDebut'], $f['dateFin'], $f['deviseAffichage'], $f['modeConversion'], $request->integer('classe') ?: null, $f['scopeDevise'] ?? 'consolide');
         $headers = ['Compte', 'Intitulé', 'Solde début D', 'Solde début C', 'Mvt débit', 'Mvt crédit', 'Solde fin D', 'Solde fin C'];
         $rows = collect($data['lignes'] ?? [])->map(fn ($r) => [$r['num_compte'] ?? '', $r['libelle'] ?? '', $this->export->formatNum($r['solde_debut_debiteur'] ?? 0), $this->export->formatNum($r['solde_debut_crediteur'] ?? 0), $this->export->formatNum($r['mouvement_debit'] ?? 0), $this->export->formatNum($r['mouvement_credit'] ?? 0), $this->export->formatNum($r['solde_fin_debiteur'] ?? 0), $this->export->formatNum($r['solde_fin_crediteur'] ?? 0)])->all();
         if (isset($data['totaux'])) $rows[] = ['=== TOTAL GÉNÉRAL', '', $this->export->formatNum($data['totaux']['solde_debut_debiteur']), $this->export->formatNum($data['totaux']['solde_debut_crediteur']), $this->export->formatNum($data['totaux']['mouvement_debit']), $this->export->formatNum($data['totaux']['mouvement_credit']), $this->export->formatNum($data['totaux']['solde_fin_debiteur']), $this->export->formatNum($data['totaux']['solde_fin_crediteur'])];
@@ -548,8 +549,8 @@ class ComptableExportController extends Controller
     {
         $societe = Societe::findOrFail($societeId);
         $exercice = $this->livres->exerciceCourant($societeId);
-        $options = $this->livres->optionsDefaut($societe);
-        return ['societe' => $societe, 'exercice' => $exercice, 'dateDebut' => $request->get('date_debut', $exercice?->date_debut?->format('Y-m-d')), 'dateFin' => $request->get('date_fin', $exercice?->date_fin?->format('Y-m-d')), 'deviseAffichage' => strtoupper($request->get('devise_affichage', $options['devise_affichage'])), 'modeConversion' => $request->get('mode_conversion', $options['mode_conversion'])];
+        $options = $this->livres->resoudreFiltresDevise($societe, ['mode_devise' => $request->get('mode_devise'), 'devise_affichage' => $request->get('devise_affichage'), 'mode_conversion' => $request->get('mode_conversion'), 'scope_devise' => $request->get('scope_devise')]);
+        return ['societe' => $societe, 'exercice' => $exercice, 'dateDebut' => $request->get('date_debut', $exercice?->date_debut?->format('Y-m-d')), 'dateFin' => $request->get('date_fin', $exercice?->date_fin?->format('Y-m-d')), 'deviseAffichage' => $options['devise_affichage'], 'modeConversion' => $options['mode_conversion'], 'scopeDevise' => $options['scope_devise']];
     }
 
     protected function metaFiltres(array $f): array
@@ -563,8 +564,8 @@ class ComptableExportController extends Controller
         $exercice = $this->fiscalite->exerciceCourant($societeId);
         if ($request->filled('exercice_id')) $exercice = Exercice::where('societe_id', $societeId)->findOrFail($request->integer('exercice_id'));
         if (!$exercice) return ['error' => 'Aucun exercice courant.'];
-        $options = $this->livres->optionsDefaut($societe);
-        return ['societe' => $societe, 'exercice' => $exercice, 'dateDebut' => $request->get('date_debut', $exercice->date_debut?->format('Y-m-d')), 'dateFin' => $request->get('date_fin', $exercice->date_fin?->format('Y-m-d')), 'devise' => strtoupper($request->get('devise_affichage', $options['devise_affichage']))];
+        $options = $this->livres->resoudreFiltresDevise($societe, ['mode_devise' => $request->get('mode_devise'), 'devise_affichage' => $request->get('devise_affichage'), 'mode_conversion' => $request->get('mode_conversion'), 'scope_devise' => $request->get('scope_devise')]);
+        return ['societe' => $societe, 'exercice' => $exercice, 'dateDebut' => $request->get('date_debut', $exercice->date_debut?->format('Y-m-d')), 'dateFin' => $request->get('date_fin', $exercice->date_fin?->format('Y-m-d')), 'devise' => $options['devise_affichage'], 'mode' => $options['mode_conversion'], 'scope' => $options['scope_devise']];
     }
 
     protected function etatsCtx(Request $request, int $societeId): array
@@ -573,9 +574,9 @@ class ComptableExportController extends Controller
         if ($request->filled('exercice_id')) $exercice = Exercice::where('societe_id', $societeId)->findOrFail($request->integer('exercice_id'));
         if (!$exercice) return ['error' => 'Aucun exercice.'];
         $societe = Societe::findOrFail($societeId);
-        $options = $this->livres->optionsDefaut($societe);
+        $options = $this->livres->resoudreFiltresDevise($societe, ['mode_devise' => $request->get('mode_devise'), 'devise_affichage' => $request->get('devise_affichage'), 'mode_conversion' => $request->get('mode_conversion'), 'scope_devise' => $request->get('scope_devise')]);
         $exerciceN1 = $this->etats->exercicePrecedent($societeId, $exercice);
-        return ['societe' => $societe, 'exercice' => $exercice, 'exerciceN1' => $exerciceN1, 'dateArrete' => $request->get('date_arrete', $exercice->date_fin?->format('Y-m-d')), 'devise' => strtoupper($request->get('devise_affichage', $options['devise_affichage'])), 'mode' => $request->get('mode_conversion', $options['mode_conversion'])];
+        return ['societe' => $societe, 'exercice' => $exercice, 'exerciceN1' => $exerciceN1, 'dateArrete' => $request->get('date_arrete', $exercice->date_fin?->format('Y-m-d')), 'devise' => $options['devise_affichage'], 'mode' => $options['mode_conversion'], 'scope' => $options['scope_devise']];
     }
 
     protected function exportPlanComptable(Request $request, int $societeId, string $format, Societe $societe)

@@ -1,9 +1,10 @@
 import {get, postJson } from "../../modules/http.js";
 import { vuePageMixin } from "../../modules/vue-page-mixin.js";
 import { exportMixin } from "../../modules/export-mixin.js";
+import { deviseFiltreMixin } from "../../modules/devise-filtre-mixin.js";
 
 export const etatsMixin = {
-    mixins: [vuePageMixin, exportMixin],
+    mixins: [vuePageMixin, exportMixin, deviseFiltreMixin],
 
     data() {
         return {
@@ -12,10 +13,11 @@ export const etatsMixin = {
             exercice: null,
             exerciceN1: null,
             exercices: [],
-            options: { devises: [], devise_affichage: "CDF", mode_conversion: "origine", scope_devise: "consolide" },
+            options: { devises: [], modes_devise: [], devise_affichage: "CDF", mode_conversion: "origine", scope_devise: "consolide", mode_devise: "cdf_consolide" },
             filtres: {
                 date_arrete: "",
                 exercice_id: null,
+                mode_devise: "cdf_consolide",
                 devise_affichage: "CDF",
                 scope_devise: "consolide",
                 mode_conversion: "origine",
@@ -47,7 +49,7 @@ export const etatsMixin = {
             if (this.filtres.date_arrete) {
                 parts.push(`Arrêté au ${this.fmtDate(this.filtres.date_arrete)}`);
             }
-            parts.push(`Devise: ${this.filtres.devise_affichage}`);
+            parts.push(`Devise: ${this.deviseAffichageCourante}`);
             if (this.filtres.avec_n1 && this.exerciceN1) {
                 parts.push(`Comparatif N-1 actif`);
             }
@@ -77,9 +79,8 @@ export const etatsMixin = {
             this.options = data.options || this.options;
             this.filtres.date_arrete = data.date_arrete || this.filtres.date_arrete;
             this.filtres.exercice_id = data.exercice?.id || null;
-            this.filtres.devise_affichage = this.options.devise_affichage || "CDF";
-            this.filtres.scope_devise = this.options.scope_devise || "consolide";
-            this.filtres.mode_conversion = this.options.mode_conversion || "origine";
+            this.filtres.mode_devise = this.options.mode_devise || "cdf_consolide";
+            this.applyDeviseOptionsFromPayload({ options: this.options });
 
             if (data.taux_usd) {
                 this.filtres.taux = data.taux_usd;
@@ -90,9 +91,7 @@ export const etatsMixin = {
             return new URLSearchParams({
                 date_arrete: this.filtres.date_arrete,
                 exercice_id: this.filtres.exercice_id || "",
-                devise_affichage: this.filtres.devise_affichage,
-                scope_devise: this.filtres.scope_devise,
-                mode_conversion: this.filtres.mode_conversion,
+                mode_devise: this.queryParamModeDevise(),
                 avec_n1: this.filtres.avec_n1 ? "1" : "0",
                 taux: this.filtres.taux,
             }).toString();
@@ -111,24 +110,8 @@ export const etatsMixin = {
         },
 
         async onFiltreChange() {
+            this.syncDeviseFromMode();
             await this.loadData();
-        },
-
-        async saveTauxUsd() {
-            if (!this.filtres.taux || this.filtres.taux <= 0) return;
-            const date = new Date().toISOString().slice(0, 10);
-            const { data } = await postJson("/accounting/parametres/taux-change/save", {
-                devise_code: "USD",
-                date_taux: date,
-                taux: this.filtres.taux,
-            });
-            if (data.errors) {
-                this.error = data.errors;
-                return;
-            }
-            if (this.filtres.mode_conversion === "actuel") {
-                await this.loadData();
-            }
         },
 
         handleResponse(data) {

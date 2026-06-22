@@ -29,6 +29,7 @@ export const saisieMixin = {
                 taux: 1,
             },
             options: { devises: [] },
+            devises: [],
             tauxUsd: 1,
             exportBase: "/accounting/export/saisie",
         };
@@ -92,6 +93,7 @@ export const saisieMixin = {
                 this.devisePrincipale = data.devise_principale || "CDF";
                 this.deviseDefaut = data.devise_defaut || this.devisePrincipale;
                 this.journalDeviseEtrangere = !!data.journal_devise_etrangere;
+                this.devises = data.devises || [];
                 this.template = data.template || [];
 
                 this.tauxUsd = data.taux_usd || 1;
@@ -150,9 +152,8 @@ export const saisieMixin = {
 
         suffixDevise(code) {
             const c = (code || "CDF").toUpperCase();
-            if (c === "CDF") return "Fr";
-            if (c === "USD") return "USD";
-            return c;
+            const map = { CDF: "Fr", USD: "USD", EUR: "€", XAF: "FCFA", XOF: "FCFA" };
+            return map[c] || c;
         },
 
         formatMontantDevise(montant, devise) {

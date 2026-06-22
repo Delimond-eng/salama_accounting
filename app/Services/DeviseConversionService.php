@@ -39,7 +39,19 @@ class DeviseConversionService
             ->orderByDesc('date_taux')
             ->value('taux');
 
-        return $taux ? (float) $taux : 1.0;
+        if ($taux) {
+            return (float) $taux;
+        }
+
+        // Aucune cotation à cette date (ex. opération antérieure au 1er taux saisi) :
+        // on prend le taux connu le plus proche dans le temps plutôt que 1.0,
+        // qui assimilerait à tort 1 unité étrangère à 1 unité de devise principale.
+        $tauxProche = TauxChange::where('societe_id', $societeId)
+            ->where('devise_code', $devise)
+            ->orderBy('date_taux')
+            ->value('taux');
+
+        return $tauxProche ? (float) $tauxProche : 1.0;
     }
 
     public function versDevisePrincipale(float $montant, string $deviseSource, float $taux): float
@@ -81,13 +93,19 @@ class DeviseConversionService
             return round($montant, 2);
         }
 
+        // En mode origine : taux enregistré sur l'écriture pour la devise source ;
+        // pour la devise cible, taux du jour de l'écriture (cohérent avec la saisie).
         $tauxSrc = $mode === 'actuel'
             ? $this->tauxJournalier($societeId, $deviseSource, $dateEcriture)
-            : ($deviseSource === $this->devisePrincipale ? 1.0 : ($tauxOrigine > 0 ? $tauxOrigine : $this->tauxJournalier($societeId, $deviseSource, $dateEcriture)));
+            : ($deviseSource === $this->devisePrincipale
+                ? 1.0
+                : ($tauxOrigine > 1 ? $tauxOrigine : $this->tauxJournalier($societeId, $deviseSource, $dateEcriture)));
 
         $tauxDst = $mode === 'actuel'
             ? $this->tauxJournalier($societeId, $deviseCible, $dateEcriture)
-            : $this->tauxJournalier($societeId, $deviseCible, $dateEcriture);
+            : ($deviseCible === $this->devisePrincipale
+                ? 1.0
+                : $this->tauxJournalier($societeId, $deviseCible, $dateEcriture));
 
         $principal = $this->versDevisePrincipale($montant, $deviseSource, $tauxSrc);
 
@@ -104,11 +122,22 @@ class DeviseConversionService
         return '1 '.$devise.' = '.number_format($taux, 2, ',', ' ').' '.$this->devisePrincipale;
     }
 
+    /**
+     * Devises proposées dans les sélecteurs (saisie, livres, états, dashboard).
+     * Inclut la devise principale + les devises de travail : USD, EUR, FCFA (XAF).
+     */
     public function devisesPourAffichage(): array
     {
+        $codes = array_values(array_unique(array_merge(
+            [$this->devisePrincipale],
+            ['CDF', 'USD', 'EUR', 'XAF']
+        )));
+
+        $ordre = "'".implode("','", $codes)."'";
+
         return Devise::actif()
-            ->whereIn('code_iso', ['CDF', 'USD'])
-            ->orderByRaw("FIELD(code_iso, 'CDF', 'USD')")
+            ->whereIn('code_iso', $codes)
+            ->orderByRaw("FIELD(code_iso, {$ordre})")
             ->get(['code_iso', 'libelle', 'symbole', 'nb_decimales'])
             ->all();
     }

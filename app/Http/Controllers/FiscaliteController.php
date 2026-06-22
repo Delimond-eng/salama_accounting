@@ -84,14 +84,20 @@ class FiscaliteController extends Controller
         if (! $exercice) {
             return ['error' => 'Aucun exercice courant.'];
         }
-        $options = $this->livres->optionsDefaut($societe);
+        $options = $this->livres->resoudreFiltresDevise($societe, [
+            'mode_devise' => $request->get('mode_devise'),
+            'devise_affichage' => $request->get('devise_affichage'),
+            'mode_conversion' => $request->get('mode_conversion'),
+            'scope_devise' => $request->get('scope_devise'),
+        ]);
         $dateDebut = $request->get('date_debut', $exercice->date_debut->format('Y-m-d'));
         $dateFin = $request->get('date_fin', $exercice->date_fin->format('Y-m-d'));
-        $devise = strtoupper($request->get('devise_affichage', $options['devise_affichage']));
-        $mode = $request->get('mode_conversion', $options['mode_conversion']);
-        $scope = $request->get('scope_devise', $options['scope_devise'] ?? 'consolide');
+        $devise = $options['devise_affichage'];
+        $mode = $options['mode_conversion'];
+        $scope = $options['scope_devise'];
+        $modeDevise = $options['mode_devise'];
 
-        return compact('societe', 'exercice', 'dateDebut', 'dateFin', 'devise', 'mode', 'scope');
+        return compact('societe', 'exercice', 'dateDebut', 'dateFin', 'devise', 'mode', 'scope', 'modeDevise');
     }
 
     public function apiTvaCollectee(Request $request): JsonResponse

@@ -94,18 +94,21 @@ class LivresController extends Controller
     {
         $societeId = SocieteContext::requireId();
         $data = $request->validate([
-            'devise_affichage' => 'required|string|size:3',
-            'mode_conversion' => 'required|in:origine,actuel',
-            'scope_devise' => 'nullable|in:natif,consolide',
+            'mode_devise' => 'nullable|string|in:'.implode(',', \App\Support\DeviseMode::ids()),
+            'devise_affichage' => 'nullable|string|size:3',
+            'mode_conversion' => 'nullable|in:origine,actuel',
+            'scope_devise' => 'nullable|string',
         ]);
 
         $societe = Societe::findOrFail($societeId);
         $params = $societe->parametres ?? [];
-        $params['devise_affichage'] = strtoupper($data['devise_affichage']);
-        $params['mode_conversion'] = $data['mode_conversion'];
-        if (isset($data['scope_devise'])) {
-            $params['scope_devise'] = $data['scope_devise'];
-        }
+
+        // Le mode unifié est prioritaire ; on en dérive les paramètres internes stockés.
+        $resolved = $this->livres->resoudreFiltresDevise($societe, $data);
+        $params['mode_devise'] = $resolved['mode_devise'];
+        $params['devise_affichage'] = $resolved['devise_affichage'];
+        $params['scope_devise'] = $resolved['scope_devise'];
+        $params['mode_conversion'] = $resolved['mode_conversion'];
         $societe->update(['parametres' => $params]);
 
         return response()->json(['status' => 'success', 'message' => 'Préférences devise enregistrées.', 'options' => $this->livres->optionsDefaut($societe->fresh())]);
@@ -115,15 +118,22 @@ class LivresController extends Controller
     {
         $societe = Societe::findOrFail($societeId);
         $exercice = $this->livres->exerciceCourant($societeId);
-        $options = $this->livres->optionsDefaut($societe);
+
+        $options = $this->livres->resoudreFiltresDevise($societe, [
+            'mode_devise' => $request->get('mode_devise'),
+            'devise_affichage' => $request->get('devise_affichage'),
+            'scope_devise' => $request->get('scope_devise'),
+            'mode_conversion' => $request->get('mode_conversion'),
+        ]);
 
         $dateDebut = $request->get('date_debut', $exercice?->date_debut?->format('Y-m-d'));
         $dateFin = $request->get('date_fin', $exercice?->date_fin?->format('Y-m-d'));
-        $deviseAffichage = strtoupper($request->get('devise_affichage', $options['devise_affichage']));
-        $modeConversion = $request->get('mode_conversion', $options['mode_conversion']);
-        $scopeDevise = $request->get('scope_devise', $options['scope_devise'] ?? 'consolide');
+        $deviseAffichage = $options['devise_affichage'];
+        $modeConversion = $options['mode_conversion'];
+        $scopeDevise = $options['scope_devise'];
+        $modeDevise = $options['mode_devise'];
 
-        return compact('societe', 'exercice', 'dateDebut', 'dateFin', 'deviseAffichage', 'modeConversion', 'scopeDevise', 'options');
+        return compact('societe', 'exercice', 'dateDebut', 'dateFin', 'deviseAffichage', 'modeConversion', 'scopeDevise', 'modeDevise', 'options');
     }
 
     public function apiBalance(Request $request): JsonResponse
@@ -230,7 +240,8 @@ class LivresController extends Controller
             $f['dateFin'],
             $f['deviseAffichage'],
             $f['modeConversion'],
-            $request->get('type_tiers')
+            $request->get('type_tiers'),
+            $f['scopeDevise']
         );
 
         return response()->json(['status' => 'success', 'lignes' => $lignes, 'filtres' => $f]);
@@ -263,7 +274,8 @@ class LivresController extends Controller
             $f['dateFin'],
             $f['deviseAffichage'],
             $f['modeConversion'],
-            null
+            null,
+            $f['scopeDevise']
         )->keyBy('tiers_id');
 
         $result = $tiers->map(function ($t) use ($soldes) {
@@ -308,7 +320,8 @@ class LivresController extends Controller
             $f['dateFin'],
             $f['deviseAffichage'],
             $f['modeConversion'],
-            $validated['type']
+            $validated['type'],
+            $f['scopeDevise']
         );
 
         $today = now()->toDateString();
@@ -320,7 +333,8 @@ class LivresController extends Controller
             $validated['type'],
             $dateRef,
             $f['deviseAffichage'],
-            $f['modeConversion']
+            $f['modeConversion'],
+            $f['scopeDevise']
         );
 
         return response()->json([

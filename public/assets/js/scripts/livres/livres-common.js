@@ -1,20 +1,22 @@
 import { get, postJson } from "../../modules/http.js";
 import { vuePageMixin } from "../../modules/vue-page-mixin.js";
 import { exportMixin } from "../../modules/export-mixin.js";
+import { deviseFiltreMixin } from "../../modules/devise-filtre-mixin.js";
 
 export const livresMixin = {
-    mixins: [vuePageMixin, exportMixin],
+    mixins: [vuePageMixin, exportMixin, deviseFiltreMixin],
 
     data() {
         return {
             page: window.__LIVRES_PAGE__ || "balance",
             societe: null,
             exercice: null,
-            options: { devises: [], devise_affichage: "CDF", mode_conversion: "origine", scope_devise: "consolide" },
+            options: { devises: [], modes_devise: [], devise_affichage: "CDF", mode_conversion: "origine", scope_devise: "consolide", mode_devise: "cdf_consolide" },
             journaux: [],
             filtres: {
                 date_debut: "",
                 date_fin: "",
+                mode_devise: "cdf_consolide",
                 devise_affichage: "CDF",
                 scope_devise: "consolide",
                 mode_conversion: "origine",
@@ -48,10 +50,7 @@ export const livresMixin = {
             if (this.filtres.date_debut && this.filtres.date_fin) {
                 parts.push(`Période du ${this.fmtDate(this.filtres.date_debut)} au ${this.fmtDate(this.filtres.date_fin)}`);
             }
-            parts.push(`Devise: ${this.filtres.devise_affichage}`);
-            if (this.filtres.mode_conversion === 'actuel') {
-                parts.push(`Taux: ${this.tauxUsd}`);
-            }
+            parts.push(`Devise: ${this.deviseAffichageCourante}`);
             return parts.join(' • ');
         }
     },
@@ -79,18 +78,15 @@ export const livresMixin = {
             this.dateTaux = data.date_taux;
             this.filtres.date_debut = data.date_debut || this.filtres.date_debut;
             this.filtres.date_fin = data.date_fin || this.filtres.date_fin;
-            this.filtres.devise_affichage = this.options.devise_affichage || "CDF";
-            this.filtres.scope_devise = this.options.scope_devise || "consolide";
-            this.filtres.mode_conversion = this.options.mode_conversion || "origine";
+            this.filtres.mode_devise = this.options.mode_devise || "cdf_consolide";
+            this.applyDeviseOptionsFromPayload({ options: this.options });
         },
 
         queryParams(extra = {}) {
             const p = new URLSearchParams({
                 date_debut: this.filtres.date_debut,
                 date_fin: this.filtres.date_fin,
-                devise_affichage: this.filtres.devise_affichage,
-                scope_devise: this.filtres.scope_devise,
-                mode_conversion: this.filtres.mode_conversion,
+                mode_devise: this.queryParamModeDevise(),
                 taux: this.tauxUsd,
             });
             if (this.page === "journal" && this.journalId) {
@@ -109,6 +105,7 @@ export const livresMixin = {
         },
 
         async onFiltreChange() {
+            this.syncDeviseFromMode();
             await this.savePreferences();
             await this.loadData();
         },
@@ -119,28 +116,11 @@ export const livresMixin = {
 
         async savePreferences() {
             const { data } = await postJson("/accounting/livres/preferences", {
-                devise_affichage: this.filtres.devise_affichage,
-                mode_conversion: this.filtres.mode_conversion,
+                mode_devise: this.queryParamModeDevise(),
             });
             if (data.status === "success" && data.options) {
                 this.options = data.options;
-            }
-        },
-
-        async saveTauxUsd() {
-            if (!this.tauxUsd || this.tauxUsd <= 0) return;
-            const date = this.dateTaux || new Date().toISOString().slice(0, 10);
-            const { data } = await postJson("/accounting/parametres/taux-change/save", {
-                devise_code: "USD",
-                date_taux: date,
-                taux: this.tauxUsd,
-            });
-            if (data.errors) {
-                this.error = data.errors;
-                return;
-            }
-            if (this.filtres.mode_conversion === "actuel") {
-                await this.loadData();
+                this.applyDeviseOptionsFromPayload({ options: data.options });
             }
         },
 

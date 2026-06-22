@@ -58,6 +58,7 @@ class DashboardComptableService
             'devise' => $devise,
             'scope_devise' => $scope,
             'mode_conversion' => $mode,
+            'mode_devise' => $options['mode_devise'] ?? null,
             'options_devise' => $options,
             'date_reference' => $dateFin,
             'kpis' => $kpis,

@@ -57,6 +57,7 @@ Route::middleware(['auth', 'accounting.permission'])->group(function () {
             Route::get('/ecritures/{id}', [SaisieController::class, 'ecritureShow'])->whereNumber('id')->name('ecritures.show');
             Route::post('/ecritures/store', [SaisieController::class, 'store'])->name('ecritures.store');
             Route::post('/ecritures/{id}/validate', [SaisieController::class, 'validateEcriture'])->whereNumber('id')->name('ecritures.validate');
+            Route::post('/ecritures/{id}/unvalidate', [SaisieController::class, 'remettreEnBrouillon'])->whereNumber('id')->name('ecritures.unvalidate');
             Route::post('/ecritures/{id}/delete', [SaisieController::class, 'destroy'])->whereNumber('id')->name('ecritures.delete');
             Route::get('/comptes/search', [SaisieController::class, 'comptesSearch'])->name('comptes.search');
             Route::get('/sections/search', [SaisieController::class, 'sectionsSearch'])->name('sections.search');

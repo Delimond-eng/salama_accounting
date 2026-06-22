@@ -397,6 +397,27 @@ class SaisieComptableService
         });
     }
 
+    public function remettreEnBrouillon(int $societeId, int $ecritureId): Ecriture
+    {
+        return DB::transaction(function () use ($societeId, $ecritureId) {
+            $ecriture = Ecriture::where('societe_id', $societeId)->findOrFail($ecritureId);
+            if ($ecriture->statut !== 'validee') {
+                throw new InvalidArgumentException('Seules les écritures validées peuvent être remises en brouillon.');
+            }
+
+            $ecriture->update([
+                'statut' => 'brouillon',
+                'valide_par' => null,
+                'valide_le' => null,
+                'modifie_par' => Auth::id(),
+            ]);
+
+            $this->auditLog->logEcriture('rebrouillon', $ecriture->fresh());
+
+            return $ecriture->fresh(['lignes', 'journal']);
+        });
+    }
+
     public function supprimerBrouillon(int $societeId, int $ecritureId): void
     {
         $ecriture = Ecriture::where('societe_id', $societeId)->findOrFail($ecritureId);

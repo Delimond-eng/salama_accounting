@@ -37,37 +37,11 @@
                     <option value="fournisseur">Fournisseurs</option>
                 </select>
             </div>
-            <div class="col-md-2">
-                <label class="form-label text-muted fs-12 mb-1">Devise</label>
-                <select class="form-select form-select-sm" v-model="filtres.devise_affichage" @change="onFiltreChange">
-                    <option v-for="d in options.devises" :key="d.code_iso" :value="d.code_iso">@{{ d.code_iso }}</option>
-                </select>
-            </div>
-            <div class="col-md-2">
-                <label class="form-label text-muted fs-12 mb-1">Présentation</label>
-                <select class="form-select form-select-sm" v-model="filtres.scope_devise" @change="onFiltreChange">
-                    <option value="natif">Native</option>
-                    <option value="consolide">Consolidée</option>
-                </select>
-            </div>
-            <div class="col-md-2" v-if="filtres.scope_devise === 'consolide'">
-                <label class="form-label text-muted fs-12 mb-1">Conversion</label>
-                <select class="form-select form-select-sm" v-model="filtres.mode_conversion" @change="onFiltreChange">
-                    <option value="origine">Taux d'origine</option>
-                    <option value="actuel">Taux actuel</option>
-                </select>
-            </div>
-            <div class="col-md-2" v-if="filtres.scope_devise === 'consolide' && (filtres.mode_conversion === 'actuel' || filtres.devise_affichage !== 'CDF')">
-                <label class="form-label text-muted fs-12 mb-1">Taux (1 USD =)</label>
-                <div class="input-group input-group-sm">
-                    <input type="number" step="0.01" class="form-control" v-model.number="tauxUsd" @change="saveTauxUsd">
-                    <span class="input-group-text bg-light fs-11">CDF</span>
-                </div>
-            </div>
+            @include('components.mode-devise-select', ['change' => 'onFiltreChange'])
         </div>
-        <div class="mt-3 pt-2 border-top d-flex align-items-center gap-2" v-if="exercice">
+        <div class="mt-3 pt-2 border-top d-flex align-items-center gap-2 flex-wrap" v-if="exercice">
             <span class="badge bg-soft-info text-info fs-11">@{{ exercice.libelle }}</span>
-            <span class="badge bg-soft-primary text-primary fs-11">@{{ filtres.scope_devise === 'natif' ? 'Native ' + filtres.devise_affichage : 'Consolidé ' + filtres.devise_affichage }}</span>
+            @include('components.mode-devise-legende')
         </div>
     </div>
 </div>

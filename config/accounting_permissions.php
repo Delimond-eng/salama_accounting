@@ -6,6 +6,7 @@ return [
         'create' => 'Créer',
         'update' => 'Modifier',
         'validate' => 'Valider',
+        'unvalidate' => 'Remettre en brouillon',
         'delete' => 'Supprimer',
         'export' => 'Exporter',
         'import' => 'Importer',

@@ -1,9 +1,10 @@
 import { get } from "../../modules/http.js";
 import { vuePageMixin } from "../../modules/vue-page-mixin.js";
 import { exportMixin } from "../../modules/export-mixin.js";
+import { deviseFiltreMixin } from "../../modules/devise-filtre-mixin.js";
 
 export const fiscaliteMixin = {
-    mixins: [vuePageMixin, exportMixin],
+    mixins: [vuePageMixin, exportMixin, deviseFiltreMixin],
 
     data() {
         return {
@@ -11,12 +12,13 @@ export const fiscaliteMixin = {
             societe: null,
             exercice: null,
             exercices: [],
-            options: { devises: [], devise_affichage: "CDF", mode_conversion: "origine" },
+            options: { devises: [], modes_devise: [], devise_affichage: "CDF", mode_conversion: "origine", mode_devise: "cdf_consolide" },
             config: { taux_tva: 18, taux_is: 30 },
             filtres: {
                 date_debut: "",
                 date_fin: "",
                 exercice_id: null,
+                mode_devise: "cdf_consolide",
                 devise_affichage: "CDF",
                 mode_conversion: "origine",
                 taux: 1,
@@ -35,14 +37,9 @@ export const fiscaliteMixin = {
             if (this.filtres.date_debut && this.filtres.date_fin) {
                 parts.push(`Période du ${this.fmtDate(this.filtres.date_debut)} au ${this.fmtDate(this.filtres.date_fin)}`);
             }
-            if (this.filtres.devise_affichage) {
-                parts.push(`Devise: ${this.filtres.devise_affichage}`);
-            }
-            if (this.filtres.mode_conversion === 'actuel') {
-                parts.push(`Taux: ${this.filtres.taux}`);
-            }
-            return parts.join(' • ') || "Toutes les périodes";
-        }
+            parts.push(`Devise: ${this.deviseAffichageCourante}`);
+            return parts.join(" • ") || "Toutes les périodes";
+        },
     },
 
     async mounted() {
@@ -68,12 +65,11 @@ export const fiscaliteMixin = {
             this.filtres.date_debut = data.date_debut || "";
             this.filtres.date_fin = data.date_fin || "";
             this.filtres.exercice_id = data.exercice?.id || null;
-            this.filtres.devise_affichage = this.options.devise_affichage || "CDF";
-            this.filtres.mode_conversion = this.options.mode_conversion || "origine";
+            this.filtres.mode_devise = this.options.mode_devise || "cdf_consolide";
+            this.applyDeviseOptionsFromPayload({ options: this.options });
             if (data.taux_usd) {
                 this.filtres.taux = data.taux_usd;
             }
-            this.filtres.scope_devise = this.options.scope_devise || "consolide";
         },
 
         queryParams() {
@@ -81,10 +77,8 @@ export const fiscaliteMixin = {
                 date_debut: this.filtres.date_debut,
                 date_fin: this.filtres.date_fin,
                 exercice_id: this.filtres.exercice_id || "",
-                devise_affichage: this.filtres.devise_affichage,
-                mode_conversion: this.filtres.mode_conversion,
+                mode_devise: this.queryParamModeDevise(),
                 taux: this.filtres.taux,
-                scope_devise: this.filtres.scope_devise,
             }).toString();
         },
 

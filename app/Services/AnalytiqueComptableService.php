@@ -19,7 +19,8 @@ use InvalidArgumentException;
 class AnalytiqueComptableService
 {
     public function __construct(
-        protected DeviseConversionService $devises
+        protected DeviseConversionService $devises,
+        protected LivresComptablesService $livres
     ) {}
 
     public function axesRestreintsActifs(Societe $societe): bool
@@ -536,14 +537,10 @@ class AnalytiqueComptableService
      */
     protected function parametresDevise(int $societeId, array $params): array
     {
-        $societe = Societe::find($societeId);
+        $societe = Societe::findOrFail($societeId);
         $this->devises->setDevisePrincipale($societe->devise_principale ?? 'CDF');
 
-        return [
-            'devise_affichage' => strtoupper($params['devise_affichage'] ?? $societe->devise_principale ?? 'CDF'),
-            'mode_conversion' => $params['mode_conversion'] ?? 'origine',
-            'scope_devise' => $params['scope_devise'] ?? 'consolide',
-        ];
+        return $this->livres->resoudreFiltresDevise($societe, $params);
     }
 
     protected function convertirMontant(float $montant, object $row, array $ctx, int $societeId): float
@@ -590,8 +587,8 @@ class AnalytiqueComptableService
             ->when($sectionId, fn ($q) => $q->where('s.id', $sectionId))
             ->when($journalId, fn ($q) => $q->where('e.journal_id', $journalId));
 
-        if ($ctx['scope_devise'] === 'natif') {
-            $q->where('e.devise', $ctx['devise_affichage']);
+        if (str_starts_with($ctx['scope_devise'], 'natif')) {
+            $this->livres->appliquerScopeDevise($q, $ctx['scope_devise'], $ctx['devise_affichage']);
         }
 
         return $q;

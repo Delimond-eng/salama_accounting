@@ -92,15 +92,21 @@ class EtatsController extends Controller
             return ['error' => 'Aucun exercice sélectionné.'];
         }
 
-        $options = $this->livres->optionsDefaut($societe);
+        $options = $this->livres->resoudreFiltresDevise($societe, [
+            'mode_devise' => $request->get('mode_devise'),
+            'devise_affichage' => $request->get('devise_affichage'),
+            'scope_devise' => $request->get('scope_devise'),
+            'mode_conversion' => $request->get('mode_conversion'),
+        ]);
         $dateArrete = $request->get('date_arrete', $exercice->date_fin->format('Y-m-d'));
-        $devise = strtoupper($request->get('devise_affichage', $options['devise_affichage']));
-        $mode = $request->get('mode_conversion', $options['mode_conversion']);
-        $scopeDevise = $request->get('scope_devise', $options['scope_devise'] ?? 'consolide');
+        $devise = $options['devise_affichage'];
+        $mode = $options['mode_conversion'];
+        $scopeDevise = $options['scope_devise'];
+        $modeDevise = $options['mode_devise'];
         $avecN1 = $request->boolean('avec_n1', true);
         $n1 = $avecN1 ? $this->etats->exercicePrecedent($societeId, $exercice) : null;
 
-        return compact('societe', 'exercice', 'dateArrete', 'devise', 'mode', 'scopeDevise', 'n1');
+        return compact('societe', 'exercice', 'dateArrete', 'devise', 'mode', 'scopeDevise', 'modeDevise', 'n1');
     }
 
     public function apiBilan(Request $request): JsonResponse
@@ -164,7 +170,7 @@ class EtatsController extends Controller
             return response()->json(['errors' => [$ctx['error']]], 422);
         }
 
-        $data = $this->etats->fluxTresorerie($societeId, $ctx['exercice'], $ctx['dateArrete'], $ctx['devise'], $ctx['mode'], $ctx['n1']);
+        $data = $this->etats->fluxTresorerie($societeId, $ctx['exercice'], $ctx['dateArrete'], $ctx['devise'], $ctx['mode'], $ctx['n1'], $ctx['scopeDevise']);
 
         return response()->json(['status' => 'success', 'data' => $data]);
     }
@@ -177,7 +183,7 @@ class EtatsController extends Controller
             return response()->json(['errors' => [$ctx['error']]], 422);
         }
 
-        $data = $this->etats->variationCapitauxPropres($societeId, $ctx['exercice'], $ctx['dateArrete'], $ctx['devise'], $ctx['mode'], $ctx['n1']);
+        $data = $this->etats->variationCapitauxPropres($societeId, $ctx['exercice'], $ctx['dateArrete'], $ctx['devise'], $ctx['mode'], $ctx['n1'], $ctx['scopeDevise']);
 
         return response()->json(['status' => 'success', 'data' => $data]);
     }
@@ -195,7 +201,7 @@ class EtatsController extends Controller
             return response()->json(['errors' => [$ctx['error']]], 422);
         }
 
-        $data = $this->etats->comparatif($societeId, $ctx['exercice'], $ctx['dateArrete'], $ctx['devise'], $ctx['mode']);
+        $data = $this->etats->comparatif($societeId, $ctx['exercice'], $ctx['dateArrete'], $ctx['devise'], $ctx['mode'], $ctx['scopeDevise']);
 
         return response()->json(['status' => 'success', 'data' => $data]);
     }
@@ -210,9 +216,9 @@ class EtatsController extends Controller
 
         $data = match ($type) {
             'bilan' => $this->etats->bilan($societeId, $ctx['exercice'], $ctx['dateArrete'], $ctx['devise'], $ctx['mode'], $ctx['n1'], $ctx['scopeDevise']),
-            'compte-resultat' => $this->etats->compteResultat($societeId, $ctx['exercice'], $ctx['dateArrete'], $ctx['devise'], $ctx['mode'], $ctx['n1']),
-            'flux-tresorerie' => $this->etats->fluxTresorerie($societeId, $ctx['exercice'], $ctx['dateArrete'], $ctx['devise'], $ctx['mode'], $ctx['n1']),
-            'variation-kp' => $this->etats->variationCapitauxPropres($societeId, $ctx['exercice'], $ctx['dateArrete'], $ctx['devise'], $ctx['mode'], $ctx['n1']),
+            'compte-resultat' => $this->etats->compteResultat($societeId, $ctx['exercice'], $ctx['dateArrete'], $ctx['devise'], $ctx['mode'], $ctx['n1'], $ctx['scopeDevise']),
+            'flux-tresorerie' => $this->etats->fluxTresorerie($societeId, $ctx['exercice'], $ctx['dateArrete'], $ctx['devise'], $ctx['mode'], $ctx['n1'], $ctx['scopeDevise']),
+            'variation-kp' => $this->etats->variationCapitauxPropres($societeId, $ctx['exercice'], $ctx['dateArrete'], $ctx['devise'], $ctx['mode'], $ctx['n1'], $ctx['scopeDevise']),
             default => null,
         };
 

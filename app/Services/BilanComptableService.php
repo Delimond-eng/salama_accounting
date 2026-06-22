@@ -22,6 +22,12 @@ class BilanComptableService
 
     private const TOLERANCE = 0.02;
 
+    /**
+     * Tolérance relative au-delà de laquelle un écart de consolidation est considéré
+     * comme structurel (et non comme un simple arrondi de conversion de devise).
+     */
+    private const TOLERANCE_RELATIVE_CONVERSION = 0.005;
+
     public function __construct(
         protected LivresComptablesService $livres
     ) {}
@@ -312,6 +318,94 @@ class BilanComptableService
             'nature' => 'resultat_exercice',
             'origine' => 'classes_6_7',
         ];
+
+        return $assignations;
+    }
+
+    /**
+     * Conversion multi-devises : la conversion ligne à ligne (arrondie à 2 décimales)
+     * introduit un résidu d'arrondi qui empêche TOTAL ACTIF = TOTAL PASSIF, alors que les
+     * livres natifs sont parfaitement équilibrés. On absorbe ce résidu via une ligne
+     * « Écart de conversion » (478/479), comme l'exige SYSCOHADA, au lieu de déclarer
+     * le bilan déséquilibré.
+     *
+     * S'applique en consolidation (CDF+USD) et en modes natifs convertis (ex. USD natif en CDF).
+     * Un écart structurel (taux manquant, classe oubliée…) reste signalé.
+     */
+    protected function conversionMultideviseActive(string $scopeDevise, string $deviseAffichage): bool
+    {
+        if ($scopeDevise === 'consolide') {
+            return true;
+        }
+
+        if (str_starts_with($scopeDevise, 'natif:')) {
+            $source = strtoupper(explode(':', $scopeDevise, 2)[1] ?? $deviseAffichage);
+
+            return strtoupper($deviseAffichage) !== $source;
+        }
+
+        return false;
+    }
+
+    protected function absorberEcartConversion(
+        array $assignations,
+        array $totaux,
+        string $scopeDevise,
+        string $deviseAffichage
+    ): array {
+        if (! $this->conversionMultideviseActive($scopeDevise, $deviseAffichage)) {
+            return $assignations;
+        }
+
+        if (($assignations['non_affectes'] ?? []) !== []) {
+            return $assignations;
+        }
+
+        $ecart = round((float) $totaux['total_actif'] - (float) $totaux['total_passif'], 2);
+
+        if (abs($ecart) < 0.01) {
+            return $assignations;
+        }
+
+        $base = max(1.0, abs((float) $totaux['total_actif']), abs((float) $totaux['total_passif']));
+
+        // Écart trop important pour un simple arrondi de change → laissé au contrôle (erreur bloquante).
+        if (abs($ecart) / $base > self::TOLERANCE_RELATIVE_CONVERSION) {
+            return $assignations;
+        }
+
+        if ($ecart > 0) {
+            // Actif > Passif : on équilibre côté passif.
+            $assignations['passif']['479000'] = [
+                'compte_id' => null,
+                'num_compte' => '479000',
+                'libelle' => 'Écart de conversion (consolidation devises)',
+                'classe' => 4,
+                'debit' => 0.0,
+                'credit' => $ecart,
+                'balance' => $ecart,
+                'side' => self::SIDE_PASSIF,
+                'section' => 'ecart_conversion',
+                'nature' => 'ecart_conversion',
+                'origine' => 'consolidation_devises',
+            ];
+        } else {
+            // Passif > Actif : on équilibre côté actif.
+            $montant = abs($ecart);
+            $assignations['actif']['478000'] = [
+                'compte_id' => null,
+                'num_compte' => '478000',
+                'libelle' => 'Écart de conversion (consolidation devises)',
+                'classe' => 4,
+                'debit' => $montant,
+                'credit' => 0.0,
+                'balance' => $montant,
+                'side' => self::SIDE_ACTIF,
+                'section' => 'ecart_conversion',
+                'nature' => 'ecart_conversion',
+                'origine' => 'consolidation_devises',
+            ];
+        }
 
         return $assignations;
     }
@@ -626,6 +720,9 @@ class BilanComptableService
         $assignations = $this->injecterResultatExercice($assignations, $resultatNet);
 
         $totaux = $this->calculerTotaux($assignations);
+        $assignations = $this->absorberEcartConversion($assignations, $totaux, $scopeDevise, $deviseAffichage);
+        $totaux = $this->calculerTotaux($assignations);
+
         $payload = $this->construirePayload(
             $assignations,
             $totaux,

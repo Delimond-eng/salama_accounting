@@ -15,6 +15,13 @@
         <button type="button" class="btn-close" @click="warnings=[]"></button>
     </div>
 
+    <div v-if="estValidee" class="alert alert-info d-flex align-items-center justify-content-between">
+        <span><i class="ti ti-lock me-2"></i>Cette écriture est <strong>validée</strong> — consultation seule.</span>
+        <button v-if="canUnvalidate" type="button" class="btn btn-sm btn-warning" @click="ouvrirRebrouillon(ecritureCourante)">
+            <i class="ti ti-arrow-back-up me-1"></i>Remettre en brouillon
+        </button>
+    </div>
+
     <form @submit.prevent="save(false)">
         <div class="card border-0 rounded-0 mb-3">
             <div class="card-header d-flex justify-content-between align-items-center py-3">
@@ -25,20 +32,19 @@
                 <div class="row g-3">
                     <div class="col-md-3">
                         <label class="form-label">Journal</label>
-                        <select class="form-select" v-select2 v-model.number="entete.journal_id" required :disabled="journalVerrouille" @change="appliquerDeviseJournal" placeholder="Choisir un journal">
+                        <select class="form-select" v-select2 v-model.number="entete.journal_id" required :disabled="journalVerrouille || estValidee" @change="appliquerDeviseJournal" placeholder="Choisir un journal">
                             <option></option>
                             <option v-for="j in journaux" :key="j.id" :value="j.id">@{{ j.code }} — @{{ j.libelle }}@{{ (j.devise_defaut && j.devise_defaut !== devisePrincipale) ? ' (' + j.devise_defaut + ')' : '' }}</option>
                         </select>
                     </div>
                     <div class="col-md-2">
                         <label class="form-label">Date comptable</label>
-                        <input type="date" class="form-control" v-model="entete.date_ecriture" required>
+                        <input type="date" class="form-control" v-model="entete.date_ecriture" required :readonly="estValidee">
                     </div>
                     <div class="col-md-2" v-if="multiDevise">
                         <label class="form-label">Devise</label>
                         <select v-if="!deviseVerrouillee" class="form-select" v-model="entete.devise" @change="fetchTaux">
-                            <option value="CDF">CDF (Franc)</option>
-                            <option value="USD">USD</option>
+                            <option v-for="d in devises" :key="d.code_iso" :value="d.code_iso">@{{ d.code_iso }} — @{{ d.libelle }}</option>
                         </select>
                         <input v-else type="text" class="form-control bg-light" v-model="entete.devise" readonly>
                     </div>
@@ -48,7 +54,7 @@
                     </div>
                     <div class="col-md-5">
                         <label class="form-label">Libellé</label>
-                        <input type="text" class="form-control" v-model="entete.libelle" required>
+                        <input type="text" class="form-control" v-model="entete.libelle" required :readonly="estValidee">
                     </div>
                     <div class="col-md-3">
                         <label class="form-label">Réf. facture</label>
@@ -79,7 +85,7 @@
                         <i class="ti ti-chevron-right fs-10 mx-1"></i> <span class="text-info">⑤</span> montant débit ou crédit.
                     </small>
                 </div>
-                <div class="d-flex gap-2">
+                <div class="d-flex gap-2" v-if="!estValidee">
                     <button type="button" class="btn btn-xs btn-outline-secondary" @click="appliquerTemplate"><i class="ti ti-template me-1"></i>Modèle</button>
                     <button type="button" class="btn btn-xs btn-primary" @click="ajouterLigne"><i class="ti ti-plus me-1"></i>Ligne</button>
                 </div>
@@ -89,10 +95,10 @@
                     <table class="table table-bordered mb-0">
                         <thead class="table-light">
                             <tr>
-                                <th style="width:12%">Compte <button type="button" class="btn btn-xs btn-primary ms-2" @click="openQuickCompte()"><i class="ti ti-plus"></i></button></th>
+                                <th style="width:12%">Compte <button v-if="!estValidee" type="button" class="btn btn-xs btn-primary ms-2" @click="openQuickCompte()"><i class="ti ti-plus"></i></button></th>
                                 <th style="width:18%">Tiers</th>
                                 <th>Libellé</th>
-                                <th v-if="showColonneAnalytique" style="width:16%">Analytique <button type="button" class="btn btn-xs btn-primary ms-2" @click="openQuickAnalytique()"><i class="ti ti-plus"></i></button></th>
+                                <th v-if="showColonneAnalytique" style="width:16%">Analytique <button v-if="!estValidee" type="button" class="btn btn-xs btn-primary ms-2" @click="openQuickAnalytique()"><i class="ti ti-plus"></i></button></th>
                                 <th class="text-end" style="width:12%">Débit</th>
                                 <th class="text-end" style="width:12%">Crédit</th>
                                 <th v-if="multiDevise && !journalDeviseEtrangere" class="text-end" style="width:10%">M. devise</th>
@@ -109,7 +115,8 @@
                                             @focus="onCompteSearchFocus(idx)"
                                             @blur="onCompteSearchBlur(idx)"
                                             placeholder="Rechercher..."
-                                            autocomplete="off">
+                                            autocomplete="off"
+                                            :readonly="estValidee">
                                         <ul v-show="compteUiOpen(idx)" class="dropdown-menu show w-100 shadow-sm compte-select-dropdown">
                                             <li v-if="compteUiLoading(idx)"><span class="dropdown-item text-muted">Recherche…</span></li>
                                             <li v-else-if="!compteUiResults(idx).length"><span class="dropdown-item text-muted">Aucun compte</span></li>
@@ -123,19 +130,19 @@
                                     </div>
                                 </td>
                                 <td>
-                                    <select class="form-select form-select-sm" v-select2 v-model.number="l.tiers_id" placeholder="Choisir un tiers">
+                                    <select class="form-select form-select-sm" v-select2 v-model.number="l.tiers_id" placeholder="Choisir un tiers" :disabled="estValidee">
                                         <option></option>
                                         <option v-for="t in tiersOptions" :key="t.id" :value="t.id">@{{ t.code }} @{{ t.nom }}</option>
                                     </select>
                                 </td>
-                                <td><input type="text" class="form-control form-control-sm" v-model="l.libelle"></td>
+                                <td><input type="text" class="form-control form-control-sm" v-model="l.libelle" :readonly="estValidee"></td>
                                 <td v-if="showColonneAnalytique">
                                     <select v-if="sectionsListe.length" class="form-select form-select-sm"
                                         v-select2
                                         v-model.number="l.section_analytique_id"
                                         @change="onSectionSelectChange(idx)"
                                         placeholder="Choisir l'analytique"
-                                        :disabled="!isAnalytiqueEligible(l.num_compte)"
+                                        :disabled="estValidee || !isAnalytiqueEligible(l.num_compte)"
                                         :class="{'border-danger': analytiqueObligatoireJournal && !l.section_analytique_id && isAnalytiqueEligible(l.num_compte)}">
                                         <option></option>
                                         <optgroup v-for="axe in axesAnalytiques" :key="axe.id" :label="axe.code + ' — ' + axe.libelle">
@@ -152,7 +159,7 @@
                                             @blur="onSectionSearchBlur(idx)"
                                             placeholder="Rechercher un analytique…"
                                             autocomplete="off"
-                                            :disabled="!isAnalytiqueEligible(l.num_compte)">
+                                            :disabled="estValidee || !isAnalytiqueEligible(l.num_compte)">
                                         <ul v-show="sectionUiOpen(idx)" class="dropdown-menu show w-100 shadow-sm" style="max-height:180px;overflow:auto">
                                             <li v-if="sectionUiLoading(idx)"><span class="dropdown-item text-muted">Recherche…</span></li>
                                             <li v-else-if="!sectionUiResults(idx).length"><span class="dropdown-item text-muted">Aucun résultat</span></li>
@@ -165,12 +172,13 @@
                                         </ul>
                                     </div>
                                 </td>
-                                <td><input type="number" step="0.01" min="0" class="form-control form-control-sm text-end" v-model.number="l.debit" @input="onMontant(l,'debit')"></td>
-                                <td><input type="number" step="0.01" min="0" class="form-control form-control-sm text-end" v-model.number="l.credit" @input="onMontant(l,'credit')"></td>
-                                <td v-if="multiDevise && !journalDeviseEtrangere"><input type="number" step="0.01" class="form-control form-control-sm text-end" v-model.number="l.montant_devise"></td>
-                                <td class="text-center">
+                                <td><input type="number" step="0.01" min="0" class="form-control form-control-sm text-end" v-model.number="l.debit" @input="onMontant(l,'debit')" :readonly="estValidee"></td>
+                                <td><input type="number" step="0.01" min="0" class="form-control form-control-sm text-end" v-model.number="l.credit" @input="onMontant(l,'credit')" :readonly="estValidee"></td>
+                                <td v-if="multiDevise && !journalDeviseEtrangere"><input type="number" step="0.01" class="form-control form-control-sm text-end" v-model.number="l.montant_devise" :readonly="estValidee"></td>
+                                <td class="text-center" v-if="!estValidee">
                                     <button type="button" class="btn btn-sm text-danger" @click="supprimerLigne(idx)" :disabled="lignes.length<=2"><i class="ti ti-trash"></i></button>
                                 </td>
+                                <td v-else class="text-center text-muted">—</td>
                             </tr>
                         </tbody>
                         <tfoot class="table-light text-dark fw-bold">
@@ -190,9 +198,11 @@
         </div>
 
         <div class="d-flex gap-2 justify-content-end mb-4">
-            <a :href="listeUrl" class="btn btn-white border">Annuler</a>
-            <button type="submit" class="btn btn-outline-primary" :disabled="isLoading || !equilibre">Enregistrer brouillon</button>
-            <button type="button" class="btn btn-primary" :disabled="isLoading || !equilibre" @click="save(true)">Valider l'écriture</button>
+            <a :href="listeUrl" class="btn btn-white border">@{{ estValidee ? 'Retour' : 'Annuler' }}</a>
+            <template v-if="!estValidee">
+                <button type="submit" class="btn btn-outline-primary" :disabled="isLoading || !equilibre">Enregistrer brouillon</button>
+                <button type="button" class="btn btn-primary" :disabled="isLoading || !equilibre" @click="save(true)">Valider l'écriture</button>
+            </template>
         </div>
     </form>
 
@@ -302,6 +312,8 @@
     </div>
 
     </template>
+
+    @include('saisie._modal_rebrouillon')
 </div>
 
 <style>
@@ -360,6 +372,7 @@
     window.__SAISIE_PAGE__ = @json($page);
     window.__ECRITURE_ID__ = @json($ecritureId);
     window.__DUPLICATE_ID__ = @json($duplicateId);
+    window.__SAISIE_PERMISSIONS__ = @json(['unvalidate' => auth()->user()?->can('saisie.unvalidate') ?? false]);
 </script>
 <script type="module" src="{{ asset('assets/js/scripts/saisie/ecriture.js') }}"></script>
 @endpush

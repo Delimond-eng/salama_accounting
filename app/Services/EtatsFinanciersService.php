@@ -227,7 +227,8 @@ class EtatsFinanciersService
         string $dateFin,
         string $deviseAffichage = 'CDF',
         string $modeConversion = 'origine',
-        ?Exercice $exerciceN1 = null
+        ?Exercice $exerciceN1 = null,
+        string $scopeDevise = 'consolide'
     ): array {
         return $this->fluxTresorerie->generer(
             $societeId,
@@ -235,7 +236,8 @@ class EtatsFinanciersService
             $dateFin,
             $deviseAffichage,
             $modeConversion,
-            $exerciceN1
+            $exerciceN1,
+            $scopeDevise
         );
     }
 
@@ -245,12 +247,13 @@ class EtatsFinanciersService
         string $dateFin,
         string $deviseAffichage = 'CDF',
         string $modeConversion = 'origine',
-        ?Exercice $exerciceN1 = null
+        ?Exercice $exerciceN1 = null,
+        string $scopeDevise = 'consolide'
     ): array {
         $definitions = config('syscohada_etats.variation_kp');
-        $soldesN = $this->soldesComptes($societeId, $exercice, $dateFin, $deviseAffichage, $modeConversion);
+        $soldesN = $this->soldesComptes($societeId, $exercice, $dateFin, $deviseAffichage, $modeConversion, $scopeDevise);
         $soldesN1 = $exerciceN1
-            ? $this->soldesComptes($societeId, $exerciceN1, $exerciceN1->date_fin->format('Y-m-d'), $deviseAffichage, $modeConversion)
+            ? $this->soldesComptes($societeId, $exerciceN1, $exerciceN1->date_fin->format('Y-m-d'), $deviseAffichage, $modeConversion, $scopeDevise)
             : null;
 
         $lignes = [];
@@ -307,11 +310,12 @@ class EtatsFinanciersService
         Exercice $exercice,
         string $dateFin,
         string $deviseAffichage = 'CDF',
-        string $modeConversion = 'origine'
+        string $modeConversion = 'origine',
+        string $scopeDevise = 'consolide'
     ): array {
         $n1 = $this->exercicePrecedent($societeId, $exercice);
-        $bilan = $this->bilan($societeId, $exercice, $dateFin, $deviseAffichage, $modeConversion, $n1);
-        $cr = $this->compteResultat($societeId, $exercice, $dateFin, $deviseAffichage, $modeConversion, $n1);
+        $bilan = $this->bilan($societeId, $exercice, $dateFin, $deviseAffichage, $modeConversion, $n1, $scopeDevise);
+        $cr = $this->compteResultat($societeId, $exercice, $dateFin, $deviseAffichage, $modeConversion, $n1, $scopeDevise);
 
         return [
             'bilan' => $bilan,

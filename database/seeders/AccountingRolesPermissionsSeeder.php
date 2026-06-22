@@ -111,7 +111,7 @@ class AccountingRolesPermissionsSeeder extends Seeder
 
             'admin_comptable' => [
                 ...$v('dashboard', ['view']),
-                ...$v('saisie', ['view', 'create', 'update', 'validate', 'delete']),
+                ...$v('saisie', ['view', 'create', 'update', 'validate', 'unvalidate', 'delete']),
                 ...$v('livres', ['view', 'export']),
                 ...$v('etats', ['view', 'export']),
                 ...$v('tresorerie', ['view', 'create', 'update', 'export']),

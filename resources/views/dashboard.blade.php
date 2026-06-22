@@ -39,24 +39,13 @@
         <div v-if="data && data.exercice" class="card border-0 shadow-sm mb-4">
             <div class="card-body py-3">
                 <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
-                    <div>
-                        <h6 class="mb-1 fw-semibold"><i class="ti ti-currency-dollar me-1 text-primary"></i>Périmètre d'affichage</h6>
-                        <p class="text-muted fs-12 mb-0">KPI, graphiques et contrôles recalculés selon le filtre sélectionné.</p>
+                    <div class="flex-grow-1">
+                        <h6 class="mb-1 fw-semibold"><i class="ti ti-currency-dollar me-1 text-primary"></i>Mode d'affichage devise</h6>
+                        <p class="text-muted fs-12 mb-0"><i class="ti ti-info-circle me-1"></i>@{{ noteModeDevise }}</p>
                     </div>
-                    <div class="btn-group flex-wrap" role="group">
-                        <button v-for="p in presetsDevise" :key="p.id" type="button"
-                            class="btn btn-sm"
-                            :class="presetActif(p) ? 'btn-primary' : 'btn-outline-primary'"
-                            :disabled="isLoading"
-                            @click="appliquerPreset(p)">
-                            @{{ p.label }}
-                        </button>
-                    </div>
-                    <div v-if="filtresDevise.scope_devise === 'consolide'" class="d-flex align-items-center gap-2">
-                        <label class="form-label mb-0 fs-12 text-muted text-nowrap">Taux de conversion</label>
-                        <select class="form-select form-select-sm" style="min-width:130px" v-model="filtresDevise.mode_conversion" @change="onFiltreChange" :disabled="isLoading">
-                            <option value="origine">Taux à l'origine</option>
-                            <option value="actuel">Taux actuel</option>
+                    <div class="d-flex align-items-center gap-2">
+                        <select class="form-select form-select-sm" style="min-width:230px" v-model="filtresDevise.mode_devise" @change="onFiltreChange" :disabled="isLoading">
+                            <option v-for="m in modesDeviseListe" :key="m.id" :value="m.id">@{{ m.label }}</option>
                         </select>
                     </div>
                 </div>

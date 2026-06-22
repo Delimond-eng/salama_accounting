@@ -2,6 +2,7 @@ import { get, postJson } from "../../modules/http.js";
 import { compteSelectMixin } from "../../modules/compte-select-mixin.js";
 import { analytiqueSelectMixin } from "../../modules/analytique-select-mixin.js";
 import { saisieMixin } from "./saisie-common.js";
+import { rebrouillonMixin } from "../../modules/rebrouillon-mixin.js";
 
 // Directive Select2 simple et robuste pour Vue.js
 Vue.directive('select2', {
@@ -31,11 +32,13 @@ Vue.directive('select2', {
 
 new Vue({
     el: "#App",
-    mixins: [saisieMixin, compteSelectMixin, analytiqueSelectMixin],
+    mixins: [saisieMixin, compteSelectMixin, analytiqueSelectMixin, rebrouillonMixin],
     data() {
         return {
             ecritureId: window.__ECRITURE_ID__ || null,
             duplicateId: window.__DUPLICATE_ID__ || null,
+            statut: null,
+            numPiece: "",
             multiDevise: false,
             journalVerrouille: false,
             template: [],
@@ -109,6 +112,16 @@ new Vue({
         equilibre() {
             return this.totalDebit > 0 && this.ecart < 0.01;
         },
+        estValidee() {
+            return this.statut === "validee";
+        },
+        ecritureCourante() {
+            return {
+                id: this.entete.id,
+                num_piece: this.numPiece,
+                libelle: this.entete.libelle,
+            };
+        },
     },
 
     methods: {
@@ -149,6 +162,8 @@ new Vue({
             const { data } = await get(`/accounting/saisie/ecritures/${id}`);
             if (data.status !== "success") return;
             const e = data.ecriture;
+            this.statut = isDuplicate ? null : e.statut;
+            this.numPiece = isDuplicate ? "" : (e.num_piece || "");
             this.entete = {
                 id: isDuplicate ? null : e.id,
                 exercice_id: e.exercice_id,
@@ -362,6 +377,11 @@ new Vue({
             if (data.ecriture?.id && !this.warnings?.length) {
                 window.location.href = this.listeUrl;
             }
+        },
+
+        async onRebrouillonSuccess(ecriture) {
+            this.statut = ecriture?.statut || "brouillon";
+            this.message = "Écriture remise en brouillon — vous pouvez la modifier.";
         },
     },
 });

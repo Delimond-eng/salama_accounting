@@ -49,18 +49,48 @@
                                     <button type="button" class="btn btn-sm btn-outline-info" @click="dupliquer(e)" title="Dupliquer"><i class="ti ti-copy"></i></button>
                                     <button v-if="e.statut==='brouillon'" type="button" class="btn btn-sm btn-outline-success" @click="valider(e)" title="Valider"><i class="ti ti-check"></i></button>
                                     <button v-if="e.statut==='brouillon'" type="button" class="btn btn-sm btn-outline-danger" @click="supprimer(e)" title="Supprimer"><i class="ti ti-trash"></i></button>
+                                    <button v-if="e.statut==='validee' && canUnvalidate" type="button" class="btn btn-sm btn-outline-warning" @click="ouvrirRebrouillon(e)" title="Remettre en brouillon"><i class="ti ti-arrow-back-up"></i></button>
                                 </div>
                             </td>
                         </tr>
                     </tbody>
                 </table>
             </div>
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 p-3 border-top" v-if="!isLoading && totalEcritures">
+                <div class="d-flex align-items-center gap-2">
+                    <span class="text-muted fs-12">@{{ intervalleAffiche }} écriture(s)</span>
+                    <select class="form-select form-select-sm w-auto" v-model.number="parPage" @change="changerParPage">
+                        <option :value="25">25 / page</option>
+                        <option :value="50">50 / page</option>
+                        <option :value="100">100 / page</option>
+                        <option :value="200">200 / page</option>
+                    </select>
+                </div>
+                <nav v-if="dernierePage > 1">
+                    <ul class="pagination pagination-sm mb-0">
+                        <li class="page-item" :class="{ disabled: pageCourante === 1 }">
+                            <a class="page-link" href="javascript:void(0);" @click="allerPage(pageCourante - 1)"><i class="ti ti-chevron-left"></i></a>
+                        </li>
+                        <li class="page-item" v-for="(p, i) in pagesAffichees" :key="i" :class="{ active: p === pageCourante, disabled: p === '...' }">
+                            <a class="page-link" href="javascript:void(0);" @click="allerPage(p)">@{{ p }}</a>
+                        </li>
+                        <li class="page-item" :class="{ disabled: pageCourante === dernierePage }">
+                            <a class="page-link" href="javascript:void(0);" @click="allerPage(pageCourante + 1)"><i class="ti ti-chevron-right"></i></a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
         </div>
     </div>
     </template>
+
+    @include('saisie._modal_rebrouillon')
 </div>
 @endsection
 @push('scripts')
-<script>window.__SAISIE_PAGE__ = @json($page);</script>
+<script>
+window.__SAISIE_PAGE__ = @json($page);
+window.__SAISIE_PERMISSIONS__ = @json(['unvalidate' => auth()->user()?->can('saisie.unvalidate') ?? false]);
+</script>
 <script type="module" src="{{ asset('assets/js/scripts/saisie/liste.js') }}"></script>
 @endpush

@@ -15,26 +15,7 @@
                     <input type="date" class="form-control border-start-0 ps-0" v-model="filtres.date_fin" @change="loadData">
                 </div>
             </div>
-            <div class="col-md-2">
-                <label class="form-label text-muted fs-12 mb-1">Devise</label>
-                <select class="form-select form-select-sm" v-model="filtres.devise_affichage" @change="loadData">
-                    <option v-for="d in options.devises" :key="d.code_iso" :value="d.code_iso">@{{ d.code_iso }}</option>
-                </select>
-            </div>
-            <div class="col-md-2">
-                <label class="form-label text-muted fs-12 mb-1">Présentation</label>
-                <select class="form-select form-select-sm" v-model="filtres.scope_devise" @change="loadData">
-                    <option value="natif">Native</option>
-                    <option value="consolide">Consolidée</option>
-                </select>
-            </div>
-            <div class="col-md-2" v-if="filtres.scope_devise === 'consolide'">
-                <label class="form-label text-muted fs-12 mb-1">Conversion</label>
-                <select class="form-select form-select-sm" v-model="filtres.mode_conversion" @change="loadData">
-                    <option value="origine">Taux d'origine</option>
-                    <option value="actuel">Taux actuel</option>
-                </select>
-            </div>
+            @include('components.mode-devise-select', ['change' => 'onModeDeviseChange', 'colClass' => 'col-md-3'])
             <div class="col-md-2">
                 <label class="form-label text-muted fs-12 mb-1">Axe</label>
                 <select class="form-select form-select-sm" v-model.number="filtres.axe_id" @change="loadData">
@@ -57,8 +38,8 @@
                 </select>
             </div>
         </div>
-        <div class="mt-3 pt-2 border-top d-flex align-items-center gap-2" v-if="result?.devise">
-            <span class="badge bg-soft-primary text-primary fs-11">Montants exprimés en @{{ result.devise }}</span>
+        <div class="mt-3 pt-2 border-top">
+            @include('components.mode-devise-legende')
         </div>
     </div>
 </div>

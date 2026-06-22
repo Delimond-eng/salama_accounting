@@ -12,6 +12,7 @@ use App\Services\SaisieComptableService;
 use App\Support\SocieteContext;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\View\View;
 
 class SaisieController extends Controller
@@ -83,6 +84,9 @@ class SaisieController extends Controller
             'multi_devise' => $multiDevise,
             'template' => $journal ? $this->saisie->suggestTemplate($journal) : [],
             'taux_usd' => $this->saisie->tauxPourDevise($societeId, 'USD', $today),
+            'devises' => app(\App\Services\DeviseConversionService::class)
+                ->setDevisePrincipale($devisePrincipale)
+                ->devisesPourAffichage(),
             'analytique_obligatoire' => (bool) ($journal?->analytique_obligatoire ?? false),
             'axes_analytiques' => $this->analytique->axesActifs($societeId),
             // On renvoie TOUS les tiers sans limite
@@ -141,9 +145,20 @@ class SaisieController extends Controller
             });
         }
 
-        $ecritures = $query->limit(200)->get();
+        $perPage = (int) $request->get('per_page', 50);
+        $perPage = $perPage > 0 ? min($perPage, 200) : 50;
 
-        return response()->json(['status' => 'success', 'ecritures' => $ecritures, 'total' => $ecritures->count()]);
+        // 'page' est déjà utilisé pour le type de journal -> on pagine via 'p'
+        $paginator = $query->paginate($perPage, ['*'], 'p');
+
+        return response()->json([
+            'status' => 'success',
+            'ecritures' => $paginator->items(),
+            'total' => $paginator->total(),
+            'page' => $paginator->currentPage(),
+            'per_page' => $paginator->perPage(),
+            'last_page' => $paginator->lastPage(),
+        ]);
     }
 
     public function ecritureShow(int $id): JsonResponse
@@ -247,6 +262,27 @@ class SaisieController extends Controller
             $ecriture = $this->saisie->validerEcriture(SocieteContext::requireId(), $id);
 
             return response()->json(['status' => 'success', 'message' => 'Écriture validée.', 'ecriture' => $ecriture]);
+        } catch (\Throwable $e) {
+            return response()->json(['errors' => [$e->getMessage()]], 422);
+        }
+    }
+
+    public function remettreEnBrouillon(Request $request, int $id): JsonResponse
+    {
+        try {
+            $data = $request->validate(['password' => 'required|string']);
+            $user = $request->user();
+            if (! $user || ! Hash::check($data['password'], $user->password)) {
+                return response()->json(['errors' => ['Mot de passe incorrect.']], 422);
+            }
+
+            $ecriture = $this->saisie->remettreEnBrouillon(SocieteContext::requireId(), $id);
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Écriture remise en brouillon.',
+                'ecriture' => $ecriture,
+            ]);
         } catch (\Throwable $e) {
             return response()->json(['errors' => [$e->getMessage()]], 422);
         }

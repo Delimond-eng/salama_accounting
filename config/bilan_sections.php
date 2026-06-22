@@ -17,6 +17,10 @@ return [
             'libelle' => 'TRÉSORERIE ACTIF',
             'titre' => 'Banques et caisses (classe 5)',
         ],
+        'ecart_conversion' => [
+            'libelle' => 'ÉCART DE CONVERSION',
+            'titre' => 'Écart de conversion - Actif (consolidation multi-devises)',
+        ],
     ],
     'passif' => [
         'capital' => [
@@ -42,6 +46,10 @@ return [
         'tresorerie_passif' => [
             'libelle' => 'TRÉSORERIE PASSIF',
             'titre' => 'Découverts bancaires',
+        ],
+        'ecart_conversion' => [
+            'libelle' => 'ÉCART DE CONVERSION',
+            'titre' => 'Écart de conversion - Passif (consolidation multi-devises)',
         ],
     ],
 ];

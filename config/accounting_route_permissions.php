@@ -25,6 +25,7 @@ return [
 
         'accounting.saisie.ecritures.store' => 'saisie.create',
         'accounting.saisie.ecritures.validate' => 'saisie.validate',
+        'accounting.saisie.ecritures.unvalidate' => 'saisie.unvalidate',
         'accounting.saisie.ecritures.delete' => 'saisie.delete',
         'accounting.saisie.import-releve.store' => 'saisie.create',
 

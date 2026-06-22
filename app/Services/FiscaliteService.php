@@ -40,9 +40,8 @@ class FiscaliteService
             ->whereNull('e.deleted_at')
             ->whereBetween('e.date_ecriture', [$dateDebut, $dateFin]);
 
-        if ($scope === 'natif') {
-            $query->where('e.devise', strtoupper($devise));
-        }
+        // Jeton de scope : 'consolide' ou 'natif[:DEVISE]'.
+        $this->livres->appliquerScopeDevise($query, $scope, $devise);
 
         $rows = $query
             ->select(['l.num_compte', 'l.debit', 'l.credit', 'e.devise', 'e.taux_change', 'e.date_ecriture'])
@@ -51,14 +50,9 @@ class FiscaliteService
         $conv = app(DeviseConversionService::class);
         $conv->setDevisePrincipale($societe->devise_principale ?? 'CDF');
 
-        return $rows->map(function ($r) use ($conv, $devise, $societeId, $mode, $scope) {
-            if ($scope === 'natif') {
-                return [
-                    'num_compte' => $r->num_compte,
-                    'debit' => round((float) $r->debit, 2),
-                    'credit' => round((float) $r->credit, 2),
-                ];
-            }
+        // La conversion vise toujours la devise d'affichage ; elle est neutre lorsque
+        // la devise saisie est déjà la devise d'affichage (modes natifs USD/CDF).
+        return $rows->map(function ($r) use ($conv, $devise, $societeId, $mode) {
             $debit = $conv->convertir(
                 (float) $r->debit,
                 strtoupper($r->devise ?? 'CDF'),

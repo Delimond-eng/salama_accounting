@@ -1,11 +1,12 @@
 import { get, postJson } from "../modules/http.js";
 import { vuePageMixin } from "../modules/vue-page-mixin.js";
+import { deviseFiltreMixin } from "../modules/devise-filtre-mixin.js";
 
 const ROUTES = window.__DASHBOARD_ROUTES__ || { named: {} };
 
 new Vue({
     el: "#App",
-    mixins: [vuePageMixin],
+    mixins: [vuePageMixin, deviseFiltreMixin],
 
     data() {
         return {
@@ -13,16 +14,12 @@ new Vue({
             error: null,
             isLoading: false,
             filtresDevise: {
+                mode_devise: "cdf_consolide",
                 devise_affichage: "CDF",
                 scope_devise: "consolide",
                 mode_conversion: "origine",
             },
-            presetsDevise: [
-                { id: "cdf_natif", label: "Francs (natif)", devise_affichage: "CDF", scope_devise: "natif" },
-                { id: "usd_natif", label: "Dollars (natif)", devise_affichage: "USD", scope_devise: "natif" },
-                { id: "cdf_consolide", label: "Consolidé (francs)", devise_affichage: "CDF", scope_devise: "consolide" },
-                { id: "usd_consolide", label: "Consolidé (dollars)", devise_affichage: "USD", scope_devise: "consolide" },
-            ],
+            modesDevise: [],
             charts: {
                 treso: null,
                 charges: null,
@@ -34,11 +31,7 @@ new Vue({
 
     computed: {
         libelleDevise() {
-            const d = this.filtresDevise.devise_affichage || "CDF";
-            const scope = this.filtresDevise.scope_devise || "consolide";
-            const suffix = scope === "natif" ? "natif" : "consolidé";
-            const lib = d === "CDF" ? "francs" : d === "USD" ? "dollars" : d;
-            return `${lib} (${suffix})`;
+            return this.libelleModeDevise || this.deviseAffichageCourante;
         },
     },
 
@@ -55,10 +48,7 @@ new Vue({
             moment.locale('fr');
         }
         window.addEventListener("devise-preferences-changed", (ev) => {
-            const o = ev.detail || {};
-            if (o.devise_affichage) this.filtresDevise.devise_affichage = o.devise_affichage;
-            if (o.scope_devise) this.filtresDevise.scope_devise = o.scope_devise;
-            if (o.mode_conversion) this.filtresDevise.mode_conversion = o.mode_conversion;
+            this.applyDeviseOptionsFromPayload(ev.detail || {});
             this.loadData(false);
         });
         window.addEventListener("societe-changed", () => this.loadData(false));
@@ -77,35 +67,15 @@ new Vue({
         },
 
         queryFiltres() {
-            const p = new URLSearchParams();
-            p.set("devise_affichage", this.filtresDevise.devise_affichage);
-            p.set("scope_devise", this.filtresDevise.scope_devise);
-            p.set("mode_conversion", this.filtresDevise.mode_conversion);
-            return p.toString();
+            return new URLSearchParams({ mode_devise: this.queryParamModeDevise() }).toString();
         },
 
         syncFiltresFromPayload(payload) {
-            const o = payload?.options_devise;
-            if (!o) return;
-            this.filtresDevise.devise_affichage = o.devise_affichage || this.filtresDevise.devise_affichage;
-            this.filtresDevise.scope_devise = o.scope_devise || this.filtresDevise.scope_devise;
-            this.filtresDevise.mode_conversion = o.mode_conversion || this.filtresDevise.mode_conversion;
-        },
-
-        presetActif(p) {
-            return (
-                this.filtresDevise.devise_affichage === p.devise_affichage &&
-                this.filtresDevise.scope_devise === p.scope_devise
-            );
-        },
-
-        async appliquerPreset(p) {
-            this.filtresDevise.devise_affichage = p.devise_affichage;
-            this.filtresDevise.scope_devise = p.scope_devise;
-            await this.onFiltreChange();
+            this.applyDeviseOptionsFromPayload(payload);
         },
 
         async onFiltreChange() {
+            this.syncDeviseFromMode();
             await this.loadData(true);
         },
 
@@ -114,7 +84,9 @@ new Vue({
             this.error = null;
             try {
                 if (persisterPrefs) {
-                    await postJson("/accounting/livres/preferences", this.filtresDevise);
+                    await postJson("/accounting/livres/preferences", {
+                        mode_devise: this.queryParamModeDevise(),
+                    });
                 }
                 const { data } = await get(`/dashboard/data?${this.queryFiltres()}`);
                 if (data.status !== "success") {
