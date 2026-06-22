@@ -18,8 +18,8 @@
             <div class="col-md-2" v-if="page === 'journal'">
                 <label class="form-label text-muted fs-12 mb-1">Journal</label>
                 <select class="form-select form-select-sm" v-model.number="journalId" @change="onFiltreChange">
-                    <option :value="null">Tous les journaux</option>
-                    <option v-for="j in journaux" :key="j.id" :value="j.id">@{{ j.code }}</option>
+                    <option value="" hidden>Tous les journaux</option>
+                    <option v-for="j in journaux" :key="j.id" :value="j.id">@{{ j.code }} ● @{{ j.libelle }}</option>
                 </select>
             </div>
             <div class="col-md-2" v-if="page === 'balance'">
