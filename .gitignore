@@ -8,6 +8,8 @@
 /storage/*.key
 /vendor
 /old
+/BDD
+/*.sql
 .env.backup
 .env
 .env.production
