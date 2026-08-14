@@ -1,4 +1,4 @@
-import { get, postJson } from "../modules/http.js";
+import {get, postJson } from "../modules/http.js";
 import { vuePageMixin } from "../modules/vue-page-mixin.js";
 import { deviseFiltreMixin } from "../modules/devise-filtre-mixin.js";
 
@@ -37,7 +37,7 @@ new Vue({
 
     watch: {
         pageReady(isReady) {
-            if (isReady && this.data?.graphiques) {
+            if (isReady && this.data ?.graphiques) {
                 this.scheduleCharts();
             }
         },
@@ -58,7 +58,7 @@ new Vue({
 
     methods: {
         scheduleCharts() {
-            if (!this.pageReady || !this.data?.graphiques) {
+            if (!this.pageReady || !this.data ?.graphiques) {
                 return;
             }
             this.$nextTick(() => {
@@ -131,7 +131,7 @@ new Vue({
                 return "—";
             }
             const n = Number(v) || 0;
-            const d = this.data?.devise || this.filtresDevise.devise_affichage || "CDF";
+            const d = this.data ?.devise || this.filtresDevise.devise_affichage || "CDF";
             return (
                 new Intl.NumberFormat("fr-FR", {
                     minimumFractionDigits: 0,
@@ -159,7 +159,7 @@ new Vue({
         },
 
         routeUrl(name) {
-            return ROUTES.named?.[name] || "#";
+            return ROUTES.named ?.[name] || "#";
         },
 
         journalBadgeClass(type, code) {
@@ -183,25 +183,21 @@ new Vue({
         },
 
         alerteBadgeClass(niveau) {
-            return (
-                {
-                    danger: "badge-soft-danger",
-                    warning: "badge-soft-warning",
-                    info: "badge-soft-info",
-                    success: "badge-soft-success",
-                }[niveau] || "badge-soft-secondary"
-            );
+            return ({
+                danger: "badge-soft-danger",
+                warning: "badge-soft-warning",
+                info: "badge-soft-info",
+                success: "badge-soft-success",
+            }[niveau] || "badge-soft-secondary");
         },
 
         exerciceStatutClass(statut) {
-            return (
-                {
-                    ouvert: "bg-success",
-                    pre_cloture: "bg-warning text-dark",
-                    cloture: "bg-secondary",
-                    archive: "bg-dark",
-                }[statut] || "bg-light text-dark"
-            );
+            return ({
+                ouvert: "bg-success",
+                pre_cloture: "bg-warning text-dark",
+                cloture: "bg-secondary",
+                archive: "bg-dark",
+            }[statut] || "bg-light text-dark");
         },
 
         controleIcon(ok) {
@@ -218,7 +214,7 @@ new Vue({
         },
 
         renderCharts() {
-            if (!window.ApexCharts || !this.data?.graphiques) {
+            if (!window.ApexCharts || !this.data ?.graphiques) {
                 return;
             }
             if (!document.querySelector("#chart-treso")) {
@@ -238,10 +234,10 @@ new Vue({
             this.destroyChart("treso");
             el.innerHTML = "";
             const g = this.data.graphiques.tresorerie_mensuelle || {};
-            const labels = g.labels?.length ? g.labels : ["—"];
-            const banque = g.banque?.length ? g.banque : [0];
-            const caisse = g.caisse?.length ? g.caisse : [0];
-            const total = g.total?.length ? g.total : [0];
+            const labels = g.labels ?.length ? g.labels : ["—"];
+            const banque = g.banque ?.length ? g.banque : [0];
+            const caisse = g.caisse ?.length ? g.caisse : [0];
+            const total = g.total ?.length ? g.total : [0];
 
             this.charts.treso = new ApexCharts(el, {
                 series: [
@@ -281,8 +277,8 @@ new Vue({
             this.destroyChart(key);
             el.innerHTML = "";
 
-            let series = (payload?.series || []).map((v) => Number(v) || 0);
-            let labels = payload?.labels || [];
+            let series = (payload ?.series || []).map((v) => Number(v) || 0);
+            let labels = payload ?.labels || [];
             if (!series.length || series.every((v) => v === 0)) {
                 series = [1];
                 labels = ["Aucune donnée"];
@@ -316,8 +312,8 @@ new Vue({
             this.destroyChart("resultat");
             el.innerHTML = "";
             const g = this.data.graphiques.resultat_mensuel || {};
-            const series = g.series?.length ? g.series : [0];
-            const labels = g.labels?.length ? g.labels : ["—"];
+            const series = g.series ?.length ? g.series : [0];
+            const labels = g.labels ?.length ? g.labels : ["—"];
             const colors = series.map((v) => (Number(v) >= 0 ? "#03C95A" : "#E70D0D"));
 
             this.charts.resultat = new ApexCharts(el, {

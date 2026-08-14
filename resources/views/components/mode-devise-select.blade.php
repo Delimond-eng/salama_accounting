@@ -1,5 +1,5 @@
 {{--
-    Sélecteur unifié des 6 modes devise.
+    Sélecteur unifié des modes devise (USD / CDF / EUR — natif, converti, consolidé).
     Props :
       - model : expression v-model Vue (défaut filtres.mode_devise)
       - change : handler @change (défaut onModeDeviseChange)
@@ -17,7 +17,7 @@
     <label class="form-label text-muted fs-12 mb-1">
         <i class="ti ti-coins fs-14 me-1"></i>Mode d'affichage devise
     </label>
-    <select class="form-select form-select-sm" v-model="{{ $model }}" @change="{{ $change }}" :disabled="{{ $disabled }}">
+    <select class="form-select form-select-sm" style="min-width:240px" v-model="{{ $model }}" @change="{{ $change }}" :disabled="{{ $disabled }}">
         <option v-for="m in modesDeviseListe" :key="m.id" :value="m.id">@{{ m.label }}</option>
     </select>
 </div>

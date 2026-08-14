@@ -44,7 +44,7 @@
                         <p class="text-muted fs-12 mb-0"><i class="ti ti-info-circle me-1"></i>@{{ noteModeDevise }}</p>
                     </div>
                     <div class="d-flex align-items-center gap-2">
-                        <select class="form-select form-select-sm" style="min-width:230px" v-model="filtresDevise.mode_devise" @change="onFiltreChange" :disabled="isLoading">
+                        <select class="form-select form-select-sm" style="min-width:260px" v-model="filtresDevise.mode_devise" @change="onFiltreChange" :disabled="isLoading">
                             <option v-for="m in modesDeviseListe" :key="m.id" :value="m.id">@{{ m.label }}</option>
                         </select>
                     </div>

@@ -43,7 +43,7 @@ class LivresComptablesService
     /**
      * Fusionne les préférences société avec des filtres explicites (dashboard, livres, etc.).
      *
-     * Le paramètre `mode_devise` (un des 6 modes unifiés) est prioritaire. Les anciens
+     * Le paramètre `mode_devise` (modes unifiés USD/CDF/EUR) est prioritaire. Les anciens
      * paramètres séparés (devise_affichage / scope_devise / mode_conversion) restent
      * acceptés pour la rétro-compatibilité.
      *
@@ -784,6 +784,19 @@ class LivresComptablesService
         string $modeConversion,
         string $scopeDevise = 'consolide'
     ): float {
+        if ($scopeDevise === 'consolide' && $this->deviseNativeCompteTresorerie($numCompte) !== null) {
+            return $this->soldeCompteConsolideTresorerie(
+                $societeId,
+                $exerciceId,
+                $numCompte,
+                null,
+                $date,
+                false,
+                $deviseAffichage,
+                $modeConversion
+            );
+        }
+
         return $this->calculerSoldeCompte($societeId, $exerciceId, $numCompte, null, $date, false, $deviseAffichage, $modeConversion, $scopeDevise);
     }
 
@@ -796,7 +809,159 @@ class LivresComptablesService
         string $modeConversion,
         string $scopeDevise = 'consolide'
     ): float {
+        if ($scopeDevise === 'consolide' && $this->deviseNativeCompteTresorerie($numCompte) !== null) {
+            return $this->soldeCompteConsolideTresorerie(
+                $societeId,
+                $exerciceId,
+                $numCompte,
+                null,
+                $date,
+                true,
+                $deviseAffichage,
+                $modeConversion
+            );
+        }
+
         return $this->calculerSoldeCompte($societeId, $exerciceId, $numCompte, null, $date, true, $deviseAffichage, $modeConversion, $scopeDevise);
+    }
+
+    protected function deviseNativeCompteTresorerie(string $numCompte): ?string
+    {
+        return match ($numCompte) {
+            '57004' => 'USD',
+            '57005' => 'CDF',
+            default => null,
+        };
+    }
+
+    /**
+     * Solde consolidé d'une caisse physique (57004 USD, 57005 CDF) :
+     * net en devise native, puis conversion au taux de saisie moyen pondéré des mouvements.
+     */
+    protected function soldeCompteConsolideTresorerie(
+        int $societeId,
+        int $exerciceId,
+        string $numCompte,
+        ?string $dateMin,
+        string $dateMax,
+        bool $inclusifMax,
+        string $deviseAffichage,
+        string $modeConversion
+    ): float {
+        $deviseNative = $this->deviseNativeCompteTresorerie($numCompte);
+        if ($deviseNative === null) {
+            return $this->calculerSoldeCompte(
+                $societeId,
+                $exerciceId,
+                $numCompte,
+                $dateMin,
+                $dateMax,
+                $inclusifMax,
+                $deviseAffichage,
+                $modeConversion,
+                'consolide'
+            );
+        }
+
+        $soldeNatif = $this->calculerSoldeCompte(
+            $societeId,
+            $exerciceId,
+            $numCompte,
+            $dateMin,
+            $dateMax,
+            $inclusifMax,
+            $deviseNative,
+            $modeConversion,
+            'natif:'.$deviseNative
+        );
+
+        $deviseAffichage = strtoupper($deviseAffichage);
+        if ($deviseNative === $deviseAffichage) {
+            return round($soldeNatif, 2);
+        }
+
+        if (abs($soldeNatif) < 0.01) {
+            return 0.0;
+        }
+
+        $tauxMoyen = $this->tauxSaisieMoyenCompte(
+            $societeId,
+            $exerciceId,
+            $numCompte,
+            $dateMin,
+            $dateMax,
+            $inclusifMax,
+            $deviseNative
+        );
+
+        $societe = Societe::findOrFail($societeId);
+        $this->devises->setDevisePrincipale($societe->devise_principale ?? 'CDF');
+
+        return $this->devises->convertir(
+            $soldeNatif,
+            $deviseNative,
+            $deviseAffichage,
+            $tauxMoyen,
+            $societeId,
+            $inclusifMax ? $dateMax : Carbon::parse($dateMax)->subDay()->format('Y-m-d'),
+            'origine'
+        );
+    }
+
+    /**
+     * Taux de saisie moyen pondéré (par montant absolu des mouvements) sur un compte.
+     */
+    protected function tauxSaisieMoyenCompte(
+        int $societeId,
+        int $exerciceId,
+        string $numCompte,
+        ?string $dateMin,
+        string $dateMax,
+        bool $inclusifMax,
+        string $deviseNative
+    ): float {
+        $query = $this->baseLignesQuery($societeId, $exerciceId, 'natif:'.$deviseNative, $deviseNative)
+            ->where('l.num_compte', $numCompte);
+
+        if ($dateMin) {
+            $query->where('e.date_ecriture', '>=', $dateMin);
+        }
+
+        if ($inclusifMax) {
+            $query->where('e.date_ecriture', '<=', $dateMax);
+        } else {
+            $query->where('e.date_ecriture', '<', $dateMax);
+        }
+
+        $lignes = $query->select(['l.debit', 'l.credit', 'e.taux_change'])->get();
+
+        $numerateur = 0.0;
+        $denominateur = 0.0;
+        foreach ($lignes as $l) {
+            $montant = abs((float) $l->debit - (float) $l->credit);
+            if ($montant < 0.0001) {
+                continue;
+            }
+            $taux = (float) ($l->taux_change ?? 1);
+            if ($taux <= 1) {
+                continue;
+            }
+            $numerateur += $montant * $taux;
+            $denominateur += $montant;
+        }
+
+        if ($denominateur < 0.0001) {
+            $societe = Societe::findOrFail($societeId);
+            $this->devises->setDevisePrincipale($societe->devise_principale ?? 'CDF');
+
+            return $this->devises->tauxJournalier(
+                $societeId,
+                $deviseNative,
+                $inclusifMax ? $dateMax : Carbon::parse($dateMax)->subDay()->format('Y-m-d')
+            );
+        }
+
+        return round($numerateur / $denominateur, 6);
     }
 
     protected function calculerSoldeCompte(

@@ -1,0 +1,1 @@
+[10-Jun-2026 00:05:58 Africa/Kinshasa] PHP Fatal error:  Namespace declaration statement has to be the very first statement or after any declare call in the script in /home1/skkvjute/compta.salama-drc.com/app/Services/ComptableExportService.php on line 3

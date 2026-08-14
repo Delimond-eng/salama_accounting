@@ -4,30 +4,83 @@ import { analytiqueSelectMixin } from "../../modules/analytique-select-mixin.js"
 import { saisieMixin } from "./saisie-common.js";
 import { rebrouillonMixin } from "../../modules/rebrouillon-mixin.js";
 
-// Directive Select2 simple et robuste pour Vue.js
+// Directive Select2 : sync Vue ↔ Select2 sans boucle (change ↔ componentUpdated).
+// Important : jQuery trigger('change.select2') notifie aussi les handlers 'change' (v-model Vue),
+// ce qui peut re-rendre avant la fin du garde requestAnimationFrame → trop de récursion.
+function select2ReleaseSync(el) {
+    Vue.nextTick(() => {
+        requestAnimationFrame(() => {
+            el._select2Syncing = false;
+        });
+    });
+}
+
+function select2CurrentId($el) {
+    try {
+        const data = $el.select2('data');
+        if (!data || !data.length) {
+            return '';
+        }
+        const id = data[0].id;
+        return id == null ? '' : String(id);
+    } catch (e) {
+        return null;
+    }
+}
+
 Vue.directive('select2', {
-    inserted: function (el) {
+    inserted(el) {
         const $el = $(el);
+        if ($el.data('select2')) {
+            return;
+        }
+
         $el.select2({
             width: '100%',
             placeholder: $el.attr('placeholder') || 'Sélectionner...',
             allowClear: true,
-            dropdownParent: $(el).parent(), // Aide à la gestion du focus et du z-index
+            dropdownParent: $el.parent(),
             language: {
-                searching: () => "Recherche...",
-                noResults: () => "Aucun résultat"
+                searching: () => 'Recherche...',
+                noResults: () => 'Aucun résultat',
+            },
+        });
+
+        // Événements Select2 uniquement (pas le change natif, source de récursion).
+        $el.on('select2:select.select2Vue select2:unselect.select2Vue select2:clear.select2Vue', () => {
+            if (el._select2Syncing) {
+                return;
             }
-        }).on('change', function () {
+            el._select2Syncing = true;
             el.dispatchEvent(new Event('change', { bubbles: true }));
+            select2ReleaseSync(el);
         });
     },
-    componentUpdated: function (el) {
-        // Force la mise à jour visuelle de Select2 quand Vue met à jour le DOM
-        $(el).trigger('change.select2');
+    componentUpdated(el) {
+        const $el = $(el);
+        if (!$el.data('select2') || el._select2Syncing) {
+            return;
+        }
+
+        const val = $el.val();
+        const want = val == null || val === '' ? '' : String(val);
+        const shown = select2CurrentId($el);
+        // Déjà synchronisé : ne pas retoucher Select2 (évite la boucle change → Vue → update).
+        if (shown !== null && shown === want) {
+            return;
+        }
+
+        el._select2Syncing = true;
+        $el.val(val).trigger('change.select2');
+        select2ReleaseSync(el);
     },
-    unbind: function (el) {
-        $(el).off().select2('destroy');
-    }
+    unbind(el) {
+        const $el = $(el);
+        $el.off('.select2Vue');
+        if ($el.data('select2')) {
+            $el.select2('destroy');
+        }
+    },
 });
 
 new Vue({
@@ -127,7 +180,22 @@ new Vue({
     methods: {
         refreshSelect2() {
             this.$nextTick(() => {
-                $('select[v-select2]').trigger('change.select2');
+                $('select.select2-hidden-accessible').each(function () {
+                    if (this._select2Syncing) {
+                        return;
+                    }
+                    const el = this;
+                    const $el = $(el);
+                    const val = $el.val();
+                    const want = val == null || val === '' ? '' : String(val);
+                    const shown = select2CurrentId($el);
+                    if (shown !== null && shown === want) {
+                        return;
+                    }
+                    el._select2Syncing = true;
+                    $el.val(val).trigger('change.select2');
+                    select2ReleaseSync(el);
+                });
             });
         },
         async initPage() {

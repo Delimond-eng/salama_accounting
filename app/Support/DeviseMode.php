@@ -8,17 +8,15 @@ namespace App\Support;
  * Un seul paramètre (`mode_devise`) pilote tout l'affichage. Chaque mode se résout en :
  *  - devise_affichage : devise dans laquelle les montants sont présentés
  *  - scope_devise     : jeton de filtrage des écritures
- *        'natif:USD' / 'natif:CDF' -> n'inclut que les écritures saisies dans cette devise
- *        'consolide'               -> inclut toutes les écritures (converties)
- *  - mode_conversion  : toujours 'origine' (taux enregistré lors de chaque saisie)
+ *        'natif:USD' / 'natif:CDF' / 'natif:EUR' -> n'inclut que les écritures saisies dans cette devise
+ *        'consolide'                             -> inclut toutes les écritures (converties)
+ *  - mode_conversion  : 'origine' = taux_change enregistré à la saisie (ligne par ligne).
  *
- * La conversion vise toujours `devise_affichage` au taux d'origine de chaque écriture.
+ * Si taux_change ≤ 1 (erreur de saisie), le taux applicatif à la date de l'écriture est utilisé.
  */
 class DeviseMode
 {
     /**
-     * Définition canonique des 6 modes (source unique de vérité).
-     *
      * @return array<int, array{id:string,label:string,note:string,devise_affichage:string,scope_devise:string,mode_conversion:string}>
      */
     public static function all(): array
@@ -41,9 +39,17 @@ class DeviseMode
                 'mode_conversion' => 'origine',
             ],
             [
+                'id' => 'eur_natif',
+                'label' => 'EUR natif',
+                'note' => 'Affiche uniquement les opérations saisies en EUR, sans conversion.',
+                'devise_affichage' => 'EUR',
+                'scope_devise' => 'natif:EUR',
+                'mode_conversion' => 'origine',
+            ],
+            [
                 'id' => 'usd_en_cdf',
                 'label' => 'USD natif en CDF',
-                'note' => "Affiche les opérations saisies en USD, converties en CDF avec leur taux d'origine.",
+                'note' => 'Affiche les opérations saisies en USD, converties en CDF avec le taux enregistré à la saisie.',
                 'devise_affichage' => 'CDF',
                 'scope_devise' => 'natif:USD',
                 'mode_conversion' => 'origine',
@@ -51,15 +57,47 @@ class DeviseMode
             [
                 'id' => 'cdf_en_usd',
                 'label' => 'CDF natif en USD',
-                'note' => "Affiche les opérations saisies en CDF, converties en USD avec leur taux d'origine.",
+                'note' => 'Affiche les opérations saisies en CDF, converties en USD avec le taux enregistré à la saisie.',
                 'devise_affichage' => 'USD',
+                'scope_devise' => 'natif:CDF',
+                'mode_conversion' => 'origine',
+            ],
+            [
+                'id' => 'eur_en_cdf',
+                'label' => 'EUR natif en CDF',
+                'note' => 'Affiche les opérations saisies en EUR, converties en CDF avec le taux enregistré à la saisie.',
+                'devise_affichage' => 'CDF',
+                'scope_devise' => 'natif:EUR',
+                'mode_conversion' => 'origine',
+            ],
+            [
+                'id' => 'eur_en_usd',
+                'label' => 'EUR natif en USD',
+                'note' => 'Affiche les opérations saisies en EUR, converties en USD avec le taux enregistré à la saisie.',
+                'devise_affichage' => 'USD',
+                'scope_devise' => 'natif:EUR',
+                'mode_conversion' => 'origine',
+            ],
+            [
+                'id' => 'usd_en_eur',
+                'label' => 'USD natif en EUR',
+                'note' => 'Affiche les opérations saisies en USD, converties en EUR avec le taux enregistré à la saisie.',
+                'devise_affichage' => 'EUR',
+                'scope_devise' => 'natif:USD',
+                'mode_conversion' => 'origine',
+            ],
+            [
+                'id' => 'cdf_en_eur',
+                'label' => 'CDF natif en EUR',
+                'note' => 'Affiche les opérations saisies en CDF, converties en EUR avec le taux enregistré à la saisie.',
+                'devise_affichage' => 'EUR',
                 'scope_devise' => 'natif:CDF',
                 'mode_conversion' => 'origine',
             ],
             [
                 'id' => 'usd_consolide',
                 'label' => 'USD consolidé',
-                'note' => "Toutes les opérations sont regroupées et présentées en USD après conversion selon le taux d'origine de chaque transaction.",
+                'note' => 'Toutes les opérations sont regroupées et présentées en USD au taux enregistré à la saisie de chaque écriture.',
                 'devise_affichage' => 'USD',
                 'scope_devise' => 'consolide',
                 'mode_conversion' => 'origine',
@@ -67,29 +105,38 @@ class DeviseMode
             [
                 'id' => 'cdf_consolide',
                 'label' => 'CDF consolidé',
-                'note' => "Toutes les opérations sont regroupées et présentées en CDF après conversion selon le taux d'origine de chaque transaction.",
+                'note' => 'Toutes les opérations sont regroupées et présentées en CDF au taux enregistré à la saisie de chaque écriture.',
                 'devise_affichage' => 'CDF',
+                'scope_devise' => 'consolide',
+                'mode_conversion' => 'origine',
+            ],
+            [
+                'id' => 'eur_consolide',
+                'label' => 'EUR consolidé',
+                'note' => 'Toutes les opérations sont regroupées et présentées en EUR au taux enregistré à la saisie de chaque écriture.',
+                'devise_affichage' => 'EUR',
                 'scope_devise' => 'consolide',
                 'mode_conversion' => 'origine',
             ],
         ];
     }
 
-    /** Liste des identifiants valides. @return array<int,string> */
+    /** @return array<int, string> */
     public static function ids(): array
     {
         return array_column(self::all(), 'id');
     }
 
-    /** Mode par défaut selon la devise principale de la société. */
     public static function defaut(string $devisePrincipale = 'CDF'): string
     {
-        return strtoupper($devisePrincipale) === 'USD' ? 'usd_consolide' : 'cdf_consolide';
+        return match (strtoupper($devisePrincipale)) {
+            'USD' => 'usd_consolide',
+            'EUR' => 'eur_consolide',
+            default => 'cdf_consolide',
+        };
     }
 
     /**
-     * Résout un identifiant de mode en contexte complet.
-     *
      * @return array{id:string,label:string,note:string,devise_affichage:string,scope_devise:string,mode_conversion:string}
      */
     public static function resolve(?string $id, string $devisePrincipale = 'CDF'): array
@@ -104,10 +151,6 @@ class DeviseMode
         return self::resolve(self::defaut($devisePrincipale), $devisePrincipale);
     }
 
-    /**
-     * Déduit l'identifiant de mode à partir des anciens paramètres séparés
-     * (devise_affichage + scope_devise) pour la rétro-compatibilité.
-     */
     public static function fromLegacy(string $deviseAffichage, string $scopeDevise): string
     {
         $affichage = strtoupper($deviseAffichage);
@@ -117,13 +160,31 @@ class DeviseMode
             $source = isset($parts[1]) && $parts[1] !== '' ? strtoupper($parts[1]) : $affichage;
 
             if ($source === $affichage) {
-                return $source === 'USD' ? 'usd_natif' : 'cdf_natif';
+                return match ($source) {
+                    'USD' => 'usd_natif',
+                    'EUR' => 'eur_natif',
+                    default => 'cdf_natif',
+                };
             }
 
-            // Source filtrée différente de la devise d'affichage (natif converti).
-            return $source === 'USD' ? 'usd_en_cdf' : 'cdf_en_usd';
+            $key = strtolower($source).'_en_'.strtolower($affichage);
+            foreach (self::all() as $mode) {
+                if ($mode['id'] === $key) {
+                    return $mode['id'];
+                }
+            }
+
+            return match ($source) {
+                'USD' => 'usd_natif',
+                'EUR' => 'eur_natif',
+                default => 'cdf_natif',
+            };
         }
 
-        return $affichage === 'USD' ? 'usd_consolide' : 'cdf_consolide';
+        return match ($affichage) {
+            'USD' => 'usd_consolide',
+            'EUR' => 'eur_consolide',
+            default => 'cdf_consolide',
+        };
     }
 }

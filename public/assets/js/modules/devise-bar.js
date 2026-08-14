@@ -2,7 +2,7 @@ import { get, postJson } from "./http.js";
 import { deviseFiltreMixin } from "./devise-filtre-mixin.js";
 
 /**
- * Barre globale devise : sélecteur unifié des 6 modes (header).
+ * Barre globale devise : sélecteur unifié des modes (header).
  */
 if (document.getElementById("DeviseBar")) {
     new Vue({

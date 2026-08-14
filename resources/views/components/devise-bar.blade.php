@@ -1,4 +1,4 @@
-{{-- Sélecteur global devise / consolidation (header) — 6 modes unifiés --}}
+{{-- Sélecteur global devise / consolidation (header) — modes unifiés USD/CDF/EUR --}}
 <div id="DeviseBar" class="devise-bar d-none d-lg-flex align-items-center gap-2 me-2" v-cloak v-if="loaded">
     <select
         class="form-select form-select-sm border-0 shadow-sm"

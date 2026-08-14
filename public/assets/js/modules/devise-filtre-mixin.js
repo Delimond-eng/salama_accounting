@@ -1,6 +1,6 @@
 /**
- * Mixin partagé pour le sélecteur unifié des 6 modes devise
- * (USD/CDF natif, natif converti, consolidé).
+ * Mixin partagé pour le sélecteur unifié des modes devise
+ * (USD / CDF / EUR — natif, natif converti, consolidé).
  *
  * Attend `options.modes_devise` et `filtres.mode_devise`
  * (ou `filtresDevise.mode_devise` pour le dashboard).

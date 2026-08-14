@@ -51,7 +51,7 @@ class FiscaliteService
         $conv->setDevisePrincipale($societe->devise_principale ?? 'CDF');
 
         // La conversion vise toujours la devise d'affichage ; elle est neutre lorsque
-        // la devise saisie est déjà la devise d'affichage (modes natifs USD/CDF).
+        // la devise saisie est déjà la devise d'affichage (modes natifs USD/CDF/EUR).
         return $rows->map(function ($r) use ($conv, $devise, $societeId, $mode) {
             $debit = $conv->convertir(
                 (float) $r->debit,

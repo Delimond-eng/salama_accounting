@@ -10,6 +10,7 @@ use App\Models\PlanComptable;
 use App\Models\Societe;
 use App\Models\TauxChange;
 use App\Models\Tiers;
+use App\Services\DeviseConversionService;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
@@ -109,7 +110,7 @@ class SaisieComptableService
                 );
             }
 
-            return 1.0;
+            return app(DeviseConversionService::class)->tauxJournalier($societeId, $devise, $date);
         }
 
         return (float) $taux;

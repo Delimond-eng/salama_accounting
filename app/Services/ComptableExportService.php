@@ -186,6 +186,9 @@ class ComptableExportService
 
     public function downloadPdfMulti(array $sections, string $filename, string $title, array $meta = [], ?Societe $societe = null): \Illuminate\Http\Response
     {
+        ini_set('memory_limit', '1024M');
+        set_time_limit(300);
+
         return Pdf::loadView('pdf.etats-financiers-multi', [
             'societe' => $societe,
             'title' => $title,
@@ -199,13 +202,21 @@ class ComptableExportService
     {
         return match ($format) {
             'excel', 'xlsx' => $this->downloadExcel($headers, $rows, $filename, $title, $societe, $meta),
-            'pdf' => Pdf::loadView('pdf.comptable-table', array_merge(
-                compact('headers', 'rows', 'title', 'societe', 'meta'),
-                ['generated_at' => now()->format('d/m/Y H:i')]
-            ))->setPaper('a4', 'landscape')->download($this->safeFilename($filename, 'pdf')),
+            'pdf' => $this->generatePdf($headers, $rows, $filename, $title, $meta, $societe),
             'csv' => $this->downloadCsv($headers, $rows, $filename),
             default => abort(422),
         };
+    }
+
+    protected function generatePdf(array $headers, array $rows, string $filename, string $title, array $meta, ?Societe $societe)
+    {
+        ini_set('memory_limit', '1024M');
+        set_time_limit(300);
+
+        return Pdf::loadView('pdf.comptable-table', array_merge(
+            compact('headers', 'rows', 'title', 'societe', 'meta'),
+            ['generated_at' => now()->format('d/m/Y H:i')]
+        ))->setPaper('a4', 'landscape')->download($this->safeFilename($filename, 'pdf'));
     }
 
     protected function downloadCsv(array $headers, array $rows, string $filename): StreamedResponse
