@@ -21,7 +21,11 @@ new Vue({
 
     computed: {
         createUrl() {
-            return `/accounting/saisie/${this.page}/ecriture`;
+            let url = `/accounting/saisie/${this.page}/ecriture`;
+            if (this.filtres.journal_id) {
+                url += (url.includes('?') ? '&' : '?') + `journal_id=${this.filtres.journal_id}`;
+            }
+            return url;
         },
         pagesAffichees() {
             const last = this.dernierePage;
@@ -51,6 +55,24 @@ new Vue({
 
     methods: {
         async initPage() {
+            // Lecture des paramètres de l'URL pour filtrage initial (ex: notifications)
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.has('statut')) {
+                this.filtreStatut = urlParams.get('statut');
+            }
+            if (urlParams.has('search')) {
+                this.search = urlParams.get('search');
+            }
+            if (urlParams.has('date_debut')) {
+                this.filtres.date_debut = urlParams.get('date_debut');
+            }
+            if (urlParams.has('date_fin')) {
+                this.filtres.date_fin = urlParams.get('date_fin');
+            }
+            if (urlParams.has('journal_id')) {
+                this.filtres.journal_id = parseInt(urlParams.get('journal_id'));
+            }
+
             await this.loadList();
         },
 
@@ -87,7 +109,7 @@ new Vue({
         },
 
         dupliquer(e) {
-            window.location.href = `${this.createUrl}?copy=${e.id}`;
+            window.location.href = `${this.createUrl}${this.createUrl.includes('?') ? '&' : '?'}copy=${e.id}`;
         },
 
         async valider(e) {

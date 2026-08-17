@@ -67,7 +67,8 @@ class EtatsFinanciersService
         string $deviseAffichage = 'CDF',
         string $modeConversion = 'origine',
         ?Exercice $exerciceN1 = null,
-        string $scopeDevise = 'consolide'
+        string $scopeDevise = 'consolide',
+        bool $strict = true
     ): array {
         // Génération N
         $bilan = $this->bilanComptable->generer(
@@ -76,7 +77,8 @@ class EtatsFinanciersService
             $dateArrete,
             $deviseAffichage,
             $modeConversion,
-            $scopeDevise
+            $scopeDevise,
+            $strict
         );
 
         // Intégration N-1 pour le comparatif
@@ -87,7 +89,9 @@ class EtatsFinanciersService
                 $exerciceN1,
                 $exerciceN1->date_fin->format('Y-m-d'),
                 $deviseAffichage,
-                $modeConversion
+                $modeConversion,
+                'consolide',
+                false // N-1 n'est jamais bloquant
             );
 
             // Mapper les montants N-1 dans la structure N
@@ -314,7 +318,8 @@ class EtatsFinanciersService
         string $scopeDevise = 'consolide'
     ): array {
         $n1 = $this->exercicePrecedent($societeId, $exercice);
-        $bilan = $this->bilan($societeId, $exercice, $dateFin, $deviseAffichage, $modeConversion, $n1, $scopeDevise);
+        // Comparatif n'est pas bloquant par défaut
+        $bilan = $this->bilan($societeId, $exercice, $dateFin, $deviseAffichage, $modeConversion, $n1, $scopeDevise, false);
         $cr = $this->compteResultat($societeId, $exercice, $dateFin, $deviseAffichage, $modeConversion, $n1, $scopeDevise);
 
         return [

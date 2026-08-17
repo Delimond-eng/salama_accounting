@@ -27,6 +27,7 @@ export const saisieMixin = {
                 devise_affichage: "CDF",
                 mode_conversion: "origine",
                 taux: 1,
+                journal_id: "",
             },
             options: { devises: [] },
             devises: [],
@@ -57,6 +58,10 @@ export const saisieMixin = {
             if (this.filtreStatut) {
                 const label = this.filtreStatut === 'brouillon' ? 'Brouillons' : 'Validées';
                 parts.push(label);
+            }
+            if (this.filtres.journal_id) {
+                const j = this.journaux.find(x => x.id === this.filtres.journal_id);
+                if (j) parts.push(`Journal: ${j.code}`);
             }
             if (this.search) {
                 parts.push(`Recherche: "${this.search}"`);
@@ -125,6 +130,7 @@ export const saisieMixin = {
             });
             if (this.search) p.set("search", this.search);
             if (this.filtreStatut) p.set("statut", this.filtreStatut);
+            if (this.filtres.journal_id) p.set("journal_id", this.filtres.journal_id);
 
             Object.entries(extra).forEach(([k, v]) => {
                 if (v !== null && v !== undefined && v !== "") p.set(k, v);

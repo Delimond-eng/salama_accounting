@@ -190,8 +190,8 @@ class LivresComptablesService
             $key = $l->num_compte;
             if (! isset($comptes[$key])) {
                 $comptes[$key] = [
-                    'num_compte' => $l->num_compte,
-                    'libelle' => $l->libelle_compte ?? $l->num_compte,
+                    'num_compte' => $key,
+                    'libelle' => $l->libelle_compte ?? $key,
                     'ouv_debit' => 0,
                     'ouv_credit' => 0,
                     'mov_debit' => 0,
@@ -279,6 +279,9 @@ class LivresComptablesService
             'solde_fin_crediteur' => $rows->sum('solde_fin_crediteur'),
         ];
 
+        // Groupement par Grand Compte (2 chiffres)
+        $rows = $this->ajouterSousTotauxBalance($rows, $societeId);
+
         return [
             'lignes' => $rows,
             'totaux' => $totaux,
@@ -286,6 +289,46 @@ class LivresComptablesService
             'mode_conversion' => $modeConversion,
             'scope_devise' => $scopeDevise,
         ];
+    }
+
+    protected function ajouterSousTotauxBalance(Collection $rows, int $societeId): Collection
+    {
+        if ($rows->isEmpty()) return $rows;
+
+        // Groupement par préfixe de 2 chiffres
+        $grouped = $rows->groupBy(fn($r) => substr((string)$r['num_compte'], 0, 2));
+
+        $results = collect();
+        $prefixes = $grouped->keys()->toArray();
+
+        // Récupération des libellés OHADA pour ces grands comptes
+        $labels = PlanComptable::parSociete($societeId)
+            ->whereIn('num_compte', $prefixes)
+            ->pluck('libelle', 'num_compte');
+
+        foreach ($grouped->sortKeys() as $prefix => $accounts) {
+            foreach ($accounts->sortBy('num_compte') as $acc) {
+                $results->push($acc);
+            }
+
+            // Libellé formaté : "41 - Clients et comptes rattachés"
+            $grandCompteLibelle = $labels[$prefix] ?? ('Compte ' . $prefix);
+
+            $results->push([
+                'num_compte' => (string)$prefix,
+                'libelle' => $prefix . ' - ' . strtoupper($grandCompteLibelle),
+                'solde_debut_debiteur' => round($accounts->sum('solde_debut_debiteur'), 2),
+                'solde_debut_crediteur' => round($accounts->sum('solde_debut_crediteur'), 2),
+                'mouvement_debit' => round($accounts->sum('mouvement_debit'), 2),
+                'mouvement_credit' => round($accounts->sum('mouvement_credit'), 2),
+                'solde_fin_debiteur' => round($accounts->sum('solde_fin_debiteur'), 2),
+                'solde_fin_crediteur' => round($accounts->sum('solde_fin_crediteur'), 2),
+                'is_total' => true,
+                'level' => 2
+            ]);
+        }
+
+        return $results;
     }
 
     public function journalGeneral(
@@ -475,8 +518,7 @@ class LivresComptablesService
     ): array {
         $balance = $this->balanceGenerale($societeId, $exerciceId, $dateDebut, $dateFin, $deviseAffichage, $modeConversion, null, $scopeDevise);
         $lignes = collect($balance['lignes'])->filter(function ($row) {
-            return ($row['mouvement_debit'] ?? 0) != 0
-                || ($row['mouvement_credit'] ?? 0) != 0;
+            return (($row['mouvement_debit'] ?? 0) != 0 || ($row['mouvement_credit'] ?? 0) != 0) && !($row['is_total'] ?? false);
         })->map(function ($row) use ($deviseAffichage) {
             $debit = round((float) $row['mouvement_debit'], 2);
             $credit = round((float) $row['mouvement_credit'], 2);

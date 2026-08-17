@@ -15,7 +15,7 @@
                 <p class="mb-0 text-muted small">Synthèse des mouvements et soldes par compte sur la période.</p>
             </div>
             <div class="text-end" v-if="totaux">
-                <span class="badge bg-soft-info text-info px-3 py-2">@{{ lignes.length }} Comptes</span>
+                <span class="badge bg-soft-info text-info px-3 py-2">@{{ lignes.length }} Lignes</span>
             </div>
         </div>
         <div class="card-body p-0">
@@ -41,15 +41,19 @@
                     <tbody>
                         <tr v-if="isLoading"><td colspan="8" class="text-center py-5"><span class="spinner-border spinner-border-sm me-2"></span>Chargement des données...</td></tr>
                         <tr v-else-if="!lignes.length"><td colspan="8" class="text-center py-5 text-muted">Aucun mouvement trouvé pour les critères sélectionnés</td></tr>
-                        <tr v-for="r in lignes" :key="r.num_compte">
-                            <td class="font-monospace fw-bold text-primary px-3">@{{ r.num_compte }}</td>
-                            <td class="fw-medium text-dark">@{{ r.libelle }}</td>
-                            <td class="text-end text-muted">@{{ fmt(r.solde_debut_debiteur) }}</td>
-                            <td class="text-end text-muted">@{{ fmt(r.solde_debut_crediteur) }}</td>
-                            <td class="text-end fw-semibold">@{{ fmt(r.mouvement_debit) }}</td>
-                            <td class="text-end fw-semibold">@{{ fmt(r.mouvement_credit) }}</td>
-                            <td class="text-end fw-bold bg-light-soft">@{{ fmt(r.solde_fin_debiteur) }}</td>
-                            <td class="text-end fw-bold bg-light-soft">@{{ fmt(r.solde_fin_crediteur) }}</td>
+                        <tr v-for="r in lignes" :key="r.num_compte" :class="{'grand-compte-row': r.is_total, 'account-row': !r.is_total}">
+                            <td class="font-monospace px-3" :class="r.is_total ? 'text-primary fw-bold' : 'text-secondary'">
+                                @{{ r.num_compte }}
+                            </td>
+                            <td :class="r.is_total ? 'fw-bold text-primary text-uppercase' : 'fw-medium text-dark'">
+                                <span v-if="r.is_total">TOTAL </span>@{{ r.libelle }}
+                            </td>
+                            <td class="text-end" :class="r.is_total ? 'fw-bold' : 'text-muted'">@{{ fmt(r.solde_debut_debiteur) }}</td>
+                            <td class="text-end" :class="r.is_total ? 'fw-bold' : 'text-muted'">@{{ fmt(r.solde_debut_crediteur) }}</td>
+                            <td class="text-end" :class="r.is_total ? 'fw-bold' : 'fw-semibold'">@{{ fmt(r.mouvement_debit) }}</td>
+                            <td class="text-end" :class="r.is_total ? 'fw-bold' : 'fw-semibold'">@{{ fmt(r.mouvement_credit) }}</td>
+                            <td class="text-end fw-bold" :class="r.is_total ? 'text-primary bg-aliceblue' : 'bg-light-soft'">@{{ fmt(r.solde_fin_debiteur) }}</td>
+                            <td class="text-end fw-bold" :class="r.is_total ? 'text-primary bg-aliceblue' : 'bg-light-soft'">@{{ fmt(r.solde_fin_crediteur) }}</td>
                         </tr>
                     </tbody>
                     <tfoot class="bg-primary text-white fw-bold" v-if="totaux && lignes.length">
@@ -87,7 +91,18 @@
         border-bottom: 1px solid #f1f5f9;
     }
     .bg-light-soft { background-color: rgba(248, 249, 250, 0.8); }
+    .bg-aliceblue { background-color: #f0f8ff; }
     .balance-syscohada tfoot td { border: none; padding: 12px; font-size: 14px; }
+
+    .grand-compte-row {
+        background-color: #f8fbff !important;
+    }
+    .grand-compte-row td {
+        border-top: 2px solid #3f7afd !important;
+        border-bottom: 2px solid #3f7afd !important;
+        color: #2c52bd !important;
+    }
+    .account-row:hover { background-color: #fdfdfd; }
 </style>
 @endpush
 

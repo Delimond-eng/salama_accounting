@@ -103,7 +103,7 @@ class ComptableExportService
         if ($numCols === 0) return;
         $lastCol = Coordinate::stringFromColumnIndex($numCols);
 
-        // Header Style (Bandeau Bordeaux - Design Ancien revisité)
+        // Header Style (Bandeau Bordeaux)
         $col = 'A';
         foreach ($headers as $h) {
             $sheet->setCellValue($col . $rowIdx, $h);
@@ -115,18 +115,19 @@ class ComptableExportService
             'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => '800000']],
             'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical' => Alignment::VERTICAL_CENTER],
         ]);
-        $sheet->getRowDimension($rowIdx)->setRowHeight(25); // Plus d'espace pour l'entête
+        $sheet->getRowDimension($rowIdx)->setRowHeight(25);
 
         $rowIdx++;
         $rowCount = 0;
         foreach ($rows as $row) {
             $col = 'A';
-            $isTotal = false; $isTitle = false;
+            $isTotal = false; $isTitle = false; $isBlueSubtotal = false;
 
             foreach (array_slice($row, 0, $numCols) as $cell) {
                 $val = (string)$cell;
-                if (str_starts_with($val, '### ')) { $isTitle = true; $val = substr($val, 4); }
-                if (str_starts_with($val, '=== ')) { $isTotal = true; $val = substr($val, 4); }
+                if (str_starts_with($val, '*** ')) { $isBlueSubtotal = true; $val = substr($val, 4); }
+                elseif (str_starts_with($val, '### ')) { $isTitle = true; $val = substr($val, 4); }
+                elseif (str_starts_with($val, '=== ')) { $isTotal = true; $val = substr($val, 4); }
 
                 $sheet->setCellValue($col . $rowIdx, $val);
 
@@ -134,7 +135,6 @@ class ComptableExportService
                 $numVal = str_replace([' ', ','], ['', '.'], $val);
                 if (is_numeric($numVal) && strlen($val) > 0) {
                     $sheet->getStyle($col . $rowIdx)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
-                    // Format monétaire soft
                     $sheet->getStyle($col . $rowIdx)->getNumberFormat()->setFormatCode('#,##0.00');
                 }
                 $col++;
@@ -149,18 +149,25 @@ class ComptableExportService
                         'bottom' => ['borderStyle' => Border::BORDER_DOUBLE, 'color' => ['rgb' => '800000']]
                     ]
                 ]);
+            } elseif ($isBlueSubtotal) {
+                $sheet->getStyle('A'.$rowIdx.':'.$lastCol.$rowIdx)->applyFromArray([
+                    'font' => ['bold' => true, 'color' => ['rgb' => '0056b3']],
+                    'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => 'E7F1FF']],
+                    'borders' => [
+                        'top' => ['borderStyle' => Border::BORDER_MEDIUM, 'color' => ['rgb' => '0056b3']],
+                        'bottom' => ['borderStyle' => Border::BORDER_MEDIUM, 'color' => ['rgb' => '0056b3']]
+                    ]
+                ]);
             } elseif ($isTitle) {
                 $sheet->getStyle('A'.$rowIdx.':'.$lastCol.$rowIdx)->applyFromArray([
                     'font' => ['bold' => true, 'color' => ['rgb' => '800000']],
                     'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => 'EEEEEE']]
                 ]);
             } else {
-                // Alternance de couleurs (Zebra stripes) pour les lignes standards
                 if ($rowCount % 2 === 0) {
                     $sheet->getStyle('A'.$rowIdx.':'.$lastCol.$rowIdx)->getFill()
                         ->setFillType(Fill::FILL_SOLID)->getStartColor()->setRGB('FCFCFC');
                 }
-                // Bordure très légère entre les lignes
                 $sheet->getStyle('A'.$rowIdx.':'.$lastCol.$rowIdx)->getBorders()->getBottom()
                     ->setBorderStyle(Border::BORDER_THIN)->getColor()->setRGB('F1F1F1');
             }
@@ -169,7 +176,6 @@ class ComptableExportService
             $rowCount++;
         }
 
-        // Auto-size des colonnes pour un rendu propre
         for ($i = 1; $i <= $numCols; $i++) {
             $sheet->getColumnDimension(Coordinate::stringFromColumnIndex($i))->setAutoSize(true);
         }
@@ -225,7 +231,7 @@ class ComptableExportService
             $out = fopen('php://output', 'w');
             fprintf($out, chr(0xEF).chr(0xBB).chr(0xBF));
             fputcsv($out, $headers, ';');
-            foreach ($rows as $r) fputcsv($out, array_map(fn($v) => preg_replace('/^(### |=== )/', '', (string)$v), $r), ';');
+            foreach ($rows as $r) fputcsv($out, array_map(fn($v) => preg_replace('/^(\*\*\* |### |=== )/', '', (string)$v), $r), ';');
             fclose($out);
         }, $this->safeFilename($filename, 'csv'));
     }

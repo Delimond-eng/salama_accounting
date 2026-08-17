@@ -711,7 +711,8 @@ class BilanComptableService
         string $dateArrete,
         string $deviseAffichage = 'CDF',
         string $modeConversion = 'origine',
-        string $scopeDevise = 'consolide'
+        string $scopeDevise = 'consolide',
+        bool $strict = true
     ): array {
         $soldes = $this->getAccountBalances($societeId, $exercice, $dateArrete, $deviseAffichage, $modeConversion, $scopeDevise);
         $resultatNet = $this->resultatNetExercice($societeId, $exercice, $dateArrete, $deviseAffichage, $modeConversion, $scopeDevise);
@@ -733,7 +734,9 @@ class BilanComptableService
             $soldes->count()
         );
 
-        $this->validerBilan($payload, $assignations, $resultatNet);
+        if ($strict) {
+            $this->validerBilan($payload, $assignations, $resultatNet);
+        }
 
         return $payload;
     }

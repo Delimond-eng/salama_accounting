@@ -74,6 +74,15 @@
         .row-section { background-color: #efefef !important; font-weight: bold; text-transform: uppercase; }
         .row-section td { border-top: 1.5px solid #800000 !important; font-size: 8px; color: #800000; }
 
+        /* Style spécifique pour les sous-totaux bleus (Grand Compte) */
+        .row-blue-total { background-color: #e7f1ff !important; font-weight: bold; color: #0056b3; }
+        .row-blue-total td {
+            border-top: 2px solid #0056b3 !important;
+            border-bottom: 2px solid #0056b3 !important;
+            color: #0056b3 !important;
+            font-size: 8px;
+        }
+
         .row-total { background-color: #fff9f9 !important; font-weight: bold; color: #000; }
         .row-total td { border-top: 2px solid #800000 !important; border-bottom: 3px double #800000 !important; font-size: 8.5px; }
 
@@ -129,8 +138,9 @@
                     $rowClass = '';
                     foreach($row as $cell) {
                         $c = (string)$cell;
+                        if (str_starts_with($c, '*** ')) { $rowClass = 'row-blue-total'; break; }
                         if (str_starts_with($c, '### ')) { $rowClass = 'row-section'; break; }
-                        if (str_starts_with($c, '=== ') || str_contains(strtoupper($c), 'TOTAL') || str_contains(strtoupper($c), 'SOLDE DE CLÔTURE')) {
+                        if (str_starts_with($c, '=== ') || str_contains(strtoupper($c), 'TOTAL GÉNÉRAL')) {
                             $rowClass = 'row-total'; break;
                         }
                     }
@@ -139,6 +149,7 @@
                     @foreach ($row as $cell)
                         @php
                             $cleanCell = (string)$cell;
+                            if (str_starts_with($cleanCell, '*** ')) $cleanCell = substr($cleanCell, 4);
                             if (str_starts_with($cleanCell, '### ')) $cleanCell = substr($cleanCell, 4);
                             if (str_starts_with($cleanCell, '=== ')) $cleanCell = substr($cleanCell, 4);
                             $isNumeric = is_numeric(str_replace([' ', ','], ['', '.'], $cleanCell)) && strlen($cleanCell) > 0;

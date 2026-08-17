@@ -32,7 +32,7 @@ class SaisieComptableService
         'caisse' => ['code' => 'CA', 'type' => 'caisse', 'title' => 'Journal de caisse', 'icon' => 'ti-cash'],
         'od' => ['code' => 'OD', 'type' => 'operations_diverses', 'title' => 'Opérations diverses', 'icon' => 'ti-adjustments'],
         'devises' => ['code' => null, 'type' => null, 'title' => 'Écritures en devises', 'icon' => 'ti-currency-dollar', 'multi_devise' => true],
-        'import' => ['code' => null, 'type' => null, 'title' => 'Import de relevés', 'icon' => 'ti-file-upload'],
+        'import' => ['code' => null, 'type' => 'banque', 'title' => 'Import de relevés', 'icon' => 'ti-file-upload'],
     ];
 
     public function pageMeta(string $page): array
@@ -46,19 +46,34 @@ class SaisieComptableService
 
     public function resolveJournal(int $societeId, string $page, ?int $journalId = null): ?Journal
     {
+        $query = Journal::where('societe_id', $societeId)->where('actif', true);
+
         if ($journalId) {
-            return Journal::where('societe_id', $societeId)->where('actif', true)->find($journalId);
+            return $query->find($journalId);
         }
 
         $meta = self::PAGES[$page] ?? null;
-        if (! $meta || empty($meta['code'])) {
+        if (! $meta) {
             return null;
         }
 
-        return Journal::where('societe_id', $societeId)
-            ->where('code', $meta['code'])
-            ->where('actif', true)
-            ->first();
+        // 1. Essayer par code exact si défini
+        if (! empty($meta['code'])) {
+            $journal = (clone $query)->where('code', $meta['code'])->first();
+            if ($journal) {
+                return $journal;
+            }
+        }
+
+        // 2. Sinon essayer par type (premier journal du type trouvé)
+        if (! empty($meta['type'])) {
+            return $query->where('type', $meta['type'])
+                ->orderBy('ordre_affichage')
+                ->orderBy('code')
+                ->first();
+        }
+
+        return null;
     }
 
     public function exerciceCourant(int $societeId): ?Exercice

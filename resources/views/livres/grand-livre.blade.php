@@ -134,7 +134,7 @@
                                 </tr>
                                 <tr v-for="(l, i) in dataCompte.lignes" :key="i">
                                     <td class="text-muted fs-12">@{{ l.date_ecriture }}</td>
-                                    <td><span class="badge bg-label-secondary font-monospace">@{{ l.num_piece }}</span></td>
+                                    <td><span class="badge bg-info font-monospace">@{{ l.num_piece }}</span></td>
                                     <td>
                                         <div class="d-flex flex-column">
                                             <span class="fw-medium">@{{ l.libelle }}</span>

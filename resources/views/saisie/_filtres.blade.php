@@ -1,6 +1,13 @@
 <div class="card border-0 shadow-sm mb-3">
     <div class="card-body p-3">
         <div class="row g-3 align-items-center">
+            <div class="col-md-2" v-if="page !== 'nouvelle' && page !== 'devises' && page !== 'import' && journaux.length > 1">
+                <label class="form-label text-muted fs-12 mb-1">Journal</label>
+                <select class="form-select form-select-sm" v-model="filtres.journal_id" @change="loadList">
+                    <option value="">Tous les journaux</option>
+                    <option v-for="j in journaux" :key="j.id" :value="j.id">@{{ j.code }} - @{{ j.libelle }}</option>
+                </select>
+            </div>
             <div class="col-md-2">
                 <label class="form-label text-muted fs-12 mb-1">Du</label>
                 <div class="input-group input-group-sm">
@@ -34,14 +41,6 @@
                     <option value="origine">Taux d'origine</option>
                     <option value="actuel">Taux actuel</option>
                 </select>
-            </div>
-
-            <div class="col-md-2" v-if="filtres.mode_conversion === 'actuel'">
-                <label class="form-label text-muted fs-12 mb-1">Taux (1 USD = )</label>
-                <div class="input-group input-group-sm">
-                    <input type="number" step="0.01" class="form-control" v-model.number="filtres.taux" @change="loadList">
-                    <span class="input-group-text bg-light fs-11">CDF</span>
-                </div>
             </div>
         </div>
     </div>

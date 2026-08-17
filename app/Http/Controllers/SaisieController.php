@@ -54,10 +54,17 @@ class SaisieController extends Controller
         $exercice = $this->saisie->exerciceCourant($societeId);
         $societe = SocieteContext::societe();
 
-        $journaux = Journal::where('societe_id', $societeId)->where('actif', true)
-            ->orderBy('ordre_affichage')->orderBy('code')->get();
-
         $meta = $this->saisie->pageMeta($page);
+
+        $queryJournaux = Journal::where('societe_id', $societeId)->where('actif', true);
+
+        // Filtrer les journaux par type si la page a un type spécifique (ventes, achats, etc.)
+        if (!empty($meta['type'])) {
+            $queryJournaux->where('type', $meta['type']);
+        }
+
+        $journaux = $queryJournaux->orderBy('ordre_affichage')->orderBy('code')->get();
+
         $devisePrincipale = strtoupper($societe?->devise_principale ?? 'CDF');
         $deviseJournal = $journal?->devise_defaut ? strtoupper($journal->devise_defaut) : $devisePrincipale;
         $journalEnDeviseEtrangere = $journal && $deviseJournal !== $devisePrincipale;
@@ -111,16 +118,25 @@ class SaisieController extends Controller
     {
         $societeId = SocieteContext::requireId();
         $page = $request->get('page', 'nouvelle');
-        $journal = $this->saisie->resolveJournal($societeId, $page, $request->integer('journal_id') ?: null);
+        $meta = $this->saisie->pageMeta($page);
+
+        $requestedJournalId = $request->integer('journal_id');
 
         $query = Ecriture::with(['journal:id,code,libelle,type,devise_defaut', 'lignes'])
             ->parSociete($societeId)
             ->orderByDesc('created_at')
             ->orderByDesc('id');
 
-        if ($journal) {
-            $query->where('journal_id', $journal->id);
+        if ($requestedJournalId) {
+            $query->where('journal_id', $requestedJournalId);
+        } elseif (!empty($meta['type'])) {
+            // Si pas de journal spécifique, mais qu'on est sur une page typée (Achats, Ventes, etc.)
+            // On affiche toutes les écritures des journaux de ce type
+            $query->whereHas('journal', function($q) use ($meta) {
+                $q->where('type', $meta['type']);
+            });
         }
+
         if ($statut = $request->get('statut')) {
             $query->where('statut', $statut);
         }
