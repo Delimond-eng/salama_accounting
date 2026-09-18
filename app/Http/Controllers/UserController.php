@@ -7,6 +7,7 @@ use App\Support\DateTimeFormat;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
@@ -14,6 +15,22 @@ use Spatie\Permission\PermissionRegistrar;
 
 class UserController extends Controller
 {
+    /**
+     * S'assure de la présence de la colonne actif dans la table users
+     */
+    private function checkActifColumn()
+    {
+        if (!Schema::hasColumn('users', 'actif')) {
+            try {
+                Schema::table('users', function ($table) {
+                    $table->boolean('actif')->default(true)->after('role');
+                });
+            } catch (\Exception $e) {
+                // Colonne peut-être déjà en cours ou erreur ignorée
+            }
+        }
+    }
+
     public function getActions()
     {
         $actions = [];
@@ -155,6 +172,7 @@ class UserController extends Controller
 
     public function getAllUsers()
     {
+        $this->checkActifColumn();
         $labels = config('accounting_roles.labels', []);
         $users = User::query()
             ->with(['roles.permissions', 'permissions'])
@@ -169,9 +187,11 @@ class UserController extends Controller
                     'email' => $user->email,
                     'role' => $roleName,
                     'role_label' => $labels[$roleName] ?? $roleName,
+                    'actif' => Schema::hasColumn('users', 'actif') ? (bool) $user->actif : true,
                     'roles' => $user->roles->map(fn ($r) => [
                         'id' => $r->id,
                         'name' => $r->name,
+                        'label' => $labels[$r->name] ?? $r->name,
                         'permissions' => $r->permissions->pluck('name'),
                     ]),
                     'permissions' => $user->permissions->pluck('name'),
@@ -190,7 +210,16 @@ class UserController extends Controller
     public function createOrUpdateUser(Request $request)
     {
         try {
+            $this->checkActifColumn();
             $userId = $request->user_id;
+
+            // Pour éviter que l'absence de rôle ou un rôle inexistant bloque tout, on s'assure qu'il existe
+            if ($request->filled('role')) {
+                Role::firstOrCreate([
+                    'name' => $request->role,
+                    'guard_name' => 'web'
+                ]);
+            }
 
             $data = $request->validate([
                 'name' => 'required|string|max:255',
@@ -199,6 +228,7 @@ class UserController extends Controller
                 'role' => 'required|string|exists:roles,name',
                 'user_id' => 'nullable|exists:users,id',
                 'permissions' => 'nullable|array',
+                'actif' => 'nullable',
             ]);
 
             DB::beginTransaction();
@@ -241,14 +271,16 @@ class UserController extends Controller
 
             $user->syncRoles([$newRole]);
             $user->role = $newRole;
+
+            if (Schema::hasColumn('users', 'actif')) {
+                $user->actif = $request->has('actif') ? (bool)$request->actif : true;
+            }
+
             $user->save();
 
-            if (! array_key_exists('permissions', $data)) {
-                $user->syncPermissions([]);
-                app(PermissionRegistrar::class)->forgetCachedPermissions();
-            } elseif (! empty($data['permissions'])) {
+            if ($request->has('permissions')) {
                 $permissionNames = [];
-                foreach ((array) $data['permissions'] as $permission) {
+                foreach ((array) $request->permissions as $permission) {
                     $permission = trim((string) $permission);
                     if ($permission === '') {
                         continue;
@@ -260,13 +292,10 @@ class UserController extends Controller
                         'guard_name' => 'web',
                     ]);
                 }
-
-                if ($permissionNames !== []) {
-                    $user->syncPermissions(array_values(array_unique($permissionNames)));
-                    app(PermissionRegistrar::class)->forgetCachedPermissions();
-                }
+                $user->syncPermissions(array_values(array_unique($permissionNames)));
             }
 
+            app(PermissionRegistrar::class)->forgetCachedPermissions();
             DB::commit();
 
             return response()->json([
@@ -277,6 +306,38 @@ class UserController extends Controller
             return response()->json(['errors' => $e->validator->errors()->all()]);
         } catch (\Illuminate\Database\QueryException $e) {
             return response()->json(['errors' => $e->getMessage()]);
+        }
+    }
+
+    public function deleteUser(int $id)
+    {
+        try {
+            DB::beginTransaction();
+            $user = User::findOrFail($id);
+
+            if ($user->id === auth()->id()) {
+                return response()->json(['errors' => 'Impossible de supprimer votre propre compte en cours d\'utilisation.'], 403);
+            }
+
+            if ($user->hasRole('super_admin') || $user->role === 'super_admin') {
+                $count = User::where('role', 'super_admin')->count();
+                if ($count <= 1) {
+                    return response()->json(['errors' => 'Impossible de supprimer le seul super administrateur du système.'], 403);
+                }
+            }
+
+            $user->syncRoles([]);
+            $user->syncPermissions([]);
+            $user->delete();
+
+            DB::commit();
+
+            return response()->json([
+                'message' => 'Utilisateur supprimé avec succès'
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json(['errors' => $e->getMessage()], 500);
         }
     }
 
@@ -363,5 +424,4 @@ class UserController extends Controller
 
         return array_values(array_unique($permissionNames));
     }
-
 }

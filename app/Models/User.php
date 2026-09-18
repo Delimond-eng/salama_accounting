@@ -14,7 +14,7 @@ class User extends Authenticatable
     use HasApiTokens, HasFactory, HasRoles, Notifiable;
 
     protected $fillable = [
-        'name', 'email', 'password', 'role',
+        'name', 'email', 'password', 'role', 'actif',
     ];
 
     protected $hidden = [
@@ -23,6 +23,7 @@ class User extends Authenticatable
 
     protected $casts = [
         'email_verified_at' => 'datetime',
+        'actif' => 'boolean',
     ];
 
     protected function serializeDate(\DateTimeInterface $date): string

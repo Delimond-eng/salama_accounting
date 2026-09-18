@@ -91,11 +91,13 @@ class ParametresController extends Controller
                 ->orWhere('libelle', 'like', "%{$search}%")))
             ->orderBy('num_compte');
 
-        $comptes = $query->limit(500)->get();
-        $classes = PlanComptable::query()
-            ->when($societeId, fn ($q) => $q->parSociete($societeId), fn ($q) => $q->whereNull('societe_id'))
-            ->selectRaw('classe, count(*) as total')->groupBy('classe')->orderBy('classe')
-            ->pluck('total', 'classe');
+        // Récupération avec dédoublonnage (priorité aux comptes spécifiques à la société)
+        $comptesRaw = $query->limit(1000)->get();
+        $comptes = $comptesRaw->groupBy('num_compte')->map(function ($items) {
+            return $items->sortByDesc('societe_id')->first();
+        })->values()->sortBy('num_compte')->values();
+
+        $classes = $comptes->groupBy('classe')->map->count();
 
         return response()->json(['status' => 'success', 'comptes' => $comptes, 'classes' => $classes]);
     }
@@ -114,14 +116,22 @@ class ParametresController extends Controller
                 'est_rapprochable' => 'boolean',
             ]);
 
+            $payload = $this->planPayload($data, $societeId);
+
             if (! empty($data['id'])) {
                 $compte = PlanComptable::findOrFail($data['id']);
+
+                // Si c'est un compte système global, on crée/met à jour une version pour la société
                 if ($compte->est_systeme && ! $compte->societe_id) {
-                    return response()->json(['errors' => ['Compte SYSCOHADA système non modifiable.']], 422);
+                    $compte = PlanComptable::updateOrCreate(
+                        ['societe_id' => $societeId, 'num_compte' => $data['num_compte']],
+                        $payload
+                    );
+                } else {
+                    $compte->update($payload);
                 }
-                $compte->update($this->planPayload($data, $societeId));
             } else {
-                $compte = PlanComptable::create($this->planPayload($data, $societeId));
+                $compte = PlanComptable::create($payload);
             }
 
             return response()->json(['status' => 'success', 'message' => 'Compte enregistré.', 'compte' => $compte->fresh()]);
@@ -219,20 +229,24 @@ class ParametresController extends Controller
 
     private function planPayload(array $data, int $societeId): array
     {
+        $num = $data['num_compte'];
+        $len = strlen($num);
         $classe = (int) $data['classe'];
+
+        $parent = $len > 1 ? substr($num, 0, $len - 1) : null;
 
         return [
             'societe_id' => $societeId,
-            'num_compte' => $data['num_compte'],
+            'num_compte' => $num,
             'libelle' => $data['libelle'],
             'classe' => $classe,
-            'num_compte_parent' => strlen($data['num_compte']) > 2 ? substr($data['num_compte'], 0, -2).'00' : null,
-            'niveau' => 4,
+            'num_compte_parent' => $parent,
+            'niveau' => $len,
             'type_compte' => in_array($classe, [6, 7, 8], true) ? 'gestion' : ($classe === 9 ? 'hors_bilan' : 'bilan'),
             'type_compte_detail' => $data['type_compte_detail'] ?? null,
             'sens_normal' => in_array($classe, [1, 4, 7], true) ? 'crediteur' : 'debiteur',
             'categorie_bilan' => 'non_applicable',
-            'est_compte_detail' => true,
+            'est_compte_detail' => $len >= 3,
             'est_compte_tiers' => (bool) ($data['est_compte_tiers'] ?? false),
             'est_lettrable' => (bool) ($data['est_compte_tiers'] ?? false),
             'est_rapprochable' => (bool) ($data['est_rapprochable'] ?? false),

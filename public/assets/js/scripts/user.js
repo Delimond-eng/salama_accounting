@@ -165,12 +165,21 @@ new Vue({
             });
         },
 
+        openForm() {
+            this.reset();
+            new bootstrap.Modal(document.getElementById("modal_user")).show();
+        },
+
         async saveUser() {
             this.isLoading = true;
+            const targetRole = this.roles.find(r => r.id === this.form.role_id);
             const payload = {
-                name: this.form.name, email: this.form.email, password: this.form.password || null,
-                role: this.roles.find(r => r.id === this.form.role_id)?.name,
-                user_id: this.form.user_id || null, actif: this.form.actif
+                name: this.form.name,
+                email: this.form.email,
+                password: this.form.password || null,
+                role: targetRole ? targetRole.name : "",
+                user_id: this.form.user_id || null,
+                actif: this.form.actif
             };
             try {
                 const { data } = await postJson("/user/create", payload);
@@ -181,17 +190,42 @@ new Vue({
                 this.reset();
             } catch (e) { this.isLoading = false; }
         },
+
         editUser(user) {
             const roleId = user.roles?.[0]?.id || "";
-            this.form.name = user.name; this.form.email = user.email; this.form.role_id = roleId; this.form.user_id = user.id; this.form.password = ""; this.form.actif = !!user.actif;
+            this.form.name = user.name;
+            this.form.email = user.email;
+            this.form.role_id = roleId;
+            this.form.user_id = user.id;
+            this.form.password = "";
+            this.form.actif = user.actif !== undefined ? !!user.actif : true;
             new bootstrap.Modal(document.getElementById("modal_user")).show();
         },
+
+        async confirmDeleteUser(user) {
+            if (confirm(`Êtes-vous sûr de vouloir supprimer définitivement l'utilisateur ${user.name} ?`)) {
+                this.isLoading = true;
+                try {
+                    const { data } = await postJson(`/user/delete/${user.id}`, {});
+                    this.isLoading = false;
+                    if (!this.handleResponse(data)) return;
+                    await this.viewAllUsers();
+                } catch (e) { this.isLoading = false; }
+            }
+        },
+
         manageAccess(user) {
             this.form.user_id = user.id;
-            let combined = [...(user.permissions || []), ...(user.roles || []).flatMap(r => r.permissions || [])];
-            this.form.permissions = [...new Set(combined.map(p => typeof p === "string" ? p : p.name))];
+            // Fusionner les permissions directes de l'utilisateur ET celles de ses rôles
+            const directPerms = (user.permissions || []).map(p => typeof p === "string" ? p : p.name);
+            const rolePerms = (user.roles || []).flatMap(r => (r.permissions || []).map(p => typeof p === "string" ? p : p.name));
+
+            // Dédoublonner le tout pour l'affichage des checkboxes
+            this.form.permissions = [...new Set([...directPerms, ...rolePerms])];
+
             new bootstrap.Modal(document.getElementById("access_users")).show();
         },
+
         async addAccess() {
             this.isLoading = true;
             try {
@@ -202,7 +236,9 @@ new Vue({
                 bootstrap.Modal.getInstance(document.getElementById("access_users"))?.hide();
             } catch (e) { this.isLoading = false; }
         },
+
         openRoleForm() { this.formRole = { name: "", permissions: [], role_id: "" }; new bootstrap.Modal(document.getElementById("role-modal")).show(); },
+
         async createRole() {
             this.isLoading = true;
             try {
@@ -213,11 +249,15 @@ new Vue({
                 bootstrap.Modal.getInstance(document.getElementById("role-modal"))?.hide();
             } catch (e) { this.isLoading = false; }
         },
+
         editRole(role) {
             if (this.isProtectedRole(role.name)) return;
             this.formRole = { name: role.name, permissions: (role.permissions || []).map(p => typeof p === "string" ? p : p.name), role_id: role.id };
             new bootstrap.Modal(document.getElementById("role-modal")).show();
         },
-        reset() { this.form = { name: "", email: "", password: "", role_id: "", user_id: "", actif: true, permissions: [], }; }
+
+        reset() {
+            this.form = { name: "", email: "", password: "", role_id: "", user_id: "", actif: true, permissions: [], };
+        }
     }
 });

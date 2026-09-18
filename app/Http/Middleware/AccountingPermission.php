@@ -4,6 +4,8 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Schema;
 use Symfony\Component\HttpFoundation\Response;
 
 class AccountingPermission
@@ -13,6 +15,18 @@ class AccountingPermission
         $user = $request->user();
         if (! $user) {
             abort(403);
+        }
+
+        // Vérification du compte bloqué / inactif
+        if (Schema::hasColumn('users', 'actif') && !$user->actif) {
+            Auth::logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+
+            if ($request->expectsJson()) {
+                return response()->json(['errors' => ['Votre compte a été bloqué. Session fermée.']], 403);
+            }
+            return redirect()->route('login')->withErrors(['email' => 'Votre compte a été bloqué ou désactivé.']);
         }
 
         $routeName = $request->route()?->getName();

@@ -86,8 +86,8 @@
                                     <span class="badge badge-soft-info me-1" v-for="r in u.roles" :key="r.id">@{{ r.label || roleLabel(r.name) }}</span>
                                 </td>
                                 <td class="text-center">
-                                    <span class="badge rounded-pill" :class="u.actif ? 'bg-soft-success text-success' : 'bg-soft-secondary text-secondary'">
-                                        @{{ u.actif ? 'Actif' : 'Inactif' }}
+                                    <span class="badge rounded-pill" :class="u.actif ? 'bg-soft-success text-success' : 'bg-soft-danger text-danger'">
+                                        @{{ u.actif ? 'Actif' : 'Bloqué' }}
                                     </span>
                                 </td>
                                 <td class="text-end">
@@ -98,6 +98,11 @@
                                         </button>
                                         <button type="button" class="btn btn-icon btn-sm btn-label-primary" @click="editUser(u)" title="Modifier">
                                             <i class="ti ti-edit"></i>
+                                        </button>
+                                        @endcan
+                                        @can('users.delete')
+                                        <button type="button" class="btn btn-icon btn-sm btn-label-danger" @click="confirmDeleteUser(u)" title="Supprimer">
+                                            <i class="ti ti-trash"></i>
                                         </button>
                                         @endcan
                                     </div>
@@ -144,7 +149,7 @@
                                 <div class="col-12">
                                     <div class="form-check form-switch">
                                         <input class="form-check-input" type="checkbox" v-model="form.actif" id="user_actif">
-                                        <label class="form-check-label fw-medium" for="user_actif">Utilisateur actif</label>
+                                        <label class="form-check-label fw-medium" for="user_actif">Utilisateur actif (décocher pour bloquer)</label>
                                     </div>
                                 </div>
                             </div>
@@ -234,6 +239,7 @@
     .bg-light-soft { background-color: #f8fafc; }
     .search-box { min-width: 280px; }
     .bg-soft-success { background-color: #dcfce7; color: #15803d; }
+    .bg-soft-danger { background-color: #fee2e2; color: #991b1b; }
     .bg-soft-secondary { background-color: #f1f5f9; color: #475569; }
     .bg-soft-info { background-color: #e0f2fe; color: #0369a1; }
 </style>

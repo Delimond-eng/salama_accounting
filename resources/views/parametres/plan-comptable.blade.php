@@ -55,26 +55,26 @@
                 </div>
                 <div class="card-body p-0">
                     <div class="table-responsive">
-                        <table class="table table-hover table-bordered table-custom mb-0">
+                        <table class="table table-hover table-bordered table-custom mb-0" style="table-layout: fixed; width: 100%;">
                             <thead>
                                 <tr>
-                                    <th style="width: 120px">N° Compte</th>
-                                    <th>Intitulé du compte</th>
-                                    <th style="width: 80px" class="text-center">Classe</th>
-                                    <th>Nature / Type</th>
-                                    <th class="text-center" style="width: 60px">Tiers</th>
-                                    <th class="text-center" style="width: 60px">Rapp.</th>
-                                    <th class="text-end" style="width: 80px">Action</th>
+                                    <th style="width: 100px;">N° Compte</th>
+                                    <th style="width: auto;">Intitulé du compte</th>
+                                    <th style="width: 70px;" class="text-center">Classe</th>
+                                    <th style="width: 150px;">Nature / Type</th>
+                                    <th style="width: 65px;" class="text-center">Tiers</th>
+                                    <th style="width: 65px;" class="text-center">Rapp.</th>
+                                    <th style="width: 80px;" class="text-end">Action</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <tr v-if="isLoading"><td colspan="7" class="text-center py-5"><span class="spinner-border spinner-border-sm me-2"></span>Chargement…</td></tr>
                                 <tr v-else-if="!comptes.length"><td colspan="7" class="text-center py-5 text-muted">Aucun compte trouvé</td></tr>
                                 <tr v-for="c in comptes" :key="c.id">
-                                    <td class="font-monospace fw-bold text-primary">@{{ c.num_compte }}</td>
-                                    <td class="fw-medium">@{{ c.libelle }}</td>
+                                    <td class="font-monospace fw-bold text-primary" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">@{{ c.num_compte }}</td>
+                                    <td class="fw-medium" style="white-space: normal; word-break: break-word;">@{{ c.libelle }}</td>
                                     <td class="text-center"><span class="badge bg-light text-dark border">@{{ c.classe }}</span></td>
-                                    <td><span class="text-muted small">@{{ c.type_compte_detail || c.type_compte || 'Standard' }}</span></td>
+                                    <td style="white-space: normal; word-break: break-word;"><span class="text-muted small">@{{ c.type_compte_detail || c.type_compte || 'Standard' }}</span></td>
                                     <td class="text-center">
                                         <i v-if="c.est_compte_tiers" class="ti ti-circle-check-filled text-success fs-18"></i>
                                         <span v-else class="text-light-soft">—</span>
@@ -84,10 +84,9 @@
                                         <span v-else class="text-light-soft">—</span>
                                     </td>
                                     <td class="text-end">
-                                        <button v-if="!c.est_systeme || c.societe_id" type="button" class="btn btn-icon btn-sm btn-label-primary" @click="editCompte(c)" title="Modifier">
+                                        <button type="button" class="btn btn-icon btn-sm btn-label-primary" @click="editCompte(c)" title="Modifier">
                                             <i class="ti ti-edit"></i>
                                         </button>
-                                        <span v-else class="badge bg-label-secondary"><i class="ti ti-lock"></i></span>
                                     </td>
                                 </tr>
                             </tbody>

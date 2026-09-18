@@ -326,4 +326,7 @@ Route::middleware(['auth', 'accounting.permission'])->group(function () {
     Route::post('/user/access', [UserController::class, 'attributeAccess'])
         ->name('user.access')
         ->middleware('can:users.update');
+    Route::post('/user/delete/{id}', [UserController::class, 'deleteUser'])
+        ->name('user.delete')
+        ->middleware('can:users.delete');
 });
